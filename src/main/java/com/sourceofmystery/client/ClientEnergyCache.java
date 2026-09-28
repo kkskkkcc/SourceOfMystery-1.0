@@ -15,4 +15,11 @@ public class ClientEnergyCache {
         ClientEnergyCache.max = max;
         ClientEnergyCache.guiUnlocked = guiUnlocked;
     }
+
+    /**
+     * 退出存档/断开服务器时清空，避免进入下一个存档时短暂显示上一个存档的数值
+     */
+    public static void reset() {
+        update(0, 0, false);
+    }
 }

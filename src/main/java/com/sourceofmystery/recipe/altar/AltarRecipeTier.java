@@ -31,17 +31,4 @@ public enum AltarRecipeTier {
     public String getDisplayName() {
         return displayName;
     }
-
-    public boolean isHigherThan(AltarRecipeTier other) {
-        return this.priority > other.priority;
-    }
-
-    public static AltarRecipeTier fromName(String name) {
-        for (AltarRecipeTier tier : values()) {
-            if (tier.displayName.equals(name)) {
-                return tier;
-            }
-        }
-        return D;
-    }
 }

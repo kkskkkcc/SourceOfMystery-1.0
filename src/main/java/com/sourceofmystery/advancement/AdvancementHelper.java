@@ -2,66 +2,46 @@ package com.sourceofmystery.advancement;
 
 import com.sourceofmystery.SourceOfMystery;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nullable;
 
 /**
- * 成就系统辅助类
+ * 成就系统辅助类（用于 minecraft:impossible 触发器的成就，由代码直接授予）
  */
 public class AdvancementHelper {
 
-    private static final String MOD_ID = SourceOfMystery.MOD_ID;
+    @Nullable
+    private static Advancement find(ServerPlayer player, String advancementId) {
+        ResourceLocation location = new ResourceLocation(SourceOfMystery.MOD_ID, advancementId);
+        Advancement advancement = player.server.getAdvancements().getAdvancement(location);
+        if (advancement == null) {
+            SourceOfMystery.LOGGER.warn("Advancement not found: {}", location);
+        }
+        return advancement;
+    }
 
     /**
      * 检查玩家是否已完成指定成就
      */
     public static boolean hasAdvancement(ServerPlayer player, String advancementId) {
-        ResourceLocation location = new ResourceLocation(MOD_ID, advancementId);
-        Advancement advancement = player.getServer().getAdvancements().getAdvancement(location);
-
-        if (advancement == null) {
-            SourceOfMystery.LOGGER.warn("Advancement not found: {}", location);
-            return false;
-        }
-
-        // 纯检查：只判断是否已完成，不授予
-        return player.getAdvancements().getOrStartProgress(advancement).isDone();
+        Advancement advancement = find(player, advancementId);
+        return advancement != null && player.getAdvancements().getOrStartProgress(advancement).isDone();
     }
 
     /**
-     * 授予玩家指定成就
+     * 授予玩家指定成就的全部剩余条件
      */
     public static void grantAdvancement(ServerPlayer player, String advancementId) {
-        ResourceLocation location = new ResourceLocation(MOD_ID, advancementId);
-        Advancement advancement = player.getServer().getAdvancements().getAdvancement(location);
-
+        Advancement advancement = find(player, advancementId);
         if (advancement == null) {
-            SourceOfMystery.LOGGER.warn("Advancement not found: {}", location);
             return;
         }
-
-        // 遍历所有剩余 criteria 逐个授予（用正确的 criteria 名，而非硬编码 "trigger"）
-        net.minecraft.advancements.AdvancementProgress progress = player.getAdvancements().getOrStartProgress(advancement);
-        for (String criteriaName : progress.getRemainingCriteria()) {
-            player.getAdvancements().award(advancement, criteriaName);
+        AdvancementProgress progress = player.getAdvancements().getOrStartProgress(advancement);
+        for (String criterion : progress.getRemainingCriteria()) {
+            player.getAdvancements().award(advancement, criterion);
         }
-        SourceOfMystery.LOGGER.info("Awarded advancement {} to player {}", advancementId, player.getName().getString());
-    }
-
-    /**
-     * 撤销玩家指定成就
-     */
-    public static void revokeAdvancement(ServerPlayer player, String advancementId) {
-        ResourceLocation location = new ResourceLocation(MOD_ID, advancementId);
-        Advancement advancement = player.getServer().getAdvancements().getAdvancement(location);
-
-        if (advancement == null) {
-            SourceOfMystery.LOGGER.warn("Advancement not found: {}", location);
-            return;
-        }
-
-        player.getAdvancements().revoke(advancement, "trigger");
     }
 }

@@ -18,7 +18,7 @@ import java.util.Collection;
 
 /**
  * 调试指令：/somenergy <玩家> <数值>
- * 用于设置玩家的神秘之能（能量和上限同时设为该值），数值范围 1-1000000
+ * 用于设置玩家的神秘之能（能量和上限同时设为该值），数值范围 1-1000000，支持 @a 等多目标选择器
  */
 @Mod.EventBusSubscriber(modid = SourceOfMystery.MOD_ID)
 public class ModCommands {
@@ -28,27 +28,24 @@ public class ModCommands {
         event.getDispatcher().register(
                 Commands.literal("somenergy")
                         .requires(source -> source.hasPermission(2)) // 需要权限等级 2（作弊/OP）
-                        .then(Commands.argument("player", EntityArgument.player())
+                        .then(Commands.argument("targets", EntityArgument.players())
                                 .then(Commands.argument("value", IntegerArgumentType.integer(1, 1000000))
                                         .executes(ModCommands::setEnergy)))
         );
     }
 
     private static int setEnergy(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-        Collection<ServerPlayer> players = EntityArgument.getPlayers(ctx, "player");
+        Collection<ServerPlayer> players = EntityArgument.getPlayers(ctx, "targets");
         int value = IntegerArgumentType.getInteger(ctx, "value");
 
-        int count = 0;
         for (ServerPlayer player : players) {
             MysteryEnergyCapability.setEnergyAndMax(player, value);
-            count++;
         }
 
-        final int finalCount = count;
         ctx.getSource().sendSuccess(
-                () -> Component.literal("§a已设置 §e" + finalCount + " §a名玩家的神秘之能为 §e" + value),
+                () -> Component.translatable("commands.sourceofmystery.somenergy.success", players.size(), value),
                 true
         );
-        return count;
+        return players.size();
     }
 }

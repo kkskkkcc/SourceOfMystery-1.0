@@ -2,8 +2,11 @@ package com.sourceofmystery.network;
 
 import com.sourceofmystery.SourceOfMystery;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
+
+import java.util.Optional;
 
 public class ModNetwork {
 
@@ -22,6 +25,7 @@ public class ModNetwork {
                 EnergySyncPacket.class,
                 EnergySyncPacket::encode,
                 EnergySyncPacket::decode,
-                EnergySyncPacket::handle);
+                EnergySyncPacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 }

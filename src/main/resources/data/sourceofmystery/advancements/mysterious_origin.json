@@ -1,8 +1,12 @@
 {
   "parent": "sourceofmystery:root",
   "display": {
-    "title": "神秘起源",
-    "description": "首次使用神秘祭坛",
+    "title": {
+      "translate": "advancements.sourceofmystery.mysterious_origin.title"
+    },
+    "description": {
+      "translate": "advancements.sourceofmystery.mysterious_origin.description"
+    },
     "icon": {
       "item": "sourceofmystery:mystery_altar"
     },

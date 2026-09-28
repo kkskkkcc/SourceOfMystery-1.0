@@ -8,30 +8,31 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.network.PacketDistributor;
 
 /**
- * 神秘之能系统 - 使用简单的 NBT 存储
- * 不再依赖复杂的 Capability API
+ * 神秘之能系统 - 使用玩家 persistentData 中的 NBT 存储
+ * 不依赖 Capability API
  */
 public class MysteryEnergyCapability {
 
+    private static final String ROOT_KEY = "sourceofmystery";
     private static final String ENERGY_KEY = "sourceofmystery_energy";
     private static final String ENERGY_MAX_KEY = "sourceofmystery_energy_max";
     private static final String GUI_UNLOCKED_KEY = "sourceofmystery_gui_unlocked";
+    private static final String LAST_REFRESH_DAY_KEY = "sourceofmystery_last_refresh_day";
     private static final long INITIAL_ENERGY = 100L;
+    private static final long ENERGY_PER_KILL = 10L;
 
     /**
      * 获取玩家的神秘之能
      */
     public static long getEnergy(Player player) {
-        CompoundTag tag = getPlayerData(player);
-        return tag.getLong(ENERGY_KEY);
+        return getPlayerData(player).getLong(ENERGY_KEY);
     }
 
     /**
      * 设置玩家的神秘之能
      */
     public static void setEnergy(Player player, long energy) {
-        CompoundTag tag = getPlayerData(player);
-        tag.putLong(ENERGY_KEY, Math.max(0, energy));
+        getPlayerData(player).putLong(ENERGY_KEY, Math.max(0, energy));
     }
 
     /**
@@ -40,8 +41,7 @@ public class MysteryEnergyCapability {
     public static void addEnergy(Player player, long amount) {
         if (amount > 0) {
             setEnergy(player, getEnergy(player) + amount);
-            CompoundTag tag = getPlayerData(player);
-            tag.putLong(ENERGY_MAX_KEY, getEnergyMax(player) + amount);
+            getPlayerData(player).putLong(ENERGY_MAX_KEY, getEnergyMax(player) + amount);
             syncToClient(player);
         }
     }
@@ -50,17 +50,25 @@ public class MysteryEnergyCapability {
      * 获取玩家的神秘之能上限
      */
     public static long getEnergyMax(Player player) {
-        CompoundTag tag = getPlayerData(player);
-        return tag.getLong(ENERGY_MAX_KEY);
+        return getPlayerData(player).getLong(ENERGY_MAX_KEY);
     }
 
     /**
-     * 每日恢复：把当前能量回满到上限
+     * 每日恢复：跨入新的一天时把当前能量回满到上限。
+     * 上次恢复的天数存在玩家 NBT 中，服务器重启、切换存档都不会丢失。
      */
-    public static void dailyRefresh(Player player) {
+    public static void tickDailyRefresh(Player player, long currentDay) {
         CompoundTag tag = getPlayerData(player);
-        tag.putLong(ENERGY_KEY, getEnergyMax(player));
-        syncToClient(player);
+        if (!tag.contains(LAST_REFRESH_DAY_KEY)) {
+            // 首次记录：只记下当前天数，不刷新
+            tag.putLong(LAST_REFRESH_DAY_KEY, currentDay);
+            return;
+        }
+        if (tag.getLong(LAST_REFRESH_DAY_KEY) != currentDay) {
+            tag.putLong(LAST_REFRESH_DAY_KEY, currentDay);
+            tag.putLong(ENERGY_KEY, getEnergyMax(player));
+            syncToClient(player);
+        }
     }
 
     /**
@@ -91,14 +99,14 @@ public class MysteryEnergyCapability {
     }
 
     /**
-     * 获取玩家的持久化数据标签
+     * 获取本模组在玩家 persistentData 中的数据标签（死亡、跨维度时会整体复制）
      */
-    private static CompoundTag getPlayerData(Player player) {
+    public static CompoundTag getPlayerData(Player player) {
         CompoundTag rootTag = player.getPersistentData();
-        if (!rootTag.contains("sourceofmystery")) {
-            rootTag.put("sourceofmystery", new CompoundTag());
+        if (!rootTag.contains(ROOT_KEY)) {
+            rootTag.put(ROOT_KEY, new CompoundTag());
         }
-        return rootTag.getCompound("sourceofmystery");
+        return rootTag.getCompound(ROOT_KEY);
     }
 
     /**
@@ -110,49 +118,43 @@ public class MysteryEnergyCapability {
     }
 
     /**
-     * 在玩家死亡时调用以保留神秘之能
+     * 玩家实体被替换时（死亡重生、从末地返回主世界）复制全部神秘之能数据。
+     * Forge 不会自动复制 persistentData，从末地返回时同样会生成新的玩家实体，
+     * 所以这里不能只处理死亡的情况。
      */
-    public static void onPlayerClone(Player original, Player player, boolean wasDeath) {
-        if (wasDeath) {
-            long originalEnergy = getEnergy(original);
-            setEnergy(player, originalEnergy);
-            // 复制能量上限
-            CompoundTag tag = getPlayerData(player);
-            tag.putLong(ENERGY_MAX_KEY, getEnergyMax(original));
-            // 复制GUI解锁状态
-            boolean guiUnlocked = isGuiUnlocked(original);
-            setGuiUnlocked(player, guiUnlocked);
-        }
+    public static void onPlayerClone(Player original, Player player) {
+        player.getPersistentData().put(ROOT_KEY, getPlayerData(original).copy());
     }
 
     /**
      * 在玩家击杀时调用以增加神秘之能
      */
     public static void onPlayerKill(Player player) {
-        addEnergy(player, 10);
+        addEnergy(player, ENERGY_PER_KILL);
     }
 
     /**
      * 检查GUI是否已解锁
      */
     public static boolean isGuiUnlocked(Player player) {
-        CompoundTag tag = getPlayerData(player);
-        return tag.getBoolean(GUI_UNLOCKED_KEY);
+        return getPlayerData(player).getBoolean(GUI_UNLOCKED_KEY);
     }
 
     /**
      * 设置GUI解锁状态
      */
     public static void setGuiUnlocked(Player player, boolean unlocked) {
-        CompoundTag tag = getPlayerData(player);
-        tag.putBoolean(GUI_UNLOCKED_KEY, unlocked);
+        if (isGuiUnlocked(player) == unlocked) {
+            return;
+        }
+        getPlayerData(player).putBoolean(GUI_UNLOCKED_KEY, unlocked);
         syncToClient(player);
     }
 
     /**
      * 服务端 -> 客户端：把能量、上限、GUI状态同步给玩家
      */
-    private static void syncToClient(Player player) {
+    public static void syncToClient(Player player) {
         if (player instanceof ServerPlayer serverPlayer) {
             ModNetwork.CHANNEL.send(
                     PacketDistributor.PLAYER.with(() -> serverPlayer),

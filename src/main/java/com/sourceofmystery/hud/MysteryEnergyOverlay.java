@@ -1,50 +1,34 @@
 package com.sourceofmystery.hud;
 
-import com.sourceofmystery.SourceOfMystery;
 import com.sourceofmystery.client.ClientEnergyCache;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
+import net.minecraft.network.chat.Component;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
+import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 
-@Mod.EventBusSubscriber(modid = SourceOfMystery.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
-public class MysteryEnergyOverlay {
+/**
+ * 神秘之能 HUD：左下角显示 "当前 / 上限"。
+ * 作为独立 overlay 注册（见 ClientModEvents），每帧只绘制一次，并会随 F1 隐藏。
+ */
+public class MysteryEnergyOverlay implements IGuiOverlay {
 
-    private static final int ENERGY_DISPLAY_THRESHOLD = 1; // 显示阈值
+    public static final String ID = "mystery_energy";
+    private static final int MARGIN = 10;
 
-    @SubscribeEvent
-    public static void onRenderGuiOverlay(RenderGuiOverlayEvent.Post event) {
-        Minecraft minecraft = Minecraft.getInstance();
-
-        if (minecraft.player == null || minecraft.level == null) {
+    @Override
+    public void render(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
+        Minecraft minecraft = gui.getMinecraft();
+        if (minecraft.player == null || minecraft.options.hideGui || !ClientEnergyCache.guiUnlocked) {
             return;
         }
 
-        // 检查是否已解锁神秘之能GUI（从客户端缓存读取）
-        if (!ClientEnergyCache.guiUnlocked) {
-            return;
-        }
-
-        // 检查是否有神秘之能
-        long energy = ClientEnergyCache.energy;
-        if (energy < ENERGY_DISPLAY_THRESHOLD) {
-            return;
-        }
-
-        GuiGraphics guiGraphics = event.getGuiGraphics();
-        Font fontRenderer = minecraft.font;
-
-        long max = ClientEnergyCache.max;
-        String energyText = "§6⚡ 神秘之能: §a" + energy + " §7/ §e" + max;
-
-        int x = 10; // 左下角，左边距10像素
-        int screenHeight = event.getWindow().getGuiScaledHeight();
-        int y = screenHeight - fontRenderer.lineHeight - 10; // 底部边距10像素
-
-        // 纯文字，不绘制背景
-        guiGraphics.drawString(fontRenderer, energyText, x, y, 0xFFFFFF);
+        Component text = Component.translatable("hud.sourceofmystery.energy",
+                        Component.literal(String.valueOf(ClientEnergyCache.energy)).withStyle(ChatFormatting.GREEN),
+                        Component.literal(String.valueOf(ClientEnergyCache.max)).withStyle(ChatFormatting.YELLOW))
+                .withStyle(ChatFormatting.GOLD);
+        int y = screenHeight - minecraft.font.lineHeight - MARGIN;
+        guiGraphics.drawString(minecraft.font, text, MARGIN, y, 0xFFFFFF);
     }
 }

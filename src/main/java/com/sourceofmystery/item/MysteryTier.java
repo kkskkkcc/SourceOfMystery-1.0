@@ -28,15 +28,10 @@ public class MysteryTier implements Tier {
     @Override public int getEnchantmentValue() { return enchantmentValue; }
     @Override public Ingredient getRepairIngredient() { return repairIngredient; }
 
-    // 预定义的等级 (attackDamageBonus + base 3.0 = weapon damage)
-    // MYSTERY: 4 + 3(bonus) = 10 damage, 1.6 speed
+    // 预定义的等级；各把剑的最终伤害见 ModItems 中的注释
     public static final MysteryTier MYSTERY = new MysteryTier(4, 1500, 8.0f, 4.0f, 15, Ingredient.of(Items.DIAMOND));
-    // SPIRIT_SOURCE: 10 + 2(bonus) = 15 damage, 1.8 speed
     public static final MysteryTier SPIRIT_SOURCE = new MysteryTier(5, 2500, 9.0f, 10.0f, 20, Ingredient.of(Items.DIAMOND));
-    // DARK_SOURCE: 40 + 7(bonus) = 50 damage, 2.0 speed
     public static final MysteryTier DARK_SOURCE = new MysteryTier(6, 4000, 10.0f, 40.0f, 25, Ingredient.of(Items.NETHERITE_INGOT));
-    // ORIGIN_DRAGON: 90 + 7(bonus) = 100 damage, 3.0 speed
     public static final MysteryTier ORIGIN_DRAGON = new MysteryTier(7, 8000, 12.0f, 90.0f, 30, Ingredient.of(Items.NETHERITE_INGOT));
-    // DIVINE_PUNISHMENT: 210 + 47(bonus) = 260 damage, 3.0 speed
     public static final MysteryTier DIVINE_PUNISHMENT = new MysteryTier(8, 15000, 15.0f, 210.0f, 35, Ingredient.of(Items.NETHERITE_INGOT));
 }

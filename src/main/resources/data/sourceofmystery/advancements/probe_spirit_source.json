@@ -1,8 +1,12 @@
 {
   "parent": "sourceofmystery:origin_power",
   "display": {
-    "title": "窥探灵源",
-    "description": "获得灵源秘甲或灵源秘剑",
+    "title": {
+      "translate": "advancements.sourceofmystery.probe_spirit_source.title"
+    },
+    "description": {
+      "translate": "advancements.sourceofmystery.probe_spirit_source.description"
+    },
     "icon": {
       "item": "sourceofmystery:spirit_source_chestplate"
     },
@@ -16,7 +20,9 @@
       "conditions": {
         "items": [
           {
-            "items": ["sourceofmystery:spirit_source_sword"]
+            "items": [
+              "sourceofmystery:spirit_source_sword"
+            ]
           }
         ]
       }
@@ -26,11 +32,18 @@
       "conditions": {
         "items": [
           {
-            "items": ["sourceofmystery:spirit_source_chestplate"]
+            "items": [
+              "sourceofmystery:spirit_source_chestplate"
+            ]
           }
         ]
       }
     }
   },
-  "requirements": [["spirit_source_sword", "spirit_source_chestplate"]]
+  "requirements": [
+    [
+      "spirit_source_sword",
+      "spirit_source_chestplate"
+    ]
+  ]
 }

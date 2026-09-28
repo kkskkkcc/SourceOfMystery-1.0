@@ -47,7 +47,7 @@ public class MysteryArmorMaterial implements ArmorMaterial {
     @Override public float getToughness() { return toughness; }
     @Override public float getKnockbackResistance() { return knockbackResistance; }
 
-    // 预定义的材料
+    // 预定义的材料（套装效果通过 == 比较这些常量识别，不要依赖 getName）
     // protection数组: [boots, leggings, chestplate, helmet]
     // getName 复用原版护甲材质名，避免自定义贴图缺失导致穿甲时模型变黑
     // 秘源甲: 胸甲护甲值 10
