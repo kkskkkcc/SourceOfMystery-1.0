@@ -1,0 +1,39 @@
+{
+  "parent": "sourceofmystery:kill_divine_heavenly_dao",
+  "display": {
+    "title": "我为天道",
+    "description": "获得神威天罚或神威天佑",
+    "icon": {
+      "item": "sourceofmystery:divine_blessing_chestplate"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "rewards": {
+    "experience": 2000
+  },
+  "criteria": {
+    "divine_punishment_sword": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": ["sourceofmystery:divine_punishment_sword"]
+          }
+        ]
+      }
+    },
+    "divine_blessing_chestplate": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": ["sourceofmystery:divine_blessing_chestplate"]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [["divine_punishment_sword", "divine_blessing_chestplate"]]
+}

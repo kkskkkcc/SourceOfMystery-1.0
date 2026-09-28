@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "MCM",
+    "CWC",
+    "MCM"
+  ],
+  "key": {
+    "M": { "item": "sourceofmystery:mystery_ingot" },
+    "C": { "item": "minecraft:cobblestone" },
+    "W": { "item": "minecraft:crafting_table" }
+  },
+  "result": {
+    "item": "sourceofmystery:mystery_altar",
+    "count": 1
+  }
+}

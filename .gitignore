@@ -1,0 +1,47 @@
+# ---- Gradle ----
+.gradle/
+build/
+out/
+
+# ---- IDE ----
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.run/
+
+# ---- Minecraft Forge 运行目录 ----
+run/
+
+# ---- 本机捆绑的 JDK（机器相关，不应入库）----
+jdk/
+
+# ---- 日志 ----
+*.log
+
+# ---- 一次性构建脚本 / 构建产物 ----
+*.txt
+*.bat
+!gradlew.bat
+*.ps1
+*.7z
+
+# ---- 意外重定向产生的空/垃圾文件 ----
+Could
+Failed
+Get
+root
+
+# ---- 素材/设计资料（不属于构建内容）----
+原版素材/
+开发需求/
+神秘之源素材/
+
+# ---- 临时上传辅助脚本 ----
+.gh_helper.cjs
+
+# ---- 操作系统 ----
+.DS_Store
+Thumbs.db
+desktop.ini

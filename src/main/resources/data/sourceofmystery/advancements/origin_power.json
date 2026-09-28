@@ -1,0 +1,36 @@
+{
+  "parent": "sourceofmystery:mysterious_origin",
+  "display": {
+    "title": "起源之力",
+    "description": "获得秘源甲或秘源剑",
+    "icon": {
+      "item": "sourceofmystery:mystery_chestplate"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "mystery_sword": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": ["sourceofmystery:mystery_sword"]
+          }
+        ]
+      }
+    },
+    "mystery_chestplate": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": ["sourceofmystery:mystery_chestplate"]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [["mystery_sword", "mystery_chestplate"]]
+}

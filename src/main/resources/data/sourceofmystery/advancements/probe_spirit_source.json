@@ -1,0 +1,36 @@
+{
+  "parent": "sourceofmystery:origin_power",
+  "display": {
+    "title": "窥探灵源",
+    "description": "获得灵源秘甲或灵源秘剑",
+    "icon": {
+      "item": "sourceofmystery:spirit_source_chestplate"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "spirit_source_sword": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": ["sourceofmystery:spirit_source_sword"]
+          }
+        ]
+      }
+    },
+    "spirit_source_chestplate": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": ["sourceofmystery:spirit_source_chestplate"]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [["spirit_source_sword", "spirit_source_chestplate"]]
+}

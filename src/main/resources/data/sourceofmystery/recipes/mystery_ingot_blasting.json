@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:blasting",
+  "ingredient": {
+    "item": "sourceofmystery:mystery_source_ore"
+  },
+  "result": "sourceofmystery:mystery_ingot",
+  "experience": 1.0,
+  "cookingtime": 100
+}

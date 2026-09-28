@@ -1,0 +1,36 @@
+{
+  "parent": "sourceofmystery:touch_dark_source",
+  "display": {
+    "title": "我可弑神？",
+    "description": "获得始源龙甲或始源龙剑",
+    "icon": {
+      "item": "sourceofmystery:origin_dragon_chestplate"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "origin_dragon_sword": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": ["sourceofmystery:origin_dragon_sword"]
+          }
+        ]
+      }
+    },
+    "origin_dragon_chestplate": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": ["sourceofmystery:origin_dragon_chestplate"]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [["origin_dragon_sword", "origin_dragon_chestplate"]]
+}

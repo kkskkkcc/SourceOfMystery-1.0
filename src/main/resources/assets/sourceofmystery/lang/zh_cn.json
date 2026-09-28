@@ -1,0 +1,23 @@
+{
+  "item.sourceofmystery.mystery_ingot": "秘源锭",
+  "item.sourceofmystery.heavenly_dao_fragment": "天道碎片",
+  "item.sourceofmystery.mystery_source_ore": "神秘源矿",
+  "item.sourceofmystery.mystery_altar": "神秘祭坛",
+  "block.sourceofmystery.mystery_source_ore": "神秘源矿",
+  "block.sourceofmystery.mystery_altar": "神秘祭坛",
+  "creativetab.source_of_mystery": "神秘之源",
+
+  "item.sourceofmystery.mystery_sword": "秘源剑",
+  "item.sourceofmystery.spirit_source_sword": "灵源秘剑",
+  "item.sourceofmystery.dark_source_sword": "暗源之剑",
+  "item.sourceofmystery.origin_dragon_sword": "始源龙剑",
+  "item.sourceofmystery.divine_punishment_sword": "神威天罚",
+
+  "item.sourceofmystery.mystery_chestplate": "秘源甲",
+  "item.sourceofmystery.spirit_source_chestplate": "灵源秘甲",
+  "item.sourceofmystery.dark_source_chestplate": "暗源之甲",
+  "item.sourceofmystery.origin_dragon_chestplate": "始源龙甲",
+  "item.sourceofmystery.divine_blessing_chestplate": "神威天佑",
+
+  "entity.sourceofmystery.divine_heavenly_dao_boss": "神威天道"
+}

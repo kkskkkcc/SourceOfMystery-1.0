@@ -1,0 +1,26 @@
+{
+  "parent": "sourceofmystery:provoke_heaven",
+  "display": {
+    "title": "天道陨落",
+    "description": "击败神威天道 Boss",
+    "icon": {
+      "item": "sourceofmystery:divine_punishment_sword"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "rewards": {
+    "experience": 5000
+  },
+  "criteria": {
+    "divine_heavenly_dao": {
+      "trigger": "minecraft:player_killed_entity",
+      "conditions": {
+        "entity": {
+          "type": "sourceofmystery:divine_heavenly_dao_boss"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "parent": "sourceofmystery:root",
+  "display": {
+    "title": "神秘起源",
+    "description": "首次使用神秘祭坛",
+    "icon": {
+      "item": "sourceofmystery:mystery_altar"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "altar_use": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}

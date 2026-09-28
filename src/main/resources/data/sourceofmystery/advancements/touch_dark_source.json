@@ -1,0 +1,36 @@
+{
+  "parent": "sourceofmystery:probe_spirit_source",
+  "display": {
+    "title": "触摸黑暗之源",
+    "description": "获得暗源之甲或暗源之剑",
+    "icon": {
+      "item": "sourceofmystery:dark_source_chestplate"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "dark_source_sword": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": ["sourceofmystery:dark_source_sword"]
+          }
+        ]
+      }
+    },
+    "dark_source_chestplate": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": ["sourceofmystery:dark_source_chestplate"]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [["dark_source_sword", "dark_source_chestplate"]]
+}

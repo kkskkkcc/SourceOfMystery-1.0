@@ -1,0 +1,18 @@
+{
+  "parent": "sourceofmystery:can_slayer_god",
+  "display": {
+    "title": "触怒天道",
+    "description": "神威天道出现在100格范围内",
+    "icon": {
+      "item": "sourceofmystery:divine_punishment_sword"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true
+  },
+  "criteria": {
+    "boss_nearby": {
+      "trigger": "minecraft:impossible"
+    }
+  }
+}
