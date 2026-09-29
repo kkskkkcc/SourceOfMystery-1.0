@@ -27,5 +27,11 @@ public class ModNetwork {
                 EnergySyncPacket::decode,
                 EnergySyncPacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CHANNEL.registerMessage(id++,
+                SatelliteSyncPacket.class,
+                SatelliteSyncPacket::encode,
+                SatelliteSyncPacket::decode,
+                SatelliteSyncPacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 }

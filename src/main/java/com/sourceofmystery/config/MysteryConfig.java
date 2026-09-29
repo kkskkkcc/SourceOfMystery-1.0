@@ -21,6 +21,11 @@ public final class MysteryConfig {
     public static final ForgeConfigSpec.DoubleValue DIVINE_PUNISHMENT_TRUE_DAMAGE;
     public static final ForgeConfigSpec.LongValue DIVINE_PUNISHMENT_ENERGY_COST;
     public static final ForgeConfigSpec.LongValue DIVINE_BLESSING_BLOCK_COST;
+    public static final ForgeConfigSpec.DoubleValue SATELLITE_RANGE;
+    public static final ForgeConfigSpec.DoubleValue SATELLITE_DAMAGE;
+    public static final ForgeConfigSpec.IntValue SATELLITE_ATTACK_SECONDS;
+    public static final ForgeConfigSpec.IntValue SATELLITE_COOLDOWN_SECONDS;
+    public static final ForgeConfigSpec.LongValue SATELLITE_ENERGY_COST;
 
     // ==================== 突破原版护甲上限 ====================
     public static final ForgeConfigSpec.BooleanValue RAISE_ARMOR_CAPS;
@@ -62,6 +67,16 @@ public final class MysteryConfig {
                 .defineInRange("divinePunishmentEnergyCost", 1000L, 0L, Long.MAX_VALUE);
         DIVINE_BLESSING_BLOCK_COST = common.comment("神威天佑每次完全抵挡一次伤害消耗的神秘之能")
                 .defineInRange("divineBlessingBlockCost", 1000L, 0L, Long.MAX_VALUE);
+        SATELLITE_RANGE = common.comment("神威天佑外环卫星的索敌半径（格）")
+                .defineInRange("satelliteRange", 20.0, 1.0, 128.0);
+        SATELLITE_DAMAGE = common.comment("卫星环绕目标期间每秒造成的伤害")
+                .defineInRange("satelliteDamage", 20.0, 0.0, Double.MAX_VALUE);
+        SATELLITE_ATTACK_SECONDS = common.comment("卫星每次攻击环绕目标的持续时间（秒）")
+                .defineInRange("satelliteAttackSeconds", 5, 1, 600);
+        SATELLITE_COOLDOWN_SECONDS = common.comment("卫星攻击结束、飞回玩家身边后的冷却时间（秒）")
+                .defineInRange("satelliteCooldownSeconds", 10, 0, 3600);
+        SATELLITE_ENERGY_COST = common.comment("单颗卫星每次出击消耗的神秘之能，能量不足时不出击")
+                .defineInRange("satelliteEnergyCost", 10L, 0L, Long.MAX_VALUE);
         common.pop();
 
         common.comment("突破原版护甲限制 / Armor limits").push("armor");

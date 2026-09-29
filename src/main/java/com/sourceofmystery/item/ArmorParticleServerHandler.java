@@ -27,7 +27,7 @@ public class ArmorParticleServerHandler {
 
         long gameTime = level.getGameTime();
         for (ServerPlayer wearer : players) {
-            ArmorParticlePattern.emit(wearer, gameTime, (particle, x, y, z) -> {
+            ArmorParticlePattern.emit(wearer, gameTime, DivineSatelliteHandler.busyMask(wearer), (particle, x, y, z) -> {
                 for (ServerPlayer viewer : players) {
                     if (viewer != wearer) {
                         level.sendParticles(viewer, particle, false, x, y, z, 1, 0, 0, 0, 0);
