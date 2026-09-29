@@ -7,7 +7,7 @@
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:mystery_source_ore",
-      "text": "$(item)神秘源矿$()生成在主世界 Y -64 到 16 之间，会自己发光，很好找。需要$(l)铁镐$()或更好的镐子开采。"
+      "text": "$(item)神秘源矿$()和钻石矿一样稀有，生成在主世界 Y 16 以下，越深越多。它会自己发光，很好找。需要$(l)铁镐$()或更好的镐子开采。"
     },
     {
       "type": "patchouli:smelting",

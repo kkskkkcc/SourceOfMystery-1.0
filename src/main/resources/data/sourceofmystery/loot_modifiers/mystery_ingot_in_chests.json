@@ -2,6 +2,105 @@
   "type": "sourceofmystery:add_chest_loot",
   "conditions": [],
   "item": "sourceofmystery:mystery_ingot",
-  "min": 2,
-  "max": 11
+  "tables": [
+    {
+      "table": "minecraft:chests/abandoned_mineshaft",
+      "min_rolls": 2,
+      "max_rolls": 4,
+      "weight": 3,
+      "total_weight": 98,
+      "min_count": 1,
+      "max_count": 2
+    },
+    {
+      "table": "minecraft:chests/bastion_treasure",
+      "min_rolls": 3,
+      "max_rolls": 3,
+      "weight": 5,
+      "total_weight": 100,
+      "min_count": 2,
+      "max_count": 6
+    },
+    {
+      "table": "minecraft:chests/buried_treasure",
+      "min_rolls": 1,
+      "max_rolls": 3,
+      "weight": 5,
+      "total_weight": 15,
+      "min_count": 1,
+      "max_count": 2
+    },
+    {
+      "table": "minecraft:chests/desert_pyramid",
+      "min_rolls": 2,
+      "max_rolls": 4,
+      "weight": 5,
+      "total_weight": 232,
+      "min_count": 1,
+      "max_count": 3
+    },
+    {
+      "table": "minecraft:chests/end_city_treasure",
+      "min_rolls": 2,
+      "max_rolls": 6,
+      "weight": 5,
+      "total_weight": 85,
+      "min_count": 2,
+      "max_count": 7
+    },
+    {
+      "table": "minecraft:chests/jungle_temple",
+      "min_rolls": 2,
+      "max_rolls": 6,
+      "weight": 3,
+      "total_weight": 88,
+      "min_count": 1,
+      "max_count": 3
+    },
+    {
+      "table": "minecraft:chests/nether_bridge",
+      "min_rolls": 2,
+      "max_rolls": 4,
+      "weight": 5,
+      "total_weight": 73,
+      "min_count": 1,
+      "max_count": 3
+    },
+    {
+      "table": "minecraft:chests/shipwreck_treasure",
+      "min_rolls": 3,
+      "max_rolls": 6,
+      "weight": 5,
+      "total_weight": 150,
+      "min_count": 1,
+      "max_count": 1
+    },
+    {
+      "table": "minecraft:chests/stronghold_corridor",
+      "min_rolls": 2,
+      "max_rolls": 3,
+      "weight": 3,
+      "total_weight": 100,
+      "min_count": 1,
+      "max_count": 3
+    },
+    {
+      "table": "minecraft:chests/village/village_toolsmith",
+      "min_rolls": 3,
+      "max_rolls": 8,
+      "weight": 1,
+      "total_weight": 53,
+      "min_count": 1,
+      "max_count": 3
+    },
+    {
+      "table": "minecraft:chests/village/village_weaponsmith",
+      "min_rolls": 3,
+      "max_rolls": 8,
+      "weight": 3,
+      "total_weight": 94,
+      "min_count": 1,
+      "max_count": 3
+    }
+  ]
 }

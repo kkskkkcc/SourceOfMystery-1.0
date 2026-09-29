@@ -7,7 +7,7 @@
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:mystery_source_ore",
-      "text": "$(item)Mystery Source Ore$() generates in the Overworld between Y -64 and 16. It glows, so it is easy to spot. Mine it with an $(l)iron pickaxe$() or better."
+      "text": "$(item)Mystery Source Ore$() is as rare as diamond ore: it generates in the Overworld below Y 16, more often the deeper you go. It glows, so it is easy to spot. Mine it with an $(l)iron pickaxe$() or better."
     },
     {
       "type": "patchouli:smelting",

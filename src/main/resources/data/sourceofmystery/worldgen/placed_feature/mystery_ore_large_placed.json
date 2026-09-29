@@ -1,9 +1,9 @@
 {
-  "feature": "sourceofmystery:mystery_ore",
+  "feature": "sourceofmystery:mystery_ore_large",
   "placement": [
     {
-      "type": "minecraft:count",
-      "count": 7
+      "type": "minecraft:rarity_filter",
+      "chance": 9
     },
     {
       "type": "minecraft:in_square"
