@@ -37,7 +37,8 @@ import java.util.UUID;
  *     <li>灵源秘甲：水下呼吸，免疫火焰</li>
  *     <li>暗源之甲：水下呼吸、跳跃、夜视、急迫、力量 III，免疫火焰/凋零</li>
  *     <li>始源龙甲：同上 + 生命上限 +100、飞行、清除负面效果，额外免疫龙息/弹射物</li>
- *     <li>神威天佑：同始源龙甲，生命上限 +200，其余伤害可消耗 1000 神秘之能完全抵挡</li>
+ *     <li>神威天佑：同始源龙甲，生命上限 +200，其余伤害可消耗 1000 神秘之能完全抵挡；
+ *     外环卫星自动攻击见 DivineSatelliteHandler</li>
  * </ul>
  */
 @Mod.EventBusSubscriber(modid = SourceOfMystery.MOD_ID)

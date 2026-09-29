@@ -30,7 +30,7 @@ public class ArmorParticleEffect {
             return;
         }
 
-        ArmorParticlePattern.emit(player, level.getGameTime(),
+        ArmorParticlePattern.emit(player, level.getGameTime(), ClientSatelliteCache.busyMask,
                 (particle, x, y, z) -> level.addParticle(particle, x, y, z, 0, 0, 0));
     }
 }

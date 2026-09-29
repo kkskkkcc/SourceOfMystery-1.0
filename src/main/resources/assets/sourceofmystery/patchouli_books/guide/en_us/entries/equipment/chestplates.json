@@ -27,7 +27,7 @@
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:divine_blessing_chestplate",
-      "text": "Tier S+. 4 Heavenly Dao Fragments + 2 nether stars + Origin Dragon Chestplate. +200 max health; spends Mystery Energy to fully block any other damage."
+      "text": "Tier S+. 4 Heavenly Dao Fragments + 2 nether stars + Origin Dragon Chestplate. +200 max health; spends Mystery Energy to fully block any other damage.$(br2)The five outer satellites automatically attack hostile mobs and anything that hurt you within 20 blocks: each sortie costs 10 Mystery Energy, flies through walls to the target, orbits it for 5 seconds dealing 20 damage per second, then returns and cools down for 10 seconds."
     }
   ]
 }

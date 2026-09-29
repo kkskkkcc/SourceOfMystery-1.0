@@ -10,7 +10,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "Divine Punishment's bonus true damage and Divine Blessing's full damage block each cost 1000.$(br2)That is expensive, but Divine Blessing can block even command damage. The HUD sits in the bottom-left corner and turns red when you are low."
+      "text": "Divine Punishment's bonus true damage and Divine Blessing's full damage block each cost 1000; each sortie of a Divine Blessing satellite costs 10.$(br2)That is expensive, but Divine Blessing can block even command damage. The HUD sits in the bottom-left corner and turns red when you are low."
     }
   ]
 }
