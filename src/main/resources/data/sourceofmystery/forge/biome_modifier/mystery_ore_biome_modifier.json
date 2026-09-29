@@ -1,6 +1,10 @@
 {
   "type": "forge:add_features",
   "biomes": "#minecraft:is_overworld",
-  "features": "sourceofmystery:mystery_ore_placed",
+  "features": [
+    "sourceofmystery:mystery_ore_placed",
+    "sourceofmystery:mystery_ore_large_placed",
+    "sourceofmystery:mystery_ore_buried_placed"
+  ],
   "step": "underground_ores"
 }
