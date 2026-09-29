@@ -1,0 +1,11 @@
+{
+  "name": "book.sourceofmystery.guide.name",
+  "landing_text": "book.sourceofmystery.guide.landing",
+  "subtitle": "book.sourceofmystery.guide.subtitle",
+  "i18n": true,
+  "use_resource_pack": true,
+  "model": "patchouli:book_purple",
+  "book_texture": "patchouli:textures/gui/book_purple.png",
+  "show_progress": false,
+  "creative_tab": "sourceofmystery:source_of_mystery"
+}

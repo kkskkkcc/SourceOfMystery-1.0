@@ -1,8 +1,10 @@
 package com.sourceofmystery.recipe.altar;
 
+import java.util.Locale;
+
 /**
  * 神秘祭坛配方优先级枚举
- * S+ 最高，D 最低
+ * S+ 最高，D 最低；多个配方同时满足时优先合成等级高的
  */
 public enum AltarRecipeTier {
     S_PLUS(9, "S+"),
@@ -30,5 +32,17 @@ public enum AltarRecipeTier {
 
     public String getDisplayName() {
         return displayName;
+    }
+
+    /**
+     * 解析配方 JSON 中的等级，接受 "S+" 或 "s_plus" 两种写法
+     */
+    public static AltarRecipeTier fromName(String name) {
+        for (AltarRecipeTier tier : values()) {
+            if (tier.displayName.equalsIgnoreCase(name) || tier.name().equalsIgnoreCase(name)) {
+                return tier;
+            }
+        }
+        throw new IllegalArgumentException("Unknown altar recipe tier: " + name.toUpperCase(Locale.ROOT));
     }
 }

@@ -1,0 +1,33 @@
+{
+  "name": "Chestplates",
+  "icon": "sourceofmystery:mystery_chestplate",
+  "category": "sourceofmystery:equipment",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:mystery_chestplate",
+      "text": "Tier D+. 4 iron ingots + 4 Mystery Ingots + a diamond."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:spirit_source_chestplate",
+      "text": "Tier C+. 4 Mystery Ingots + 4 netherite ingots + Mystery Chestplate. Water breathing, immune to fire."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:dark_source_chestplate",
+      "text": "Tier B+. 2 wither skeleton skulls + 4 netherite ingots + 2 nether stars + Spirit Source Chestplate. Jump Boost, Night Vision, Haste, Strength III; immune to fire and wither. Unbreakable."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:origin_dragon_chestplate",
+      "text": "Tier A+. Dragon Soul + 4 end crystals + nether star + dragon head + elytra + Dark Source Chestplate. +100 max health, flight, cleanses harmful effects; also immune to dragon breath and projectiles."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:divine_blessing_chestplate",
+      "text": "Tier S+. 4 Heavenly Dao Fragments + 2 nether stars + Origin Dragon Chestplate. +200 max health; spends Mystery Energy to fully block any other damage."
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "name": "剑",
+  "icon": "sourceofmystery:mystery_sword",
+  "category": "sourceofmystery:equipment",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:mystery_sword",
+      "text": "D 级。铁锭 ×4 + 秘源锭 ×4 + 钻石剑。无特效，无限耐久。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:spirit_source_sword",
+      "text": "C 级。秘源锭 ×4 + 下界合金锭 ×4 + 秘源剑。命中后燃烧 10 秒，可以叠加。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:dark_source_sword",
+      "text": "B 级。凋灵骷髅头 ×2 + 下界合金锭 ×4 + 下界之星 ×2 + 灵源秘剑。燃烧 + 凋零，均可叠加。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:origin_dragon_sword",
+      "text": "A 级。龙魂 + 末地水晶 ×4 + 下界之星 + 龙首 + 鞘翅 + 暗源之剑。追加高亮与虚弱 III。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:divine_punishment_sword",
+      "text": "S 级。天道碎片 ×4 + 下界之星 ×2 + 始源龙剑。全部效果 + 缓慢 III；打不死目标时消耗神秘之能追加真实伤害。"
+    }
+  ]
+}

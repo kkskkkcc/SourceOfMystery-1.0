@@ -15,6 +15,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.entity.living.LivingDropsEvent;
+import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -51,6 +53,23 @@ public class BossSpawnHandler {
             SourceOfMystery.LOGGER.info("Ender Dragon died. Boss summoning countdown started.");
             broadcastToEnd(end, Component.translatable("message.sourceofmystery.boss.awakening")
                     .withStyle(ChatFormatting.LIGHT_PURPLE));
+        }
+    }
+
+    /**
+     * 二阶段召唤的凋灵不掉落物品和经验，避免每场 Boss 战额外产出下界之星
+     */
+    @SubscribeEvent
+    public static void onMinionDrops(LivingDropsEvent event) {
+        if (event.getEntity().getTags().contains(DivineHeavenlyDaoBoss.MINION_TAG)) {
+            event.setCanceled(true);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onMinionExperience(LivingExperienceDropEvent event) {
+        if (event.getEntity().getTags().contains(DivineHeavenlyDaoBoss.MINION_TAG)) {
+            event.setDroppedExperience(0);
         }
     }
 

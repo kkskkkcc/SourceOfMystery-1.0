@@ -1,0 +1,25 @@
+{
+  "name": "Divine Heavenly Dao",
+  "icon": "sourceofmystery:heavenly_dao_fragment",
+  "category": "sourceofmystery:boss",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "The Divine Heavenly Dao flies, is $(l)immune to all ranged attacks$(), strikes everything nearby with lightning every 10 seconds and enrages nearby Endermen.$(br2)It also has three telegraphed, dodgeable skills:"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(li)$(l)Judgement Mark$(): a ring of sparks appears at your feet and lightning strikes it 1.5s later. Step out.$(li)$(l)Thunder Charge$(): it charges up, then dashes at you in a straight line. Sidestep.$(li)$(l)Thunder Nova$(): up close it charges a shockwave that launches everyone nearby. Back off when the ring shrinks."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "At low health it enters $(l)phase two$(): it rises 30 blocks, regenerates, and summons 3 Withers. While they live it takes half damage, so deal with them first."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:heavenly_dao_fragment",
+      "text": "When defeated it drops 4-8 Heavenly Dao Fragments, enchanted golden apples, a dragon egg and nether stars. The fragments craft tier S gear."
+    }
+  ]
+}

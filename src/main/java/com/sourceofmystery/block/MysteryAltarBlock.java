@@ -2,9 +2,9 @@ package com.sourceofmystery.block;
 
 import com.sourceofmystery.SourceOfMystery;
 import com.sourceofmystery.advancement.AdvancementHelper;
-import com.sourceofmystery.capability.energy.MysteryEnergyCapability;
+import com.sourceofmystery.energy.MysteryEnergy;
 import com.sourceofmystery.recipe.altar.AltarRecipe;
-import com.sourceofmystery.recipe.altar.AltarRecipeManager;
+import com.sourceofmystery.recipe.ModRecipes;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
@@ -17,6 +17,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -29,6 +30,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,8 +59,8 @@ public class MysteryAltarBlock extends Block {
         if (!AdvancementHelper.hasAdvancement(serverPlayer, "mysterious_origin")) {
             AdvancementHelper.grantAdvancement(serverPlayer, "mysterious_origin");
         }
-        MysteryEnergyCapability.initPlayer(player);
-        MysteryEnergyCapability.setGuiUnlocked(player, true);
+        MysteryEnergy.initPlayer(player);
+        MysteryEnergy.setGuiUnlocked(player, true);
 
         // 多行信息发到聊天栏（action bar 只能显示一行，连续发送会互相覆盖）
         player.sendSystemMessage(Component.empty()
@@ -66,8 +68,8 @@ public class MysteryAltarBlock extends Block {
                         .withStyle(ChatFormatting.GOLD, ChatFormatting.BOLD))
                 .append(" ")
                 .append(Component.translatable("message.sourceofmystery.altar.energy",
-                        value(MysteryEnergyCapability.getEnergy(player), ChatFormatting.GREEN),
-                        value(MysteryEnergyCapability.getEnergyMax(player), ChatFormatting.YELLOW))
+                        value(MysteryEnergy.getEnergy(player), ChatFormatting.GREEN),
+                        value(MysteryEnergy.getEnergyMax(player), ChatFormatting.YELLOW))
                         .withStyle(ChatFormatting.GRAY)));
 
         List<ItemEntity> nearbyItems = findNearbyItems(level, pos);
@@ -77,16 +79,25 @@ public class MysteryAltarBlock extends Block {
                     describeMaterials(availableItems)).withStyle(ChatFormatting.GRAY));
         }
 
-        AltarRecipe recipe = AltarRecipeManager.getInstance().findBestMatchingRecipe(availableItems);
+        List<ItemStack> stacks = nearbyItems.stream().map(ItemEntity::getItem).toList();
+        AltarRecipe recipe = null;
+        int[] allocation = null;
+        for (AltarRecipe candidate : sortedRecipes(level)) {
+            allocation = candidate.allocate(stacks);
+            if (allocation != null) {
+                recipe = candidate;
+                break;
+            }
+        }
         if (recipe == null) {
             player.sendSystemMessage(Component.translatable("message.sourceofmystery.altar.no_recipe", SCAN_RADIUS)
                     .withStyle(ChatFormatting.RED));
             return InteractionResult.SUCCESS;
         }
 
-        consumeItems(nearbyItems, recipe.getIngredients());
+        consumeItems(nearbyItems, allocation);
 
-        ItemStack output = recipe.getOutput().copy();
+        ItemStack output = recipe.assemble(new SimpleContainer(), level.registryAccess());
         level.addFreshEntity(new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, output.copy()));
 
         spawnCraftingParticles(serverLevel, pos);
@@ -145,33 +156,31 @@ public class MysteryAltarBlock extends Block {
     }
 
     /**
-     * 从掉落物中扣除配方材料
+     * 所有祭坛配方，按等级从高到低排序（同等级按配方 ID 排序，保证结果稳定）
      */
-    private static void consumeItems(List<ItemEntity> itemEntities, Map<Item, Integer> ingredients) {
-        Map<Item, Integer> toConsume = new HashMap<>(ingredients);
+    private static List<AltarRecipe> sortedRecipes(Level level) {
+        return level.getRecipeManager().getAllRecipesFor(ModRecipes.ALTAR_TYPE.get()).stream()
+                .sorted(Comparator.comparingInt((AltarRecipe r) -> r.getTier().getPriority()).reversed()
+                        .thenComparing(r -> r.getId().toString()))
+                .toList();
+    }
 
-        for (ItemEntity itemEntity : itemEntities) {
-            if (toConsume.isEmpty()) {
-                break;
-            }
-            ItemStack stack = itemEntity.getItem();
-            Integer needed = toConsume.get(stack.getItem());
-            if (needed == null) {
+    /**
+     * 按配方的分配结果从掉落物中扣除材料
+     */
+    private static void consumeItems(List<ItemEntity> itemEntities, int[] allocation) {
+        for (int i = 0; i < itemEntities.size(); i++) {
+            int take = allocation[i];
+            if (take <= 0) {
                 continue;
             }
-
-            int available = stack.getCount();
-            if (available <= needed) {
+            ItemEntity itemEntity = itemEntities.get(i);
+            ItemStack stack = itemEntity.getItem();
+            if (take >= stack.getCount()) {
                 itemEntity.discard();
-                if (available == needed) {
-                    toConsume.remove(stack.getItem());
-                } else {
-                    toConsume.put(stack.getItem(), needed - available);
-                }
             } else {
                 // 必须通过 setItem 更新，直接改 stack 数量不会同步到客户端
-                itemEntity.setItem(stack.copyWithCount(available - needed));
-                toConsume.remove(stack.getItem());
+                itemEntity.setItem(stack.copyWithCount(stack.getCount() - take));
             }
         }
     }

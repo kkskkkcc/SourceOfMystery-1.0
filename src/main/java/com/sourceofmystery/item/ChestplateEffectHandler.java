@@ -1,7 +1,8 @@
 package com.sourceofmystery.item;
 
 import com.sourceofmystery.SourceOfMystery;
-import com.sourceofmystery.capability.energy.MysteryEnergyCapability;
+import com.sourceofmystery.config.MysteryConfig;
+import com.sourceofmystery.energy.MysteryEnergy;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -15,13 +16,13 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -46,17 +47,13 @@ public class ChestplateEffectHandler {
     private static final int EFFECT_DURATION = 40;
     // 夜视剩余不足 10 秒时屏幕会闪烁，所以持续时间要给足
     private static final int NIGHT_VISION_DURATION = 300;
-    private static final long DIVINE_BLOCK_ENERGY_COST = 1000;
     private static final String ARMOR_FLIGHT_KEY = "sourceofmystery_armor_flight";
 
-    // 生命加成 modifier 的 UUID 必须保持不变，否则老存档里已有的加成无法移除
-    private static final HealthBonus ORIGIN_DRAGON_HEALTH = new HealthBonus(MysteryArmorMaterial.ORIGIN_DRAGON,
-            UUID.fromString("5a3f1e2d-4b6c-7d8e-9f0a-1b2c3d4e5f6a"), "Origin Dragon Health Boost", 100.0);
-    private static final HealthBonus DIVINE_BLESSING_HEALTH = new HealthBonus(MysteryArmorMaterial.DIVINE_BLESSING,
-            UUID.fromString("6b4f2e3f-5c7d-8e9f-0b1c-2d3e4f5a6b7c"), "Divine Blessing Health Boost", 200.0);
-
-    private record HealthBonus(ArmorMaterial material, UUID id, String name, double amount) {
-    }
+    // 旧版本用 tick 手动添加的永久生命加成，登录时清理掉（现在由物品自带的属性修饰符提供）
+    private static final UUID[] LEGACY_HEALTH_MODIFIER_IDS = {
+            UUID.fromString("5a3f1e2d-4b6c-7d8e-9f0a-1b2c3d4e5f6a"),
+            UUID.fromString("6b4f2e3f-5c7d-8e9f-0b1c-2d3e4f5a6b7c")
+    };
 
     /**
      * 当前胸甲的材料；没穿或不是护甲时返回 null
@@ -75,8 +72,10 @@ public class ChestplateEffectHandler {
         Player player = event.player;
         ArmorMaterial material = getChestplateMaterial(player);
 
-        updateHealthBonus(player, material, ORIGIN_DRAGON_HEALTH);
-        updateHealthBonus(player, material, DIVINE_BLESSING_HEALTH);
+        // 脱下带生命加成的胸甲后，把当前生命 clamp 到新上限，避免血条残留
+        if (player.getHealth() > player.getMaxHealth()) {
+            player.setHealth(player.getMaxHealth());
+        }
         updateFlight(player, material == MysteryArmorMaterial.ORIGIN_DRAGON || material == MysteryArmorMaterial.DIVINE_BLESSING);
 
         if (player.tickCount % EFFECT_INTERVAL != 0) {
@@ -122,7 +121,7 @@ public class ChestplateEffectHandler {
 
         // 神威天佑：其他伤害消耗 1000 能量完全抵挡一次
         if (material == MysteryArmorMaterial.DIVINE_BLESSING
-                && MysteryEnergyCapability.consumeEnergy(player, DIVINE_BLOCK_ENERGY_COST)) {
+                && MysteryEnergy.consumeEnergy(player, MysteryConfig.DIVINE_BLESSING_BLOCK_COST.get())) {
             event.setCanceled(true);
             spawnDivineProtectionEffect((ServerLevel) player.level(), player);
         }
@@ -158,25 +157,15 @@ public class ChestplateEffectHandler {
         harmful.forEach(player::removeEffect);
     }
 
-    /**
-     * 穿甲加生命上限，脱甲（或换成别的胸甲）移除
-     */
-    private static void updateHealthBonus(Player player, @Nullable ArmorMaterial material, HealthBonus bonus) {
-        AttributeInstance maxHealth = player.getAttribute(Attributes.MAX_HEALTH);
+    @SubscribeEvent
+    public static void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
+        AttributeInstance maxHealth = event.getEntity().getAttribute(Attributes.MAX_HEALTH);
         if (maxHealth == null) {
             return;
         }
-        boolean active = maxHealth.getModifier(bonus.id()) != null;
-        if (material == bonus.material()) {
-            if (!active) {
-                maxHealth.addPermanentModifier(new AttributeModifier(bonus.id(), bonus.name(), bonus.amount(),
-                        AttributeModifier.Operation.ADDITION));
-            }
-        } else if (active) {
-            maxHealth.removeModifier(bonus.id());
-            // 把当前生命 clamp 到新上限，避免脱甲后血条残留
-            if (player.getHealth() > player.getMaxHealth()) {
-                player.setHealth(player.getMaxHealth());
+        for (UUID id : LEGACY_HEALTH_MODIFIER_IDS) {
+            if (maxHealth.getModifier(id) != null) {
+                maxHealth.removeModifier(id);
             }
         }
     }
@@ -187,7 +176,7 @@ public class ChestplateEffectHandler {
      * 死亡重生、切换游戏模式后能重新授予；在两件可飞行的胸甲之间直接切换也不会丢失飞行。
      */
     private static void updateFlight(Player player, boolean shouldFly) {
-        CompoundTag data = MysteryEnergyCapability.getPlayerData(player);
+        CompoundTag data = MysteryEnergy.getPlayerData(player);
         if (shouldFly) {
             if (!player.getAbilities().mayfly) {
                 player.getAbilities().mayfly = true;

@@ -6,6 +6,7 @@ license="MIT"
 modId="sourceofmystery"
 version="1.0.0"
 displayName="Source Of Mystery"
+authors="Kara251, Ba1Na1"
 description='''
 SourceOfMystery Mod - Mystery and Magic Experience
 '''
@@ -28,5 +29,20 @@ SourceOfMystery Mod - Mystery and Magic Experience
     modId="geckolib"
     mandatory=true
     versionRange="[4.8,5)"
+    ordering="NONE"
+    side="BOTH"
+
+# 以下为可选依赖：安装后提供额外功能，不安装也能正常运行
+[[dependencies.sourceofmystery]]
+    modId="jei"
+    mandatory=false
+    versionRange="[15,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.sourceofmystery]]
+    modId="patchouli"
+    mandatory=false
+    versionRange="*"
     ordering="NONE"
     side="BOTH"

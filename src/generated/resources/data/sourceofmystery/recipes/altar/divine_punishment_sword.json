@@ -1,0 +1,27 @@
+{
+  "type": "sourceofmystery:altar",
+  "tier": "S",
+  "ingredients": [
+    {
+      "ingredient": {
+        "item": "sourceofmystery:heavenly_dao_fragment"
+      },
+      "count": 4
+    },
+    {
+      "ingredient": {
+        "item": "minecraft:nether_star"
+      },
+      "count": 2
+    },
+    {
+      "ingredient": {
+        "item": "sourceofmystery:origin_dragon_sword"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "sourceofmystery:divine_punishment_sword"
+  }
+}

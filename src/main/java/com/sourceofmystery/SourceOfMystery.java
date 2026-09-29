@@ -1,12 +1,16 @@
 package com.sourceofmystery;
 
 import com.sourceofmystery.block.ModBlocks;
+import com.sourceofmystery.combat.ArmorLimits;
+import com.sourceofmystery.config.MysteryConfig;
 import com.sourceofmystery.creativetab.ModCreativeTabs;
 import com.sourceofmystery.entity.ModEntities;
 import com.sourceofmystery.item.ModItems;
 import com.sourceofmystery.network.ModNetwork;
-import com.sourceofmystery.recipe.altar.AltarRecipeRegistry;
+import com.sourceofmystery.recipe.ModRecipes;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.apache.logging.log4j.LogManager;
@@ -23,15 +27,20 @@ public class SourceOfMystery {
         ModBlocks.BLOCKS.register(modEventBus);
         ModCreativeTabs.CREATIVE_TABS.register(modEventBus);
         ModEntities.ENTITIES.register(modEventBus);
+        ModRecipes.TYPES.register(modEventBus);
+        ModRecipes.SERIALIZERS.register(modEventBus);
         modEventBus.addListener(ModEntities::registerAttributes);
         modEventBus.addListener(this::commonSetup);
+
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, MysteryConfig.COMMON_SPEC);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, MysteryConfig.CLIENT_SPEC);
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
         event.enqueueWork(() -> {
             ModNetwork.register();
-            // 神秘祭坛配方引用了注册物品，必须在所有 DeferredRegister 完成后执行
-            AltarRecipeRegistry.registerRecipes();
+            // COMMON 配置在通用设置之前已加载，可以读取
+            ArmorLimits.raiseAttributeCaps();
         });
     }
 }

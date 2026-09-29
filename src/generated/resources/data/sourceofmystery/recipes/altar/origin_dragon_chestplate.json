@@ -1,0 +1,45 @@
+{
+  "type": "sourceofmystery:altar",
+  "tier": "A+",
+  "ingredients": [
+    {
+      "ingredient": {
+        "item": "sourceofmystery:dragon_soul"
+      },
+      "count": 1
+    },
+    {
+      "ingredient": {
+        "item": "minecraft:end_crystal"
+      },
+      "count": 4
+    },
+    {
+      "ingredient": {
+        "item": "minecraft:nether_star"
+      },
+      "count": 1
+    },
+    {
+      "ingredient": {
+        "item": "minecraft:dragon_head"
+      },
+      "count": 1
+    },
+    {
+      "ingredient": {
+        "item": "minecraft:elytra"
+      },
+      "count": 1
+    },
+    {
+      "ingredient": {
+        "item": "sourceofmystery:dark_source_chestplate"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "sourceofmystery:origin_dragon_chestplate"
+  }
+}

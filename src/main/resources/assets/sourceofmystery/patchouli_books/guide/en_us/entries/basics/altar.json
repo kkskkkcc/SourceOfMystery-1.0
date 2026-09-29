@@ -1,0 +1,21 @@
+{
+  "name": "Mystery Altar",
+  "icon": "sourceofmystery:mystery_altar",
+  "category": "sourceofmystery:basics",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "sourceofmystery:mystery_altar",
+      "text": "Crafted from Mystery Ingots, cobblestone and a crafting table."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "The altar has no slots: $(l)drop the materials on the ground$() within 5 blocks of it, then $(l)right-click the altar$().$(br2)If the materials are enough, they are transmuted and the result is shown in chat. Using an altar for the first time unlocks the Mystery Energy HUD."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "When several recipes match, the altar crafts the $(l)highest tier$() first (S+ > S > A+ > ... > D).$(br2)With JEI installed, every altar recipe can be browsed in JEI."
+    }
+  ]
+}

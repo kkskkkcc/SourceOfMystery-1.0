@@ -36,17 +36,52 @@ minecraft {
                 }
             }
         }
+        // 数据生成：./gradlew runData，输出到 src/generated/resources
+        data {
+            workingDirectory project.file('run-data')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+            args '--mod', 'sourceofmystery', '--all',
+                    '--output', file('src/generated/resources/'),
+                    '--existing', file('src/main/resources/')
+            mods {
+                sourceofmystery {
+                    source sourceSets.main
+                }
+            }
+        }
     }
 }
+// 数据生成的产物与手写资源一起打包
+sourceSets.main.resources {
+    srcDir 'src/generated/resources'
+    exclude '.cache'
+}
+
 dependencies {
     minecraft 'net.minecraftforge:forge:1.20.1-47.2.0'
     implementation fg.deobf("software.bernie.geckolib:geckolib-forge-1.20.1:4.8.2")
+
+    // JEI（可选依赖）：编译只需要 API，开发环境运行时带上完整 JEI 方便测试
+    compileOnly fg.deobf("mezz.jei:jei-1.20.1-common-api:${jei_version}")
+    compileOnly fg.deobf("mezz.jei:jei-1.20.1-forge-api:${jei_version}")
+    runtimeOnly fg.deobf("mezz.jei:jei-1.20.1-forge:${jei_version}")
 }
 
 repositories {
     maven {
         name = 'Minecraft Forge'
         url = 'https://maven.minecraftforge.net/'
+    }
+    maven {
+        name = 'Jared (JEI)'
+        url = 'https://maven.blamejared.com/'
+        content { includeGroup 'mezz.jei' }
+    }
+    maven {
+        name = 'ModMaven (JEI mirror)'
+        url = 'https://modmaven.dev/'
+        content { includeGroup 'mezz.jei' }
     }
     maven {
         name = 'GeckoLib'

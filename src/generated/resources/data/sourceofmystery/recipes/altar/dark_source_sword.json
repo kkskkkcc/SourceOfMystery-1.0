@@ -1,0 +1,33 @@
+{
+  "type": "sourceofmystery:altar",
+  "tier": "B",
+  "ingredients": [
+    {
+      "ingredient": {
+        "item": "minecraft:wither_skeleton_skull"
+      },
+      "count": 2
+    },
+    {
+      "ingredient": {
+        "item": "minecraft:netherite_ingot"
+      },
+      "count": 4
+    },
+    {
+      "ingredient": {
+        "item": "minecraft:nether_star"
+      },
+      "count": 2
+    },
+    {
+      "ingredient": {
+        "item": "sourceofmystery:spirit_source_sword"
+      },
+      "count": 1
+    }
+  ],
+  "result": {
+    "item": "sourceofmystery:dark_source_sword"
+  }
+}

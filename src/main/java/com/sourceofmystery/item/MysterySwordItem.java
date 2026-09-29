@@ -10,14 +10,12 @@ import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.Tier;
 
 /**
- * 神秘系列剑的基类：无限耐久、可附魔，子类通过 {@link #onHit} 实现命中特效。
+ * 神秘系列剑的基类：无限耐久，子类通过 {@link #onHit} 实现命中特效。
  */
 public class MysterySwordItem extends SwordItem {
 
     public MysterySwordItem(Tier tier, int attackDamageBonus, float attackSpeedBonus, Rarity rarity) {
-        super(tier, attackDamageBonus, attackSpeedBonus, new Item.Properties()
-                .rarity(rarity)
-                .durability(-1)); // 耐久无限
+        super(tier, attackDamageBonus, attackSpeedBonus, new Item.Properties().rarity(rarity));
     }
 
     @Override
@@ -36,11 +34,11 @@ public class MysterySwordItem extends SwordItem {
     }
 
     /**
-     * 无限耐久的物品默认不可附魔，这里显式允许
+     * 无限耐久：物品本身保留正常的耐久值（因此可以附魔），但永远不会损耗
      */
     @Override
-    public boolean isEnchantable(ItemStack stack) {
-        return true;
+    public boolean isDamageable(ItemStack stack) {
+        return false;
     }
 
     /**

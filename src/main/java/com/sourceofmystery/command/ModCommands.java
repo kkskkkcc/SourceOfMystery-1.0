@@ -4,7 +4,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.sourceofmystery.SourceOfMystery;
-import com.sourceofmystery.capability.energy.MysteryEnergyCapability;
+import com.sourceofmystery.energy.MysteryEnergy;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -39,7 +39,7 @@ public class ModCommands {
         int value = IntegerArgumentType.getInteger(ctx, "value");
 
         for (ServerPlayer player : players) {
-            MysteryEnergyCapability.setEnergyAndMax(player, value);
+            MysteryEnergy.setEnergyAndMax(player, value);
         }
 
         ctx.getSource().sendSuccess(
