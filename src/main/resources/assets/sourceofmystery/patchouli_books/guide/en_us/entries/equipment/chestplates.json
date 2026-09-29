@@ -17,17 +17,17 @@
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:dark_source_chestplate",
-      "text": "Tier B+. 2 wither skeleton skulls + 4 netherite ingots + 2 nether stars + Spirit Source Chestplate. Jump Boost, Night Vision, Haste, Strength III; immune to fire and wither. Unbreakable."
+      "text": "Tier B+. 2 wither skeleton skulls + 4 netherite ingots + 2 nether stars + Spirit Source Chestplate. Jump Boost, Night Vision, Haste, Strength III; immune to fire and wither. Unbreakable.$(br2)Its purple satellite automatically attacks hostile mobs and anything that hurt you within 20 blocks: it flies through walls to the target, orbits it for 5 seconds dealing 10 damage per second, then returns and cools down for 10 seconds."
     },
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:origin_dragon_chestplate",
-      "text": "Tier A+. Dragon Soul + 4 end crystals + nether star + dragon head + elytra + Dark Source Chestplate. +100 max health, flight, cleanses harmful effects; also immune to dragon breath and projectiles."
+      "text": "Tier A+. Dragon Soul + 4 end crystals + nether star + dragon head + elytra + Dark Source Chestplate. +100 max health, flight, cleanses harmful effects; also immune to dragon breath and projectiles.$(br2)Its two orange satellites attack automatically: 5 seconds of orbiting at 15 damage per second, 8-second cooldown."
     },
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:divine_blessing_chestplate",
-      "text": "Tier S+. 4 Heavenly Dao Fragments + 2 nether stars + Origin Dragon Chestplate. +200 max health; spends Mystery Energy to fully block any other damage.$(br2)The five outer satellites automatically attack hostile mobs and anything that hurt you within 20 blocks: each sortie costs 10 Mystery Energy, flies through walls to the target, orbits it for 5 seconds dealing 20 damage per second, then returns and cools down for 10 seconds."
+      "text": "Tier S+. 4 Heavenly Dao Fragments + 2 nether stars + Origin Dragon Chestplate. +200 max health; spends Mystery Energy to fully block any other damage.$(br2)The five outer satellites attack automatically: each sortie costs 10 Mystery Energy, orbits for 8 seconds at 20 damage per second, 5-second cooldown. Satellites grow brighter while orbiting a target."
     }
   ]
 }

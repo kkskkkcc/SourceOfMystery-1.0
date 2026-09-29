@@ -6,6 +6,7 @@ import com.sourceofmystery.config.MysteryConfig;
 import com.sourceofmystery.creativetab.ModCreativeTabs;
 import com.sourceofmystery.entity.ModEntities;
 import com.sourceofmystery.item.ModItems;
+import com.sourceofmystery.loot.ModLootModifiers;
 import com.sourceofmystery.network.ModNetwork;
 import com.sourceofmystery.recipe.ModRecipes;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -29,6 +30,7 @@ public class SourceOfMystery {
         ModEntities.ENTITIES.register(modEventBus);
         ModRecipes.TYPES.register(modEventBus);
         ModRecipes.SERIALIZERS.register(modEventBus);
+        ModLootModifiers.SERIALIZERS.register(modEventBus);
         modEventBus.addListener(ModEntities::registerAttributes);
         modEventBus.addListener(this::commonSetup);
 

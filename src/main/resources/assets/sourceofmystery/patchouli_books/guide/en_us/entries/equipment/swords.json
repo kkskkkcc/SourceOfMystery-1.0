@@ -27,7 +27,7 @@
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:divine_punishment_sword",
-      "text": "Tier S. 4 Heavenly Dao Fragments + 2 nether stars + Origin Dragon Sword. Every effect plus Slowness III; spends Mystery Energy on bonus true damage when a hit doesn't kill."
+      "text": "Tier S. 4 Heavenly Dao Fragments + 2 nether stars + Origin Dragon Sword. Every effect plus Slowness III; when a hit doesn't kill, spends 100 Mystery Energy to call down thunder: a magic circle appears under the target and 1 second later lightning deals 200 true damage that ignores armor."
     }
   ]
 }
