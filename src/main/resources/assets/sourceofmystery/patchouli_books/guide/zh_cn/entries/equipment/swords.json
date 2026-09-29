@@ -27,7 +27,7 @@
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:divine_punishment_sword",
-      "text": "S 级。天道碎片 ×4 + 下界之星 ×2 + 始源龙剑。全部效果 + 缓慢 III；打不死目标时消耗神秘之能追加真实伤害。"
+      "text": "S 级。天道碎片 ×4 + 下界之星 ×2 + 始源龙剑。全部效果 + 缓慢 III；打不死目标时消耗 100 点神秘之能召唤天雷：目标脚下出现法阵，1 秒后落雷，造成 200 点无视护甲的真实伤害。"
     }
   ]
 }

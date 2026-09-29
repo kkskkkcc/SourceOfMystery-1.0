@@ -49,20 +49,20 @@ public class MysteryArmorMaterial implements ArmorMaterial {
 
     // 预定义的材料（套装效果通过 == 比较这些常量识别，不要依赖 getName）
     // protection数组: [boots, leggings, chestplate, helmet]
-    // getName 复用原版护甲材质名，避免自定义贴图缺失导致穿甲时模型变黑
+    // getName 决定穿戴贴图：assets/sourceofmystery/textures/models/armor/<名字>_layer_1.png
     // 秘源甲: 胸甲护甲值 10
     public static final MysteryArmorMaterial MYSTERY = new MysteryArmorMaterial(
-            "iron", 30, new int[]{4, 6, 10, 3}, 20, SoundEvents.ARMOR_EQUIP_GENERIC, 2.0f, 0.1f, Ingredient.of(Items.DIAMOND));
+            "sourceofmystery:mystery", 30, new int[]{4, 6, 10, 3}, 20, SoundEvents.ARMOR_EQUIP_GENERIC, 2.0f, 0.1f, Ingredient.of(Items.DIAMOND));
     // 灵源秘甲: 胸甲护甲值 20
     public static final MysteryArmorMaterial SPIRIT_SOURCE = new MysteryArmorMaterial(
-            "gold", 35, new int[]{6, 10, 20, 5}, 25, SoundEvents.ARMOR_EQUIP_GENERIC, 2.5f, 0.15f, Ingredient.of(Items.DIAMOND));
+            "sourceofmystery:spirit_source", 35, new int[]{6, 10, 20, 5}, 25, SoundEvents.ARMOR_EQUIP_GENERIC, 2.5f, 0.15f, Ingredient.of(Items.DIAMOND));
     // 暗源之甲: 胸甲护甲值 60
     public static final MysteryArmorMaterial DARK_SOURCE = new MysteryArmorMaterial(
-            "netherite", 40, new int[]{8, 15, 60, 7}, 30, SoundEvents.ARMOR_EQUIP_GENERIC, 3.0f, 0.2f, Ingredient.of(Items.NETHERITE_INGOT));
+            "sourceofmystery:dark_source", 40, new int[]{8, 15, 60, 7}, 30, SoundEvents.ARMOR_EQUIP_GENERIC, 3.0f, 0.2f, Ingredient.of(Items.NETHERITE_INGOT));
     // 始源龙甲: 胸甲护甲值 100
     public static final MysteryArmorMaterial ORIGIN_DRAGON = new MysteryArmorMaterial(
-            "diamond", 50, new int[]{12, 25, 100, 10}, 40, SoundEvents.ARMOR_EQUIP_NETHERITE, 4.0f, 0.3f, Ingredient.of(Items.NETHERITE_INGOT));
+            "sourceofmystery:origin_dragon", 50, new int[]{12, 25, 100, 10}, 40, SoundEvents.ARMOR_EQUIP_NETHERITE, 4.0f, 0.3f, Ingredient.of(Items.NETHERITE_INGOT));
     // 神威天佑: 胸甲护甲值 300，击退抗性 1.0（完全无视击退）
     public static final MysteryArmorMaterial DIVINE_BLESSING = new MysteryArmorMaterial(
-            "netherite", 75, new int[]{20, 40, 300, 15}, 50, SoundEvents.ARMOR_EQUIP_NETHERITE, 5.0f, 1.0f, Ingredient.of(Items.NETHERITE_INGOT));
+            "sourceofmystery:divine_blessing", 75, new int[]{20, 40, 300, 15}, 50, SoundEvents.ARMOR_EQUIP_NETHERITE, 5.0f, 1.0f, Ingredient.of(Items.NETHERITE_INGOT));
 }

@@ -1,6 +1,3 @@
 {
-  "parent": "minecraft:item/generated",
-  "textures": {
-    "layer0": "sourceofmystery:item/mystery_altar"
-  }
+  "parent": "sourceofmystery:block/mystery_altar"
 }

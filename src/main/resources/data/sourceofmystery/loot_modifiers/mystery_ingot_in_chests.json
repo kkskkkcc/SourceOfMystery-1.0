@@ -1,0 +1,7 @@
+{
+  "type": "sourceofmystery:add_chest_loot",
+  "conditions": [],
+  "item": "sourceofmystery:mystery_ingot",
+  "min": 2,
+  "max": 11
+}

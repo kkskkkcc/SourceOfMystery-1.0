@@ -19,9 +19,9 @@ public class ModItemModelProvider extends ItemModelProvider {
 
     @Override
     protected void registerModels() {
-        // 普通物品（包括两个方块物品，它们使用单独的 2D 物品贴图）
+        // 普通物品（包括神秘源矿，它使用单独的 2D 物品贴图）
         List.of(ModItems.MYSTERY_INGOT, ModItems.HEAVENLY_DAO_FRAGMENT, ModItems.DRAGON_SOUL,
-                        ModItems.MYSTERY_SOURCE_ORE, ModItems.MYSTERY_ALTAR,
+                        ModItems.MYSTERY_SOURCE_ORE,
                         ModItems.MYSTERY_CHESTPLATE, ModItems.SPIRIT_SOURCE_CHESTPLATE, ModItems.DARK_SOURCE_CHESTPLATE,
                         ModItems.ORIGIN_DRAGON_CHESTPLATE, ModItems.DIVINE_BLESSING_CHESTPLATE)
                 .forEach(item -> basicItem(item.get()));
@@ -30,6 +30,9 @@ public class ModItemModelProvider extends ItemModelProvider {
         List.of(ModItems.MYSTERY_SWORD, ModItems.SPIRIT_SOURCE_SWORD, ModItems.DARK_SOURCE_SWORD,
                         ModItems.ORIGIN_DRAGON_SWORD, ModItems.DIVINE_PUNISHMENT_SWORD)
                 .forEach(this::handheld);
+
+        // 祭坛在物品栏里直接显示方块模型
+        withExistingParent("mystery_altar", modLoc("block/mystery_altar"));
     }
 
     private void handheld(RegistryObject<Item> item) {
