@@ -1,0 +1,33 @@
+{
+  "name": "Swords",
+  "icon": "sourceofmystery:mystery_sword",
+  "category": "sourceofmystery:equipment",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:mystery_sword",
+      "text": "Tier D. 4 iron ingots + 4 Mystery Ingots + a diamond sword. No effect, unbreakable."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:spirit_source_sword",
+      "text": "Tier C. 4 Mystery Ingots + 4 netherite ingots + Mystery Sword. Sets targets on fire for 10s, stacking."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:dark_source_sword",
+      "text": "Tier B. 2 wither skeleton skulls + 4 netherite ingots + 2 nether stars + Spirit Source Sword. Fire and Wither, both stacking."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:origin_dragon_sword",
+      "text": "Tier A. Dragon Soul + 4 end crystals + nether star + dragon head + elytra + Dark Source Sword. Adds Glowing and Weakness III."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:divine_punishment_sword",
+      "text": "Tier S. 4 Heavenly Dao Fragments + 2 nether stars + Origin Dragon Sword. Every effect plus Slowness III; spends Mystery Energy on bonus true damage when a hit doesn't kill."
+    }
+  ]
+}

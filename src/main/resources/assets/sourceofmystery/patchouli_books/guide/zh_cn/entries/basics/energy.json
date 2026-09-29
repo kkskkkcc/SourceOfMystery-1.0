@@ -1,0 +1,16 @@
+{
+  "name": "神秘之能",
+  "icon": "sourceofmystery:mystery_ingot",
+  "category": "sourceofmystery:basics",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(l)神秘之能$()是神威系列装备的燃料，初始 100 点。$(br2)每击杀一个生物，当前值和上限都会增加 10 点；每个游戏日开始时，会自动回满到上限。死亡不会损失。"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "神威天罚追加一次真实伤害、神威天佑完全抵挡一次伤害，各消耗 1000 点。$(br2)这个代价很高，但神威天佑的抵挡连指令伤害都能挡下。HUD 显示在屏幕左下角，数值不足时会变红。"
+    }
+  ]
+}

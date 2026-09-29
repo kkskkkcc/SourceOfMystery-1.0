@@ -1,0 +1,16 @@
+{
+  "name": "Mystery Energy",
+  "icon": "sourceofmystery:mystery_ingot",
+  "category": "sourceofmystery:basics",
+  "sortnum": 2,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "$(l)Mystery Energy$() fuels the Divine equipment. You start with 100.$(br2)Every kill adds 10 to both your energy and its maximum, and it refills to the maximum at the start of each in-game day. It is kept on death."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Divine Punishment's bonus true damage and Divine Blessing's full damage block each cost 1000.$(br2)That is expensive, but Divine Blessing can block even command damage. The HUD sits in the bottom-left corner and turns red when you are low."
+    }
+  ]
+}

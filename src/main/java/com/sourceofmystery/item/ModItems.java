@@ -5,10 +5,11 @@ import com.sourceofmystery.block.ModBlocks;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
+
+import java.util.UUID;
 
 public class ModItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, SourceOfMystery.MOD_ID);
@@ -58,30 +59,36 @@ public class ModItems {
     public static final RegistryObject<Item> DIVINE_PUNISHMENT_SWORD = ITEMS.register("divine_punishment_sword",
             () -> new DivinePunishmentSwordItem(MysteryTier.DIVINE_PUNISHMENT, 47, -1.0f));
 
+    // 龙魂：每只末影龙死亡时掉落一个，用于合成始源龙剑 / 始源龙甲（替代原先的龙蛋）
+    public static final RegistryObject<Item> DRAGON_SOUL = ITEMS.register("dragon_soul",
+            () -> new Item(new Item.Properties().rarity(Rarity.EPIC).stacksTo(16).fireResistant()));
+
     // ==================== 胸甲 ====================
-    // 护甲值由 MysteryArmorMaterial 定义，套装效果见 ChestplateEffectHandler
+    // 护甲值由 MysteryArmorMaterial 定义（超出原版上限的部分由 combat.ArmorLimits 生效），套装效果见 ChestplateEffectHandler
     // 秘源甲: 10 护甲
     public static final RegistryObject<Item> MYSTERY_CHESTPLATE = ITEMS.register("mystery_chestplate",
-            () -> new ArmorItem(MysteryArmorMaterial.MYSTERY, ArmorItem.Type.CHESTPLATE,
-                    new Item.Properties().rarity(Rarity.EPIC).durability(600)));
+            () -> new MysteryChestplateItem(MysteryArmorMaterial.MYSTERY,
+                    new Item.Properties().rarity(Rarity.EPIC).durability(600), false));
 
     // 灵源秘甲: 20 护甲 + 火焰免疫 + 水下呼吸
     public static final RegistryObject<Item> SPIRIT_SOURCE_CHESTPLATE = ITEMS.register("spirit_source_chestplate",
-            () -> new ArmorItem(MysteryArmorMaterial.SPIRIT_SOURCE, ArmorItem.Type.CHESTPLATE,
-                    new Item.Properties().rarity(Rarity.RARE).durability(1000)));
+            () -> new MysteryChestplateItem(MysteryArmorMaterial.SPIRIT_SOURCE,
+                    new Item.Properties().rarity(Rarity.RARE).durability(1000), false));
 
     // 暗源之甲: 60 护甲 + 增益效果 + 火焰/凋零免疫 + 耐久无限
     public static final RegistryObject<Item> DARK_SOURCE_CHESTPLATE = ITEMS.register("dark_source_chestplate",
-            () -> new ArmorItem(MysteryArmorMaterial.DARK_SOURCE, ArmorItem.Type.CHESTPLATE,
-                    new Item.Properties().rarity(Rarity.EPIC).durability(-1)));
+            () -> new MysteryChestplateItem(MysteryArmorMaterial.DARK_SOURCE,
+                    new Item.Properties().rarity(Rarity.EPIC), true));
 
-    // 始源龙甲: 100 护甲 + 生命加成100 + 创造飞行 + 全免疫 + 耐久无限
+    // 始源龙甲: 100 护甲 + 生命加成100 + 飞行 + 全免疫 + 耐久无限
     public static final RegistryObject<Item> ORIGIN_DRAGON_CHESTPLATE = ITEMS.register("origin_dragon_chestplate",
-            () -> new ArmorItem(MysteryArmorMaterial.ORIGIN_DRAGON, ArmorItem.Type.CHESTPLATE,
-                    new Item.Properties().rarity(Rarity.EPIC).durability(-1)));
+            () -> new MysteryChestplateItem(MysteryArmorMaterial.ORIGIN_DRAGON,
+                    new Item.Properties().rarity(Rarity.EPIC), true,
+                    UUID.fromString("38a68d64-6005-4e1a-bcd1-2def1414a157"), 100.0));
 
     // 神威天佑: 300 护甲 + 生命加成200 + 飞行 + 全免疫 + 伤害抵消 + 耐久无限
     public static final RegistryObject<Item> DIVINE_BLESSING_CHESTPLATE = ITEMS.register("divine_blessing_chestplate",
-            () -> new ArmorItem(MysteryArmorMaterial.DIVINE_BLESSING, ArmorItem.Type.CHESTPLATE,
-                    new Item.Properties().rarity(Rarity.EPIC).durability(-1)));
+            () -> new MysteryChestplateItem(MysteryArmorMaterial.DIVINE_BLESSING,
+                    new Item.Properties().rarity(Rarity.EPIC), true,
+                    UUID.fromString("4d22fa12-dc4f-45ea-a2dd-2c94cb7defdb"), 200.0));
 }

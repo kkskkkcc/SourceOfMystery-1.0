@@ -46,3 +46,7 @@ root
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# ---- 数据生成运行目录 / 缓存 ----
+run-data/
+src/generated/resources/.cache/

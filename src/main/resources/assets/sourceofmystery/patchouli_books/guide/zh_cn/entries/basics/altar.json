@@ -1,0 +1,21 @@
+{
+  "name": "神秘祭坛",
+  "icon": "sourceofmystery:mystery_altar",
+  "category": "sourceofmystery:basics",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "sourceofmystery:mystery_altar",
+      "text": "用秘源锭、圆石和工作台合成。"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "祭坛不用放进格子里：把材料$(l)丢在地上$()，距离祭坛 5 格以内，然后$(l)右键祭坛$()。$(br2)材料够了就会转化成产物，聊天栏会显示结果。第一次使用祭坛会解锁神秘之能 HUD。"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "如果同时满足多个配方，祭坛会优先合成$(l)等级更高$()的那个（S+ > S > A+ > ... > D）。$(br2)装有 JEI 时，可以直接在 JEI 里查看所有祭坛配方。"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "name": "神秘源矿",
+  "icon": "sourceofmystery:mystery_source_ore",
+  "category": "sourceofmystery:basics",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:mystery_source_ore",
+      "text": "$(item)神秘源矿$()生成在主世界 Y -64 到 16 之间，会自己发光，很好找。需要$(l)铁镐$()或更好的镐子开采。"
+    },
+    {
+      "type": "patchouli:smelting",
+      "recipe": "sourceofmystery:mystery_ingot_smelting",
+      "text": "放进熔炉或高炉烧炼，得到$(item)秘源锭$()。"
+    }
+  ]
+}

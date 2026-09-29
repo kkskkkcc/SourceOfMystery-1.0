@@ -1,0 +1,17 @@
+{
+  "name": "The Descent",
+  "icon": "sourceofmystery:dragon_soul",
+  "category": "sourceofmystery:boss",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:dragon_soul",
+      "text": "Every Ender Dragon drops one $(item)Dragon Soul$() at the feet of its killer, or on top of the exit portal pillar if no player killed it.$(br2)The Origin Dragon sword and chestplate need one each."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "After the Ender Dragon falls, a 20-second countdown begins in the End. Then lightning strikes and the $(l)Divine Heavenly Dao$() descends above the main island.$(br2)Bring at least Origin Dragon gear."
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "神威天道",
+  "icon": "sourceofmystery:heavenly_dao_fragment",
+  "category": "sourceofmystery:boss",
+  "sortnum": 1,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "神威天道会飞行，$(l)免疫一切远程攻击$()，每 10 秒对周围落雷，还会激怒附近的末影人。$(br2)它还有三个有前摇、可以躲开的技能："
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(li)$(l)天罚雷印$()：脚下出现电火花圈，1.5 秒后落雷，离开圈子即可。$(li)$(l)雷霆冲撞$()：原地蓄力后朝你直线冲刺，横向闪避。$(li)$(l)雷环震荡$()：贴身时蓄力，随后冲击波击飞周围所有人，看到收缩的圈就拉开距离。"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "生命过低时进入$(l)第二阶段$()：飞高 30 格、每秒回血，并召唤 3 只凋灵。凋灵存活期间 Boss 受到的伤害减半，先清掉它们。"
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:heavenly_dao_fragment",
+      "text": "击败后掉落天道碎片 4-8 个、附魔金苹果、龙蛋和下界之星。天道碎片用来合成 S 级装备。"
+    }
+  ]
+}
