@@ -3,6 +3,8 @@ package com.sourceofmystery.block;
 import com.sourceofmystery.SourceOfMystery;
 import com.sourceofmystery.advancement.AdvancementHelper;
 import com.sourceofmystery.energy.MysteryEnergy;
+import com.sourceofmystery.entity.BossSpawnHandler;
+import com.sourceofmystery.item.ModItems;
 import com.sourceofmystery.recipe.altar.AltarRecipe;
 import com.sourceofmystery.recipe.ModRecipes;
 import net.minecraft.ChatFormatting;
@@ -54,6 +56,13 @@ public class MysteryAltarBlock extends Block {
 
         ServerPlayer serverPlayer = (ServerPlayer) player;
         ServerLevel serverLevel = (ServerLevel) level;
+
+        // 手持龙魂右键：献祭龙魂，召唤神威天道
+        ItemStack held = player.getItemInHand(hand);
+        if (held.is(ModItems.DRAGON_SOUL.get())) {
+            summonBoss(serverLevel, pos, player, held);
+            return InteractionResult.SUCCESS;
+        }
 
         // 首次使用祭坛：授予"神秘起源"成就，初始化并解锁神秘之能 HUD
         if (!AdvancementHelper.hasAdvancement(serverPlayer, "mysterious_origin")) {
@@ -112,6 +121,23 @@ public class MysteryAltarBlock extends Block {
         SourceOfMystery.LOGGER.debug("Player {} crafted {} using altar at {}",
                 player.getName().getString(), output.getHoverName().getString(), pos);
         return InteractionResult.SUCCESS;
+    }
+
+    /**
+     * 消耗一个龙魂开始召唤；同一维度已有召唤在进行时不消耗
+     */
+    private static void summonBoss(ServerLevel level, BlockPos pos, Player player, ItemStack soul) {
+        if (!BossSpawnHandler.startSummon(level, pos)) {
+            player.sendSystemMessage(Component.translatable("message.sourceofmystery.altar.summon_busy")
+                    .withStyle(ChatFormatting.RED));
+            return;
+        }
+        if (!player.getAbilities().instabuild) {
+            soul.shrink(1);
+        }
+        level.playSound(null, pos, SoundEvents.WITHER_SPAWN, SoundSource.BLOCKS, 1.0F, 0.8F);
+        level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, pos.getX() + 0.5, pos.getY() + 1.2, pos.getZ() + 0.5,
+                40, 0.4, 0.4, 0.4, 0.05);
     }
 
     private static MutableComponent value(Object value, ChatFormatting color) {

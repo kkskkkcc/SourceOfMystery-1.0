@@ -7,11 +7,12 @@
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:dragon_soul",
-      "text": "Every Ender Dragon drops one $(item)Dragon Soul$() at the feet of its killer, or on top of the exit portal pillar if no player killed it.$(br2)The Origin Dragon sword and chestplate need one each."
+      "text": "Every Ender Dragon drops one $(item)Dragon Soul$() at the feet of its killer, or on top of the portal pillar if no player killed it.$(br2)The Origin Dragon Sword and Chestplate each need one, and so does summoning the Heavenly Dao."
     },
     {
-      "type": "patchouli:text",
-      "text": "After the Ender Dragon falls, a 20-second countdown begins in the End. Then lightning strikes and the $(l)Divine Heavenly Dao$() descends above the main island.$(br2)Bring at least Origin Dragon gear."
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:mystery_altar",
+      "text": "Right-click the $(item)Mystery Altar$() while holding a Dragon Soul to offer it: a 20-second countdown begins in that dimension, then lightning strikes and the $(l)Divine Heavenly Dao$() descends above the altar.$(br2)Only one summoning can run per dimension at a time. Bring at least Origin gear, and build the altar somewhere open."
     }
   ]
 }

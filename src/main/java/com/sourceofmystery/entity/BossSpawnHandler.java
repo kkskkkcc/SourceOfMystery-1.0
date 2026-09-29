@@ -11,18 +11,17 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
 /**
- * 神威天道召唤流程：末影龙死亡 -> 20 秒倒计时 -> 10 道闪电 -> Boss 降临。
- * 流程状态保存在末地维度的 SavedData 中，服务器重启不会丢失进度。
+ * 神威天道召唤流程：手持龙魂右键神秘祭坛 -> 20 秒倒计时 -> 10 道闪电 -> Boss 在祭坛上方降临。
+ * 流程状态保存在祭坛所在维度的 SavedData 中，服务器重启不会丢失进度；
+ * 同一维度同时只能进行一场召唤。
  */
 @Mod.EventBusSubscriber(modid = SourceOfMystery.MOD_ID)
 public class BossSpawnHandler {
@@ -30,30 +29,29 @@ public class BossSpawnHandler {
     private static final int COUNTDOWN_TICKS = 400; // 20 秒
     private static final int LIGHTNING_COUNT = 10; // 闪电数量
     private static final int LIGHTNING_INTERVAL_TICKS = 5; // 每 5 tick 落一道闪电
-    private static final BlockPos SPAWN_POS = new BlockPos(0, 80, 0);
+    private static final int SPAWN_HEIGHT_ABOVE_ALTAR = 2;
+    // 旧版本存档里进行到一半的召唤没有记录位置，沿用原来的末地主岛中央
+    private static final BlockPos LEGACY_SPAWN_POS = new BlockPos(0, 80, 0);
     private static final double ADVANCEMENT_RANGE = 100.0;
 
     private static final int STAGE_IDLE = 0;
     private static final int STAGE_COUNTDOWN = 1;
     private static final int STAGE_LIGHTNING = 2;
 
-    @SubscribeEvent
-    public static void onEnderDragonDeath(LivingDeathEvent event) {
-        if (event.getEntity().getType() != EntityType.ENDER_DRAGON
-                || !(event.getEntity().level() instanceof ServerLevel dragonLevel)) {
-            return;
+    /**
+     * 在祭坛处开始召唤。该维度已经有一场召唤在进行时返回 false（调用方不应消耗龙魂）。
+     */
+    public static boolean startSummon(ServerLevel level, BlockPos altarPos) {
+        SummonState state = SummonState.get(level);
+        if (state.stage != STAGE_IDLE) {
+            return false;
         }
-        ServerLevel end = dragonLevel.getServer().getLevel(Level.END);
-        if (end == null) {
-            return;
-        }
-        SummonState state = SummonState.get(end);
-        if (state.stage == STAGE_IDLE) {
-            state.setStage(STAGE_COUNTDOWN);
-            SourceOfMystery.LOGGER.info("Ender Dragon died. Boss summoning countdown started.");
-            broadcastToEnd(end, Component.translatable("message.sourceofmystery.boss.awakening")
-                    .withStyle(ChatFormatting.LIGHT_PURPLE));
-        }
+        state.spawnPos = altarPos.above(SPAWN_HEIGHT_ABOVE_ALTAR);
+        state.setStage(STAGE_COUNTDOWN);
+        SourceOfMystery.LOGGER.info("Boss summoning started at altar {} in {}", altarPos, level.dimension().location());
+        broadcast(level, Component.translatable("message.sourceofmystery.boss.awakening")
+                .withStyle(ChatFormatting.LIGHT_PURPLE));
+        return true;
     }
 
     /**
@@ -75,9 +73,7 @@ public class BossSpawnHandler {
 
     @SubscribeEvent
     public static void onLevelTick(TickEvent.LevelTickEvent event) {
-        if (event.phase != TickEvent.Phase.END
-                || !(event.level instanceof ServerLevel level)
-                || level.dimension() != Level.END) {
+        if (event.phase != TickEvent.Phase.END || !(event.level instanceof ServerLevel level)) {
             return;
         }
 
@@ -107,7 +103,7 @@ public class BossSpawnHandler {
 
         // 每 20 tick（1秒）在聊天框提示一次
         if (state.stageTick % 20 == 0 && remainingSeconds > 0) {
-            broadcastToEnd(level, Component.translatable("message.sourceofmystery.boss.countdown",
+            broadcast(level, Component.translatable("message.sourceofmystery.boss.countdown",
                     Component.literal(String.valueOf(remainingSeconds)).withStyle(ChatFormatting.RED))
                     .withStyle(ChatFormatting.YELLOW));
         }
@@ -115,7 +111,7 @@ public class BossSpawnHandler {
         // 倒计时结束，进入闪电阶段
         if (state.stageTick >= COUNTDOWN_TICKS) {
             state.setStage(STAGE_LIGHTNING);
-            broadcastToEnd(level, Component.translatable("message.sourceofmystery.boss.lightning")
+            broadcast(level, Component.translatable("message.sourceofmystery.boss.lightning")
                     .withStyle(ChatFormatting.RED));
         }
     }
@@ -126,12 +122,12 @@ public class BossSpawnHandler {
     private static void tickLightning(ServerLevel level, SummonState state) {
         if (state.stageTick % LIGHTNING_INTERVAL_TICKS == 0
                 && state.stageTick / LIGHTNING_INTERVAL_TICKS <= LIGHTNING_COUNT) {
-            spawnLightning(level, SPAWN_POS);
+            spawnLightning(level, state.spawnPos);
         }
 
         // 闪电阶段结束（10 道闪电 + 少量缓冲），生成 Boss
         if (state.stageTick >= LIGHTNING_COUNT * LIGHTNING_INTERVAL_TICKS + 10) {
-            spawnBoss(level);
+            spawnBoss(level, state.spawnPos);
             state.setStage(STAGE_IDLE);
         }
     }
@@ -152,48 +148,49 @@ public class BossSpawnHandler {
     }
 
     /**
-     * 广播消息给末地维度的所有玩家（聊天框）
+     * 广播消息给召唤所在维度的所有玩家（聊天框）
      */
-    private static void broadcastToEnd(ServerLevel end, Component message) {
+    private static void broadcast(ServerLevel level, Component message) {
         // 前缀样式不能挂在父节点上，否则会被正文继承（正文也变成粗体）
         Component text = Component.empty()
                 .append(Component.translatable("message.sourceofmystery.boss.prefix")
                         .withStyle(ChatFormatting.DARK_PURPLE, ChatFormatting.BOLD))
                 .append(" ")
                 .append(message);
-        for (ServerPlayer player : end.players()) {
+        for (ServerPlayer player : level.players()) {
             player.sendSystemMessage(text);
         }
     }
 
-    private static void spawnBoss(ServerLevel level) {
-        DivineHeavenlyDaoBoss boss = ModEntities.DIVINE_HEAVENLY_DAO_BOSS.get().spawn(level, SPAWN_POS, MobSpawnType.EVENT);
+    private static void spawnBoss(ServerLevel level, BlockPos spawnPos) {
+        DivineHeavenlyDaoBoss boss = ModEntities.DIVINE_HEAVENLY_DAO_BOSS.get().spawn(level, spawnPos, MobSpawnType.EVENT);
         if (boss == null) {
             SourceOfMystery.LOGGER.warn("Failed to spawn Divine Heavenly Dao Boss");
             return;
         }
 
-        SourceOfMystery.LOGGER.info("Divine Heavenly Dao Boss spawned at End dimension");
-        broadcastToEnd(level, Component.translatable("message.sourceofmystery.boss.arrived")
+        SourceOfMystery.LOGGER.info("Divine Heavenly Dao Boss spawned at {} in {}", spawnPos, level.dimension().location());
+        broadcast(level, Component.translatable("message.sourceofmystery.boss.arrived")
                 .withStyle(ChatFormatting.RED, ChatFormatting.BOLD));
 
         // 授予"触怒天道"成就：Boss 出现在玩家周围 100 格范围内
         double rangeSq = ADVANCEMENT_RANGE * ADVANCEMENT_RANGE;
         for (ServerPlayer player : level.players()) {
-            if (player.distanceToSqr(SPAWN_POS.getCenter()) <= rangeSq) {
+            if (player.distanceToSqr(spawnPos.getCenter()) <= rangeSq) {
                 AdvancementHelper.grantAdvancement(player, "provoke_heaven");
             }
         }
     }
 
     /**
-     * 召唤流程的持久化状态（挂在末地维度上）
+     * 召唤流程的持久化状态（挂在祭坛所在的维度上）
      */
     private static class SummonState extends SavedData {
         private static final String DATA_NAME = SourceOfMystery.MOD_ID + "_boss_summon";
 
         private int stage = STAGE_IDLE;
         private int stageTick = 0;
+        private BlockPos spawnPos = LEGACY_SPAWN_POS;
 
         static SummonState get(ServerLevel level) {
             return level.getDataStorage().computeIfAbsent(SummonState::load, SummonState::new, DATA_NAME);
@@ -203,6 +200,9 @@ public class BossSpawnHandler {
             SummonState state = new SummonState();
             state.stage = tag.getInt("Stage");
             state.stageTick = tag.getInt("StageTick");
+            if (tag.contains("SpawnX")) {
+                state.spawnPos = new BlockPos(tag.getInt("SpawnX"), tag.getInt("SpawnY"), tag.getInt("SpawnZ"));
+            }
             return state;
         }
 
@@ -216,6 +216,9 @@ public class BossSpawnHandler {
         public CompoundTag save(CompoundTag tag) {
             tag.putInt("Stage", stage);
             tag.putInt("StageTick", stageTick);
+            tag.putInt("SpawnX", spawnPos.getX());
+            tag.putInt("SpawnY", spawnPos.getY());
+            tag.putInt("SpawnZ", spawnPos.getZ());
             return tag;
         }
     }
