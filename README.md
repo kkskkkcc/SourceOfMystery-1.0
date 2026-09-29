@@ -22,6 +22,25 @@
 - **Boss：神圣天道（Divine Heavenly Dao）**：使用 GeckoLib 模型的强大 Boss，包含生成机制与击杀成就。
 - **成就系统**：一系列引导玩家探索模组内容的进度成就。
 - **矿物与世界生成**：神秘源矿（Mystery Source Ore）及其自然生成。
+- **多语言**：简体中文（`zh_cn`）与英文（`en_us`），所有提示信息均走翻译键。
+
+## 调试指令
+
+```
+/somenergy <玩家> <数值>
+```
+
+需要 OP（权限等级 2），把目标玩家的神秘之能和上限同时设为该值（1–1000000），支持 `@a` 等选择器。
+
+## 代码结构
+
+| 包 | 职责 |
+| --- | --- |
+| `capability/energy` | 神秘之能（存于玩家 NBT）、每日回满、击杀奖励 |
+| `block` / `recipe/altar` | 神秘祭坛及其配方（按 S+ → D 优先级匹配） |
+| `item` | 剑（`MysterySwordItem` 为基类）、胸甲材料、`ChestplateEffectHandler` 套装效果、环绕粒子 |
+| `entity` | 神威天道 Boss 及其召唤流程（状态存于末地 SavedData） |
+| `client` / `hud` / `network` | 渲染、HUD、能量同步包 |
 
 ## 构建
 

@@ -1,8 +1,12 @@
 {
   "parent": "sourceofmystery:mysterious_origin",
   "display": {
-    "title": "起源之力",
-    "description": "获得秘源甲或秘源剑",
+    "title": {
+      "translate": "advancements.sourceofmystery.origin_power.title"
+    },
+    "description": {
+      "translate": "advancements.sourceofmystery.origin_power.description"
+    },
     "icon": {
       "item": "sourceofmystery:mystery_chestplate"
     },
@@ -16,7 +20,9 @@
       "conditions": {
         "items": [
           {
-            "items": ["sourceofmystery:mystery_sword"]
+            "items": [
+              "sourceofmystery:mystery_sword"
+            ]
           }
         ]
       }
@@ -26,11 +32,18 @@
       "conditions": {
         "items": [
           {
-            "items": ["sourceofmystery:mystery_chestplate"]
+            "items": [
+              "sourceofmystery:mystery_chestplate"
+            ]
           }
         ]
       }
     }
   },
-  "requirements": [["mystery_sword", "mystery_chestplate"]]
+  "requirements": [
+    [
+      "mystery_sword",
+      "mystery_chestplate"
+    ]
+  ]
 }

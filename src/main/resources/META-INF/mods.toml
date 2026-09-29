@@ -2,13 +2,6 @@ modLoader="javafml"
 loaderVersion="[47,48)"
 license="MIT"
 
-[[dependencies.sourceofmystery]]
-    modId="geckolib"
-    mandatory=true
-    versionRange="[4.8,5)"
-    ordering="NONE"
-    side="BOTH"
-
 [[mods]]
 modId="sourceofmystery"
 version="1.0.0"
@@ -16,3 +9,24 @@ displayName="Source Of Mystery"
 description='''
 SourceOfMystery Mod - Mystery and Magic Experience
 '''
+
+[[dependencies.sourceofmystery]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47.2.0,48)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.sourceofmystery]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1,1.21)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.sourceofmystery]]
+    modId="geckolib"
+    mandatory=true
+    versionRange="[4.8,5)"
+    ordering="NONE"
+    side="BOTH"

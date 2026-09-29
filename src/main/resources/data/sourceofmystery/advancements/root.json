@@ -1,7 +1,11 @@
 {
   "display": {
-    "title": "神秘之源",
-    "description": "",
+    "title": {
+      "translate": "advancements.sourceofmystery.root.title"
+    },
+    "description": {
+      "translate": "advancements.sourceofmystery.root.description"
+    },
     "icon": {
       "item": "sourceofmystery:mystery_ingot"
     },

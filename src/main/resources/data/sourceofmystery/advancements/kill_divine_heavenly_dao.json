@@ -1,8 +1,12 @@
 {
   "parent": "sourceofmystery:provoke_heaven",
   "display": {
-    "title": "天道陨落",
-    "description": "击败神威天道 Boss",
+    "title": {
+      "translate": "advancements.sourceofmystery.kill_divine_heavenly_dao.title"
+    },
+    "description": {
+      "translate": "advancements.sourceofmystery.kill_divine_heavenly_dao.description"
+    },
     "icon": {
       "item": "sourceofmystery:divine_punishment_sword"
     },

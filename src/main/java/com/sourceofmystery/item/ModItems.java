@@ -30,16 +30,17 @@ public class ModItems {
             () -> new BlockItem(ModBlocks.MYSTERY_ALTAR.get(), new Item.Properties()));
 
     // ==================== 武器 ====================
-    // 武器伤害计算: base 3.0 + MysteryTier.attackDamageBonus + itemAttackDamageBonus
-    // MYSTERY: 3 + 4 + 3 = 10 damage, 1.6 speed
-    // SPIRIT_SOURCE: 3 + 10 + 2 = 15 damage, 1.8 speed
-    // DARK_SOURCE: 3 + 20 + 7 = 30 damage, 2.0 speed
-    // ORIGIN_DRAGON: 3 + 35 + 7 = 45 damage, 3.0 speed
-    // DIVINE_PUNISHMENT: 3 + 50 + 47 = 100 damage, 3.0 speed
+    // 武器伤害（物品栏显示值）= 玩家基础 1 + MysteryTier.attackDamageBonus + 构造参数 attackDamageBonus
+    // 攻击速度 = 玩家基础 4.0 + 构造参数 attackSpeedBonus
+    // MYSTERY:           1 + 4   + 3  = 8   伤害, 1.6 攻速
+    // SPIRIT_SOURCE:     1 + 10  + 2  = 13  伤害, 1.8 攻速
+    // DARK_SOURCE:       1 + 40  + 7  = 48  伤害, 2.0 攻速
+    // ORIGIN_DRAGON:     1 + 90  + 7  = 98  伤害, 3.0 攻速
+    // DIVINE_PUNISHMENT: 1 + 210 + 47 = 258 伤害, 3.0 攻速
 
     // 秘源剑 - 无特效
     public static final RegistryObject<Item> MYSTERY_SWORD = ITEMS.register("mystery_sword",
-            () -> new MysterySwordItem(MysteryTier.MYSTERY, 3, -2.4f));
+            () -> new MysterySwordItem(MysteryTier.MYSTERY, 3, -2.4f, Rarity.EPIC));
 
     // 灵源秘剑 - 燃烧10秒累计
     public static final RegistryObject<Item> SPIRIT_SOURCE_SWORD = ITEMS.register("spirit_source_sword",
@@ -58,7 +59,7 @@ public class ModItems {
             () -> new DivinePunishmentSwordItem(MysteryTier.DIVINE_PUNISHMENT, 47, -1.0f));
 
     // ==================== 胸甲 ====================
-    // 护甲值由 MysteryArmorMaterial 定义
+    // 护甲值由 MysteryArmorMaterial 定义，套装效果见 ChestplateEffectHandler
     // 秘源甲: 10 护甲
     public static final RegistryObject<Item> MYSTERY_CHESTPLATE = ITEMS.register("mystery_chestplate",
             () -> new ArmorItem(MysteryArmorMaterial.MYSTERY, ArmorItem.Type.CHESTPLATE,
@@ -69,18 +70,18 @@ public class ModItems {
             () -> new ArmorItem(MysteryArmorMaterial.SPIRIT_SOURCE, ArmorItem.Type.CHESTPLATE,
                     new Item.Properties().rarity(Rarity.RARE).durability(1000)));
 
-    // 暗源之甲: 60 护甲 + 全效果 + 耐久无限
+    // 暗源之甲: 60 护甲 + 增益效果 + 火焰/凋零免疫 + 耐久无限
     public static final RegistryObject<Item> DARK_SOURCE_CHESTPLATE = ITEMS.register("dark_source_chestplate",
             () -> new ArmorItem(MysteryArmorMaterial.DARK_SOURCE, ArmorItem.Type.CHESTPLATE,
                     new Item.Properties().rarity(Rarity.EPIC).durability(-1)));
 
     // 始源龙甲: 100 护甲 + 生命加成100 + 创造飞行 + 全免疫 + 耐久无限
     public static final RegistryObject<Item> ORIGIN_DRAGON_CHESTPLATE = ITEMS.register("origin_dragon_chestplate",
-            () -> new MysteryArmorItem(MysteryArmorMaterial.ORIGIN_DRAGON, ArmorItem.Type.CHESTPLATE,
-                    new Item.Properties().rarity(Rarity.EPIC).durability(-1), 100));
+            () -> new ArmorItem(MysteryArmorMaterial.ORIGIN_DRAGON, ArmorItem.Type.CHESTPLATE,
+                    new Item.Properties().rarity(Rarity.EPIC).durability(-1)));
 
-    // 神威天佑: 300 护甲 + 生命加成200 + 全免疫 + 伤害抵消 + 耐久无限
+    // 神威天佑: 300 护甲 + 生命加成200 + 飞行 + 全免疫 + 伤害抵消 + 耐久无限
     public static final RegistryObject<Item> DIVINE_BLESSING_CHESTPLATE = ITEMS.register("divine_blessing_chestplate",
-            () -> new MysteryArmorItem(MysteryArmorMaterial.DIVINE_BLESSING, ArmorItem.Type.CHESTPLATE,
-                    new Item.Properties().rarity(Rarity.EPIC).durability(-1), 200));
+            () -> new ArmorItem(MysteryArmorMaterial.DIVINE_BLESSING, ArmorItem.Type.CHESTPLATE,
+                    new Item.Properties().rarity(Rarity.EPIC).durability(-1)));
 }

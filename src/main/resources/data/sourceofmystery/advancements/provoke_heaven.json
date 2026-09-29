@@ -1,8 +1,12 @@
 {
   "parent": "sourceofmystery:can_slayer_god",
   "display": {
-    "title": "触怒天道",
-    "description": "神威天道出现在100格范围内",
+    "title": {
+      "translate": "advancements.sourceofmystery.provoke_heaven.title"
+    },
+    "description": {
+      "translate": "advancements.sourceofmystery.provoke_heaven.description"
+    },
     "icon": {
       "item": "sourceofmystery:divine_punishment_sword"
     },
