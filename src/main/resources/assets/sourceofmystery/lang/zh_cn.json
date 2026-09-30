@@ -51,5 +51,9 @@
   "advancements.sourceofmystery.kill_divine_heavenly_dao.description": "击败神威天道 Boss。下一步：用天道碎片合成神威系列装备",
   "advancements.sourceofmystery.become_heaven.title": "我为天道",
   "advancements.sourceofmystery.become_heaven.description": "获得神威天罚或神威天佑",
-  "message.sourceofmystery.altar.summon_busy": "天道正在降临，同一维度同时只能进行一场召唤。"
+  "message.sourceofmystery.altar.summon_busy": "天道正在降临，同一维度同时只能进行一场召唤。",
+  "entity.sourceofmystery.dragon_soul": "龙魂",
+  "message.sourceofmystery.dragon_soul.prefix": "【龙魂】",
+  "message.sourceofmystery.dragon_soul.roar": "龙魂苏醒，苍穹低吟……",
+  "message.sourceofmystery.dragon_soul.arrived": "龙魂已降临！"
 }

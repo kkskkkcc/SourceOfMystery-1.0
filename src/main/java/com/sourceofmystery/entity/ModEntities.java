@@ -20,7 +20,16 @@ public class ModEntities {
                             .updateInterval(1)
                             .build(new ResourceLocation(SourceOfMystery.MOD_ID, "divine_heavenly_dao_boss").toString()));
 
+    public static final RegistryObject<EntityType<DragonSoulBoss>> DRAGON_SOUL_BOSS =
+            ENTITIES.register("dragon_soul_boss",
+                    () -> EntityType.Builder.of(DragonSoulBoss::new, MobCategory.MONSTER)
+                            .sized(1.5f, 4.0f)
+                            .clientTrackingRange(100)
+                            .updateInterval(1)
+                            .build(new ResourceLocation(SourceOfMystery.MOD_ID, "dragon_soul_boss").toString()));
+
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(DIVINE_HEAVENLY_DAO_BOSS.get(), DivineHeavenlyDaoBoss.createAttributes().build());
+        event.put(DRAGON_SOUL_BOSS.get(), DragonSoulBoss.createAttributes().build());
     }
 }

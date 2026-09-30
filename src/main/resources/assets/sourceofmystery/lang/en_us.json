@@ -51,5 +51,9 @@
   "advancements.sourceofmystery.kill_divine_heavenly_dao.description": "Defeat the Divine Heavenly Dao. Next: forge Divine gear from Heavenly Dao Fragments",
   "advancements.sourceofmystery.become_heaven.title": "I Am the Heavenly Dao",
   "advancements.sourceofmystery.become_heaven.description": "Obtain Divine Punishment or Divine Blessing",
-  "message.sourceofmystery.altar.summon_busy": "The Heavenly Dao is already descending. Only one summoning can run in a dimension at a time."
+  "message.sourceofmystery.altar.summon_busy": "The Heavenly Dao is already descending. Only one summoning can run in a dimension at a time.",
+  "entity.sourceofmystery.dragon_soul": "Dragon Soul",
+  "message.sourceofmystery.dragon_soul.prefix": "[Dragon Soul]",
+  "message.sourceofmystery.dragon_soul.roar": "The Dragon Soul stirs, and the heavens rumble...",
+  "message.sourceofmystery.dragon_soul.arrived": "The Dragon Soul has descended!"
 }

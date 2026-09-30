@@ -19,6 +19,7 @@ public class ClientModEvents {
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         // 神威天道使用 GeckoLib 模型渲染
         event.registerEntityRenderer(ModEntities.DIVINE_HEAVENLY_DAO_BOSS.get(), DivineHeavenlyDaoBossRenderer::new);
+        event.registerEntityRenderer(ModEntities.DRAGON_SOUL_BOSS.get(), DragonSoulRenderer::new);
     }
 
     @SubscribeEvent
