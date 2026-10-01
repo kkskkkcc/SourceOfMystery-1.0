@@ -63,6 +63,17 @@ public class ModItems {
     public static final RegistryObject<Item> DRAGON_SOUL = ITEMS.register("dragon_soul",
             () -> new Item(new Item.Properties().rarity(Rarity.EPIC).stacksTo(16).fireResistant()));
 
+    // 五行之源：召唤神威天道时与龙魂一起献祭（获取方式见 loot_modifiers 和 ElementSourceEvents）
+    public static final RegistryObject<Item> WOOD_SOURCE = elementSource("wood_source");
+    public static final RegistryObject<Item> GOLD_SOURCE = elementSource("gold_source");
+    public static final RegistryObject<Item> WATER_SOURCE = elementSource("water_source");
+    public static final RegistryObject<Item> FIRE_SOURCE = elementSource("fire_source");
+    public static final RegistryObject<Item> EARTH_SOURCE = elementSource("earth_source");
+
+    private static RegistryObject<Item> elementSource(String name) {
+        return ITEMS.register(name, () -> new Item(new Item.Properties().rarity(Rarity.RARE).stacksTo(64)));
+    }
+
     // ==================== 胸甲 ====================
     // 护甲值由 MysteryArmorMaterial 定义（超出原版上限的部分由 combat.ArmorLimits 生效），套装效果见 ChestplateEffectHandler
     // 秘源甲: 10 护甲

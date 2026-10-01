@@ -22,6 +22,11 @@ public class ModCreativeTabs {
                         output.accept(ModItems.MYSTERY_INGOT.get());
                         output.accept(ModItems.HEAVENLY_DAO_FRAGMENT.get());
                         output.accept(ModItems.DRAGON_SOUL.get());
+                        output.accept(ModItems.WOOD_SOURCE.get());
+                        output.accept(ModItems.GOLD_SOURCE.get());
+                        output.accept(ModItems.WATER_SOURCE.get());
+                        output.accept(ModItems.FIRE_SOURCE.get());
+                        output.accept(ModItems.EARTH_SOURCE.get());
 
                         // 方块物品
                         output.accept(ModItems.MYSTERY_SOURCE_ORE.get());

@@ -21,6 +21,8 @@ public class ModItemModelProvider extends ItemModelProvider {
     protected void registerModels() {
         // 普通物品（包括神秘源矿，它使用单独的 2D 物品贴图）
         List.of(ModItems.MYSTERY_INGOT, ModItems.HEAVENLY_DAO_FRAGMENT, ModItems.DRAGON_SOUL,
+                        ModItems.WOOD_SOURCE, ModItems.GOLD_SOURCE, ModItems.WATER_SOURCE,
+                        ModItems.FIRE_SOURCE, ModItems.EARTH_SOURCE,
                         ModItems.MYSTERY_SOURCE_ORE,
                         ModItems.MYSTERY_CHESTPLATE, ModItems.SPIRIT_SOURCE_CHESTPLATE, ModItems.DARK_SOURCE_CHESTPLATE,
                         ModItems.ORIGIN_DRAGON_CHESTPLATE, ModItems.DIVINE_BLESSING_CHESTPLATE)

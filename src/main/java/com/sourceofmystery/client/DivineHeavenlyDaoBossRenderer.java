@@ -12,7 +12,9 @@ import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 public class DivineHeavenlyDaoBossRenderer extends GeoEntityRenderer<DivineHeavenlyDaoBoss> {
     public DivineHeavenlyDaoBossRenderer(EntityRendererProvider.Context context) {
         super(context, new DivineHeavenlyDaoBossModel());
-        this.shadowRadius = 1.0F;
+        // 和碰撞箱同样倍数放大（见 DivineHeavenlyDaoBoss.SCALE）
+        this.withScale(DivineHeavenlyDaoBoss.SCALE);
+        this.shadowRadius = 0.75F * DivineHeavenlyDaoBoss.SCALE;
         this.addRenderLayer(new AutoGlowingGeoLayer<>(this));
     }
 }
