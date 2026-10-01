@@ -1,0 +1,25 @@
+{
+  "name": "Dragon Soul",
+  "icon": "sourceofmystery:dragon_soul",
+  "category": "sourceofmystery:boss",
+  "sortnum": 0,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "Where the Ender Dragon's death animation ends, a $(l)rift$() tears open: the Dragon Soul flies out, circles twice amid thunder, then descends in front of you and levels her spear at you. Your camera follows her during the entrance, and she cannot be hurt until it ends.$(br2)The End pillars also regrow their $(l)End Crystals$(). Just like the Ender Dragon, crystals within 32 blocks keep healing her, so break them first."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Every move has a $(l)wind-up$(), so a well-timed sidestep avoids it:$(li)$(l)Blink$(): she folds her wings and charges for a second. A purple swirl at your feet marks where she will land, so get out of it.$(li)$(l)Cleave / Thrust / Slash$(): 20 / 15 / 10 damage. The cleave raises the spear overhead, the thrust twists back first, the slash swings the spear out to the side.$(li)$(l)Kick$(): a chambered front kick that launches you about 10 blocks."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(li)$(l)Grab$(): her left hand draws back and lunges. If caught you are carried 20 blocks up and dropped, so keep a water bucket or slow falling ready.$(li)$(l)Sigil Breath$(): she raises a hand, draws a magic circle and fires a fan of 5 dragon fireballs.$(li)$(l)Spear Throw$(): a javelin throw. The spear flies back to her hand.$(br2)After attacking she often twirls her spear, taunts or catches her breath. Those are your $(l)openings$(). Below half health her melee can chain into a second strike."
+    },
+    {
+      "type": "patchouli:spotlight",
+      "item": "sourceofmystery:dragon_soul",
+      "text": "Drops a $(item)Dragon Soul$(), used for the Origin Dragon Sword and Chestplate and to summon the Divine Heavenly Dao."
+    }
+  ]
+}

@@ -1,54 +1,51 @@
 package com.sourceofmystery.entity;
 
+import com.google.common.collect.ImmutableList;
 import com.sourceofmystery.SourceOfMystery;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.entity.boss.enderdragon.EndCrystal;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.SpikeFeature;
+import net.minecraft.world.level.levelgen.feature.configurations.SpikeConfiguration;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.EntityMountEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
+import java.util.UUID;
+
 /**
  * 龙魂 Boss 召唤流程：
- * 末影龙死亡 -> 等原版死亡动画结束 -> 3 秒末影龙吟 -> 死亡点 20 格内闪电群循环 5 秒
- * -> 紫色卫星环绕（10 颗） -> 龙魂 Boss 降临。
+ * 末影龙死亡 -> 跟踪原版死亡动画（升空约 10 秒）直到末影龙消失，记下它最后的位置
+ * -> 刷新末地的末地水晶 -> 龙魂在该位置撕开空间裂缝出场（出场动画见 DragonSoulBoss）。
  * 流程状态保存在末影龙所在维度的 SavedData 中，服务器重启不丢进度。
  */
 @Mod.EventBusSubscriber(modid = SourceOfMystery.MOD_ID)
 public class DragonSoulSpawnHandler {
 
-    // 阶段
     private static final int STAGE_IDLE = 0;
-    private static final int STAGE_WAIT_DEATH = 1;   // 等末影龙死亡动画（10 秒）
-    private static final int STAGE_ROAR = 2;         // 末影龙吟（3 秒）
-    private static final int STAGE_LIGHTNING = 3;    // 闪电群（5 秒）
-    private static final int STAGE_SATELLITES = 4;   // 卫星环绕（2 秒）
+    private static final int STAGE_WAIT_DEATH = 1;   // 等末影龙死亡动画结束
+    // 旧版本的 2~4 阶段（龙吟 / 闪电 / 卫星）已经由龙魂的出场动画取代，读到时直接生成
 
-    // 各阶段时长（tick）
-    private static final int DEATH_ANIM_TICKS = 200; // 10 秒
-    private static final int ROAR_TICKS = 60;        // 3 秒
-    private static final int LIGHTNING_TICKS = 100;  // 5 秒
-    private static final int SATELLITE_TICKS = 40;   // 2 秒
-
-    private static final int LIGHTNING_COUNT = 5;    // 每次落 5 道闪电
-    private static final int SATELLITE_COUNT = 10;   // 10 颗卫星
-    private static final double LIGHTNING_RANGE = 20.0; // 闪电 20 格范围
-    private static final double SATELLITE_RADIUS = 3.0; // 卫星环绕半径
+    // 原版死亡动画约 10 秒（200 tick）后末影龙被移除；超过这个时间还在就不再等
+    private static final int DEATH_ANIM_TIMEOUT = 260;
 
     /**
-     * 末影龙死亡时启动召唤流程（等死亡动画结束后再走特效阶段）
+     * 末影龙死亡时启动召唤流程
      */
     @SubscribeEvent
     public static void onDragonDeath(LivingDeathEvent event) {
@@ -62,12 +59,25 @@ public class DragonSoulSpawnHandler {
         if (state.stage != STAGE_IDLE) {
             return; // 该维度已有一场召唤在进行
         }
-        // 记录死亡位置（用地面高度兜底，避免生成在半空）
-        BlockPos deathPos = event.getEntity().blockPosition();
-        int groundY = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, deathPos).getY();
-        state.spawnPos = new BlockPos(deathPos.getX(), groundY, deathPos.getZ());
+        state.dragon = event.getEntity().getUUID();
+        state.spawnPos = event.getEntity().position();
         state.setStage(STAGE_WAIT_DEATH);
-        SourceOfMystery.LOGGER.info("Dragon Soul summoning started at {} in {}", state.spawnPos, level.dimension().location());
+        SourceOfMystery.LOGGER.info("Dragon Soul summoning started in {}", level.dimension().location());
+    }
+
+    /**
+     * 龙魂抓着玩家飞上高空时，玩家不能按 Shift 自己挣脱
+     */
+    @SubscribeEvent
+    public static void onDismount(EntityMountEvent event) {
+        if (event.isDismounting() && event.getEntityBeingMounted() instanceof DragonSoulBoss boss) {
+            Entity rider = event.getEntityMounting();
+            boolean gone = !rider.isAlive() || rider.isRemoved()
+                    || rider instanceof ServerPlayer player && player.hasDisconnected();
+            if (!gone && boss.isAlive() && boss.isHolding(rider)) {
+                event.setCanceled(true);
+            }
+        }
     }
 
     @SubscribeEvent
@@ -82,99 +92,66 @@ public class DragonSoulSpawnHandler {
         state.stageTick++;
         state.setDirty();
 
-        switch (state.stage) {
-            case STAGE_WAIT_DEATH -> {
-                if (state.stageTick >= DEATH_ANIM_TICKS) {
-                    state.setStage(STAGE_ROAR);
+        if (state.stage == STAGE_WAIT_DEATH) {
+            // 末影龙死亡动画期间会缓缓升空：一直跟着它，直到它消失，用它最后的位置作为裂缝位置
+            Entity dragon = state.dragon == null ? null : level.getEntity(state.dragon);
+            if (dragon != null) {
+                state.spawnPos = dragon.position();
+                if (state.stageTick < DEATH_ANIM_TIMEOUT) {
+                    return;
                 }
             }
-            case STAGE_ROAR -> {
-                tickRoar(level, state);
-                if (state.stageTick >= ROAR_TICKS) {
-                    state.setStage(STAGE_LIGHTNING);
-                }
-            }
-            case STAGE_LIGHTNING -> {
-                tickLightning(level, state);
-                if (state.stageTick >= LIGHTNING_TICKS) {
-                    state.setStage(STAGE_SATELLITES);
-                }
-            }
-            case STAGE_SATELLITES -> {
-                tickSatellites(level, state);
-                if (state.stageTick >= SATELLITE_TICKS) {
-                    spawnBoss(level, state.spawnPos);
-                    state.setStage(STAGE_IDLE);
-                }
-            }
-            default -> state.setStage(STAGE_IDLE);
         }
+        spawnBoss(level, state.spawnPos);
+        state.dragon = null;
+        state.setStage(STAGE_IDLE);
     }
 
-    /**
-     * 龙吟阶段：每秒播放一次末影龙吟，向附近玩家播报
-     */
-    private static void tickRoar(ServerLevel level, SpawnState state) {
-        if (state.stageTick % 20 == 1) {
-            level.playSound(null, state.spawnPos, SoundEvents.ENDER_DRAGON_GROWL,
-                    SoundSource.HOSTILE, 3.0f, 0.8f);
-            broadcast(level, Component.translatable("message.sourceofmystery.dragon_soul.roar")
-                    .withStyle(ChatFormatting.LIGHT_PURPLE));
+    private static void spawnBoss(ServerLevel level, Vec3 riftPos) {
+        if (level.dimension() == Level.END) {
+            respawnEndCrystals(level);
         }
-    }
-
-    /**
-     * 闪电阶段：死亡点 20 格范围内随机落闪电（每 20 tick 一轮 5 道，循环 5 秒）
-     */
-    private static void tickLightning(ServerLevel level, SpawnState state) {
-        if (state.stageTick % 20 == 0) {
-            for (int i = 0; i < LIGHTNING_COUNT; i++) {
-                spawnLightning(level, state.spawnPos);
-            }
-        }
-    }
-
-    /**
-     * 卫星阶段：10 颗紫色卫星环绕死亡点，粒子较粗
-     */
-    private static void tickSatellites(ServerLevel level, SpawnState state) {
-        double time = level.getGameTime() * 0.15;
-        for (int i = 0; i < SATELLITE_COUNT; i++) {
-            double angle = time + i * (2 * Math.PI / SATELLITE_COUNT);
-            double x = state.spawnPos.getX() + 0.5 + Math.cos(angle) * SATELLITE_RADIUS;
-            double z = state.spawnPos.getZ() + 0.5 + Math.sin(angle) * SATELLITE_RADIUS;
-            double y = state.spawnPos.getY() + 1.5;
-            // 每颗卫星叠加多个粒子，形成"粗"的卫星点
-            for (int j = 0; j < 6; j++) {
-                level.sendParticles(ParticleTypes.DRAGON_BREATH, x, y, z, 1, 0.35, 0.35, 0.35, 0.03);
-            }
-            level.sendParticles(ParticleTypes.END_ROD, x, y, z, 1, 0.2, 0.2, 0.2, 0);
-        }
-    }
-
-    /**
-     * 在死亡点 20 格范围内生成一道纯视觉闪电
-     */
-    private static void spawnLightning(ServerLevel level, BlockPos center) {
-        double x = center.getX() + 0.5 + (level.random.nextDouble() - 0.5) * LIGHTNING_RANGE * 2;
-        double z = center.getZ() + 0.5 + (level.random.nextDouble() - 0.5) * LIGHTNING_RANGE * 2;
-        LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(level);
-        if (bolt != null) {
-            bolt.moveTo(x, center.getY(), z);
-            bolt.setVisualOnly(true);
-            level.addFreshEntity(bolt);
-        }
-    }
-
-    private static void spawnBoss(ServerLevel level, BlockPos spawnPos) {
-        DragonSoulBoss boss = ModEntities.DRAGON_SOUL_BOSS.get().spawn(level, spawnPos, MobSpawnType.EVENT);
+        DragonSoulBoss boss = ModEntities.DRAGON_SOUL_BOSS.get().create(level);
         if (boss == null) {
             SourceOfMystery.LOGGER.warn("Failed to spawn Dragon Soul Boss");
             return;
         }
-        SourceOfMystery.LOGGER.info("Dragon Soul Boss spawned at {} in {}", spawnPos, level.dimension().location());
+        boss.moveTo(riftPos.x, riftPos.y, riftPos.z, 0, 0);
+        boss.finalizeSpawn(level, level.getCurrentDifficultyAt(BlockPos.containing(riftPos)), MobSpawnType.EVENT, null, null);
+        level.addFreshEntity(boss);
+        boss.beginIntro(level, riftPos);
+        SourceOfMystery.LOGGER.info("Dragon Soul Boss tearing through at {} in {}", riftPos, level.dimension().location());
+        broadcast(level, Component.translatable("message.sourceofmystery.dragon_soul.roar")
+                .withStyle(ChatFormatting.LIGHT_PURPLE));
+    }
+
+    /**
+     * 出场动画结束、战斗开始时由 DragonSoulBoss 调用
+     */
+    public static void announceArrival(ServerLevel level) {
         broadcast(level, Component.translatable("message.sourceofmystery.dragon_soul.arrived")
                 .withStyle(ChatFormatting.LIGHT_PURPLE, ChatFormatting.BOLD));
+    }
+
+    /**
+     * 像原版重新召唤末影龙那样重建黑曜石柱顶的末地水晶（已有水晶的柱子跳过），龙魂可以被它们治疗
+     */
+    private static void respawnEndCrystals(ServerLevel level) {
+        RandomSource random = RandomSource.create();
+        int placed = 0;
+        for (SpikeFeature.EndSpike spike : SpikeFeature.getSpikesForLevel(level)) {
+            AABB top = new AABB(spike.getCenterX() - 3, spike.getHeight() - 3, spike.getCenterZ() - 3,
+                    spike.getCenterX() + 4, spike.getHeight() + 5, spike.getCenterZ() + 4);
+            if (!level.getEntitiesOfClass(EndCrystal.class, top).isEmpty()) {
+                continue;
+            }
+            SpikeConfiguration config = new SpikeConfiguration(false, ImmutableList.of(spike), null);
+            if (Feature.END_SPIKE.place(config, level, level.getChunkSource().getGenerator(), random,
+                    new BlockPos(spike.getCenterX(), 45, spike.getCenterZ()))) {
+                placed++;
+            }
+        }
+        SourceOfMystery.LOGGER.info("Respawned {} end crystals for the Dragon Soul", placed);
     }
 
     private static void broadcast(ServerLevel level, Component message) {
@@ -196,7 +173,8 @@ public class DragonSoulSpawnHandler {
 
         private int stage = STAGE_IDLE;
         private int stageTick = 0;
-        private BlockPos spawnPos = new BlockPos(0, 70, 0);
+        private Vec3 spawnPos = new Vec3(0.5, 90, 0.5);
+        private UUID dragon;
 
         static SpawnState get(ServerLevel level) {
             return level.getDataStorage().computeIfAbsent(SpawnState::load, SpawnState::new, DATA_NAME);
@@ -206,8 +184,13 @@ public class DragonSoulSpawnHandler {
             SpawnState state = new SpawnState();
             state.stage = tag.getInt("Stage");
             state.stageTick = tag.getInt("StageTick");
-            if (tag.contains("SpawnX")) {
-                state.spawnPos = new BlockPos(tag.getInt("SpawnX"), tag.getInt("SpawnY"), tag.getInt("SpawnZ"));
+            if (tag.contains("PosX")) {
+                state.spawnPos = new Vec3(tag.getDouble("PosX"), tag.getDouble("PosY"), tag.getDouble("PosZ"));
+            } else if (tag.contains("SpawnX")) {
+                state.spawnPos = Vec3.atBottomCenterOf(new BlockPos(tag.getInt("SpawnX"), tag.getInt("SpawnY"), tag.getInt("SpawnZ")));
+            }
+            if (tag.hasUUID("Dragon")) {
+                state.dragon = tag.getUUID("Dragon");
             }
             return state;
         }
@@ -222,9 +205,12 @@ public class DragonSoulSpawnHandler {
         public CompoundTag save(CompoundTag tag) {
             tag.putInt("Stage", stage);
             tag.putInt("StageTick", stageTick);
-            tag.putInt("SpawnX", spawnPos.getX());
-            tag.putInt("SpawnY", spawnPos.getY());
-            tag.putInt("SpawnZ", spawnPos.getZ());
+            tag.putDouble("PosX", spawnPos.x);
+            tag.putDouble("PosY", spawnPos.y);
+            tag.putDouble("PosZ", spawnPos.z);
+            if (dragon != null) {
+                tag.putUUID("Dragon", dragon);
+            }
             return tag;
         }
     }

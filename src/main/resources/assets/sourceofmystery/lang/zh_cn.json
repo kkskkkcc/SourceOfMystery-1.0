@@ -23,7 +23,7 @@
   "message.sourceofmystery.altar.no_recipe": "【无匹配配方】请将材料丢在祭坛周围 %s 格范围内",
   "message.sourceofmystery.altar.success": "【转化成功！】%s 级配方，获得: %sx %s",
   "message.sourceofmystery.boss.prefix": "【神威天道】",
-  "message.sourceofmystery.boss.awakening": "龙魂已献祭于神秘祭坛，天道之力开始苏醒……",
+  "message.sourceofmystery.boss.awakening": "龙魂与五行之源已献祭于神秘祭坛，天道之力开始苏醒……",
   "message.sourceofmystery.boss.countdown": "距离天道降临还有 %s 秒……",
   "message.sourceofmystery.boss.lightning": "天穹撕裂，雷霆万钧！",
   "message.sourceofmystery.boss.arrived": "神威天道已降临！",
@@ -32,7 +32,7 @@
   "jei.sourceofmystery.altar.tier": "配方等级：%s",
   "book.sourceofmystery.guide.name": "神秘之源指南",
   "book.sourceofmystery.guide.subtitle": "Source Of Mystery",
-  "book.sourceofmystery.guide.landing": "欢迎来到$(l)神秘之源$()。$(br2)从挖掘神秘源矿开始，用神秘祭坛一步步锻造更强的装备，最终以龙魂献祭祭坛，挑战降临的$(l)神威天道$()。",
+  "book.sourceofmystery.guide.landing": "欢迎来到$(l)神秘之源$()。$(br2)从挖掘神秘源矿开始，用神秘祭坛一步步锻造更强的装备，击败末影龙之后降临的$(l)龙魂$()，最终以龙魂和五行之源献祭祭坛，挑战降临的$(l)神威天道$()。",
   "advancements.sourceofmystery.root.title": "神秘之源",
   "advancements.sourceofmystery.root.description": "挖掘神秘源矿，烧炼出秘源锭，再合成神秘祭坛",
   "advancements.sourceofmystery.mysterious_origin.title": "神秘起源",
@@ -42,9 +42,9 @@
   "advancements.sourceofmystery.probe_spirit_source.title": "窥探灵源",
   "advancements.sourceofmystery.probe_spirit_source.description": "获得灵源秘甲或灵源秘剑。下一步：收集凋灵骷髅头和下界之星",
   "advancements.sourceofmystery.touch_dark_source.title": "触摸黑暗之源",
-  "advancements.sourceofmystery.touch_dark_source.description": "获得暗源之甲或暗源之剑。下一步：击杀末影龙获得龙魂",
+  "advancements.sourceofmystery.touch_dark_source.description": "获得暗源之甲或暗源之剑。下一步：击杀末影龙，再击败随后降临的龙魂，获得龙魂",
   "advancements.sourceofmystery.can_slayer_god.title": "我可弑神？",
-  "advancements.sourceofmystery.can_slayer_god.description": "获得始源龙甲或始源龙剑。下一步：再获得一个龙魂，手持龙魂右键神秘祭坛召唤神威天道",
+  "advancements.sourceofmystery.can_slayer_god.description": "获得始源龙甲或始源龙剑。下一步：再获得一个龙魂并集齐木、金、水、火、土五行之源，手持龙魂右键神秘祭坛召唤神威天道",
   "advancements.sourceofmystery.provoke_heaven.title": "触怒天道",
   "advancements.sourceofmystery.provoke_heaven.description": "神威天道出现在100格范围内。击败它，获得天道碎片",
   "advancements.sourceofmystery.kill_divine_heavenly_dao.title": "天道陨落",
@@ -82,5 +82,7 @@
   "subtitles.sourceofmystery.divine_heavenly_dao.ambient": "天道威压",
   "subtitles.sourceofmystery.divine_heavenly_dao.slam": "神威天道锤击大地",
   "subtitles.sourceofmystery.divine_heavenly_dao.charge": "神威天道蓄力",
-  "entity.sourceofmystery.giant_wither": "巨型凋灵"
+  "entity.sourceofmystery.giant_wither": "巨型凋灵",
+  "entity.sourceofmystery.dragon_spear": "龙魂之枪",
+  "entity.sourceofmystery.dragon_soul_boss": "龙魂"
 }

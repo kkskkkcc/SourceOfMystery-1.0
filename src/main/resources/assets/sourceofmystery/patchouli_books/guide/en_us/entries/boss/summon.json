@@ -1,18 +1,17 @@
 {
   "name": "The Descent",
-  "icon": "sourceofmystery:dragon_soul",
+  "icon": "sourceofmystery:mystery_altar",
   "category": "sourceofmystery:boss",
-  "sortnum": 0,
+  "sortnum": 1,
   "pages": [
     {
-      "type": "patchouli:spotlight",
-      "item": "sourceofmystery:dragon_soul",
-      "text": "Every Ender Dragon drops one $(item)Dragon Soul$() at the feet of its killer, or on top of the portal pillar if no player killed it.$(br2)The Origin Dragon Sword and Chestplate each need one, and so does summoning the Heavenly Dao."
+      "type": "patchouli:text",
+      "text": "Summoning the Divine Heavenly Dao takes a $(item)Dragon Soul$() and one of each element source:$(li)$(item)Wood Source$(): 20% from zombies (incl. husks, drowned, zombie villagers) killed by a player$(li)$(item)Gold Source$(): 20% from iron golems killed by a player$(li)$(item)Fire Source$(): 20% from blazes killed by a player$(li)$(item)Earth Source$(): 5% when a player digs dirt or grass$(li)$(item)Water Source$(): 10% when filling an empty bucket outdoors in the rain"
     },
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:mystery_altar",
-      "text": "Right-click the $(item)Mystery Altar$() while holding a Dragon Soul to offer it: a 20-second countdown begins in that dimension, then lightning strikes and the $(l)Divine Heavenly Dao$() descends above the altar.$(br2)Only one summoning can run per dimension at a time. Bring at least Origin gear, and build the altar somewhere open."
+      "text": "Carry the sources and right-click the $(item)Mystery Altar$() while holding a Dragon Soul: a 20-second countdown begins in that dimension, then lightning strikes and the $(l)Divine Heavenly Dao$() descends above the altar.$(br2)Nothing is consumed if something is missing or a summoning is already running in the dimension."
     }
   ]
 }

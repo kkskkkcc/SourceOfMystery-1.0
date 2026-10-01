@@ -1,18 +1,17 @@
 {
   "name": "天道降临",
-  "icon": "sourceofmystery:dragon_soul",
+  "icon": "sourceofmystery:mystery_altar",
   "category": "sourceofmystery:boss",
-  "sortnum": 0,
+  "sortnum": 1,
   "pages": [
     {
-      "type": "patchouli:spotlight",
-      "item": "sourceofmystery:dragon_soul",
-      "text": "每击杀一只末影龙，都会掉落一个$(item)龙魂$()：落在击杀者脚下，没有玩家击杀时放在传送门柱顶端。$(br2)始源龙剑和始源龙甲各需要一个，召唤天道也需要一个。"
+      "type": "patchouli:text",
+      "text": "召唤神威天道需要一个$(item)龙魂$()和五行之源各一个：$(li)$(item)木之源$()：玩家击杀僵尸（含尸壳、溺尸、僵尸村民）20% 掉落$(li)$(item)金之源$()：玩家击杀铁傀儡 20% 掉落$(li)$(item)火之源$()：玩家击杀烈焰人 20% 掉落$(li)$(item)土之源$()：玩家挖掘泥土、草方块 5% 掉落$(li)$(item)水之源$()：下雨时在露天用空桶打水 10% 获得"
     },
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:mystery_altar",
-      "text": "手持龙魂右键$(item)神秘祭坛$()即可献祭：所在维度进入 20 秒倒计时，随后天雷落下，$(l)神威天道$()在祭坛上方降临。$(br2)同一维度同时只能进行一场召唤。建议至少带上始源系列装备，并在开阔处搭建祭坛。"
+      "text": "五行之源放在背包里，手持龙魂右键$(item)神秘祭坛$()即可献祭：所在维度进入 20 秒倒计时，随后天雷落下，$(l)神威天道$()在祭坛上方降临。$(br2)缺少材料或同一维度已有召唤在进行时，什么都不会消耗。"
     }
   ]
 }

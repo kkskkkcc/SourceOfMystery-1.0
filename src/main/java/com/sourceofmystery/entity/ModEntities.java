@@ -30,6 +30,14 @@ public class ModEntities {
                             .updateInterval(1)
                             .build(new ResourceLocation(SourceOfMystery.MOD_ID, "dragon_soul_boss").toString()));
 
+    public static final RegistryObject<EntityType<DragonSpear>> DRAGON_SPEAR =
+            ENTITIES.register("dragon_spear",
+                    () -> EntityType.Builder.<DragonSpear>of(DragonSpear::new, MobCategory.MISC)
+                            .sized(0.6f, 0.6f)
+                            .clientTrackingRange(8)
+                            .updateInterval(1)
+                            .build(new ResourceLocation(SourceOfMystery.MOD_ID, "dragon_spear").toString()));
+
     // 原版凋灵碰撞箱 0.9 x 3.5，按倍数放大
     public static final RegistryObject<EntityType<GiantWither>> GIANT_WITHER =
             ENTITIES.register("giant_wither",

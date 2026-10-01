@@ -21,6 +21,7 @@ public class ClientModEvents {
         event.registerEntityRenderer(ModEntities.DIVINE_HEAVENLY_DAO_BOSS.get(), DivineHeavenlyDaoBossRenderer::new);
         event.registerEntityRenderer(ModEntities.DRAGON_SOUL_BOSS.get(), DragonSoulRenderer::new);
         event.registerEntityRenderer(ModEntities.GIANT_WITHER.get(), GiantWitherRenderer::new);
+        event.registerEntityRenderer(ModEntities.DRAGON_SPEAR.get(), DragonSpearRenderer::new);
     }
 
     @SubscribeEvent

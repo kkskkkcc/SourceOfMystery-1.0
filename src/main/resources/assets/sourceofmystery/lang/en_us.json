@@ -23,7 +23,7 @@
   "message.sourceofmystery.altar.no_recipe": "[No matching recipe] Drop the materials within %s blocks of the altar",
   "message.sourceofmystery.altar.success": "[Transmutation complete!] Tier %s recipe, obtained: %sx %s",
   "message.sourceofmystery.boss.prefix": "[Divine Heavenly Dao]",
-  "message.sourceofmystery.boss.awakening": "A Dragon Soul has been offered at the Mystery Altar. The power of the Heavenly Dao begins to stir...",
+  "message.sourceofmystery.boss.awakening": "A Dragon Soul and the five element sources have been offered at the Mystery Altar. The power of the Heavenly Dao begins to stir...",
   "message.sourceofmystery.boss.countdown": "The Heavenly Dao descends in %s seconds...",
   "message.sourceofmystery.boss.lightning": "The heavens are torn asunder by thunder!",
   "message.sourceofmystery.boss.arrived": "The Divine Heavenly Dao has descended!",
@@ -32,7 +32,7 @@
   "jei.sourceofmystery.altar.tier": "Tier: %s",
   "book.sourceofmystery.guide.name": "Source of Mystery Guide",
   "book.sourceofmystery.guide.subtitle": "Source Of Mystery",
-  "book.sourceofmystery.guide.landing": "Welcome to the $(l)Source of Mystery$().$(br2)Start by mining Mystery Source Ore, forge ever stronger gear at the Mystery Altar, and finally offer a Dragon Soul at the altar to face the $(l)Divine Heavenly Dao$().",
+  "book.sourceofmystery.guide.landing": "Welcome to the $(l)Source of Mystery$().$(br2)Start by mining Mystery Source Ore, forge ever stronger gear at the Mystery Altar, defeat the $(l)Dragon Soul$() that rises after the Ender Dragon, and finally offer a Dragon Soul and the five element sources at the altar to face the $(l)Divine Heavenly Dao$().",
   "advancements.sourceofmystery.root.title": "Source of Mystery",
   "advancements.sourceofmystery.root.description": "Mine Mystery Source Ore, smelt Mystery Ingots and craft a Mystery Altar",
   "advancements.sourceofmystery.mysterious_origin.title": "Mysterious Origin",
@@ -42,9 +42,9 @@
   "advancements.sourceofmystery.probe_spirit_source.title": "Probing the Spirit Source",
   "advancements.sourceofmystery.probe_spirit_source.description": "Obtain the Spirit Source Chestplate or Spirit Source Sword. Next: collect wither skeleton skulls and nether stars",
   "advancements.sourceofmystery.touch_dark_source.title": "Touching the Dark Source",
-  "advancements.sourceofmystery.touch_dark_source.description": "Obtain the Dark Source Chestplate or Dark Source Sword. Next: slay the Ender Dragon for a Dragon Soul",
+  "advancements.sourceofmystery.touch_dark_source.description": "Obtain the Dark Source Chestplate or Dark Source Sword. Next: slay the Ender Dragon, then defeat the Dragon Soul that follows for a Dragon Soul",
   "advancements.sourceofmystery.can_slayer_god.title": "Can I Slay a God?",
-  "advancements.sourceofmystery.can_slayer_god.description": "Obtain the Origin Dragon Chestplate or Origin Dragon Sword. Next: get another Dragon Soul and right-click the Mystery Altar with it to summon the Divine Heavenly Dao",
+  "advancements.sourceofmystery.can_slayer_god.description": "Obtain the Origin Dragon Chestplate or Origin Dragon Sword. Next: get another Dragon Soul and one each of the Wood, Gold, Water, Fire and Earth Sources, then right-click the Mystery Altar holding the Dragon Soul to summon the Divine Heavenly Dao",
   "advancements.sourceofmystery.provoke_heaven.title": "Provoking the Heavens",
   "advancements.sourceofmystery.provoke_heaven.description": "Be within 100 blocks when the Divine Heavenly Dao descends. Defeat it for Heavenly Dao Fragments",
   "advancements.sourceofmystery.kill_divine_heavenly_dao.title": "Fall of the Heavenly Dao",
@@ -82,5 +82,7 @@
   "subtitles.sourceofmystery.divine_heavenly_dao.ambient": "Heavenly pressure",
   "subtitles.sourceofmystery.divine_heavenly_dao.slam": "Divine Heavenly Dao smashes the ground",
   "subtitles.sourceofmystery.divine_heavenly_dao.charge": "Divine Heavenly Dao gathers power",
-  "entity.sourceofmystery.giant_wither": "Giant Wither"
+  "entity.sourceofmystery.giant_wither": "Giant Wither",
+  "entity.sourceofmystery.dragon_spear": "Dragon Soul Spear",
+  "entity.sourceofmystery.dragon_soul_boss": "Dragon Soul"
 }

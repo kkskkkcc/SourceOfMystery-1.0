@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public class ModNetwork {
 
-    private static final String PROTOCOL_VERSION = "1";
+    private static final String PROTOCOL_VERSION = "2";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(SourceOfMystery.MOD_ID, "main"),
             () -> PROTOCOL_VERSION,
@@ -32,6 +32,12 @@ public class ModNetwork {
                 SatelliteSyncPacket::encode,
                 SatelliteSyncPacket::decode,
                 SatelliteSyncPacket::handle,
+                Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CHANNEL.registerMessage(id++,
+                BossIntroPacket.class,
+                BossIntroPacket::encode,
+                BossIntroPacket::decode,
+                BossIntroPacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 }
