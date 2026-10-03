@@ -2,8 +2,10 @@ package com.sourceofmystery.entity;
 
 import com.sourceofmystery.SourceOfMystery;
 import com.sourceofmystery.advancement.AdvancementHelper;
+import com.sourceofmystery.particle.ModParticles;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -12,6 +14,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.event.entity.living.LivingExperienceDropEvent;
@@ -108,16 +111,42 @@ public class BossSpawnHandler {
                     .withStyle(ChatFormatting.YELLOW));
         }
 
-        // 倒计时结束，进入闪电阶段
+        spawnAltarMotes(level, state.spawnPos.below(SPAWN_HEIGHT_ABOVE_ALTAR), state.stageTick / (double) COUNTDOWN_TICKS);
+
+        // 倒计时结束：神威天道降临（天上的金色法阵、雷霆、从天而降的演出由 Boss 自己完成）
         if (state.stageTick >= COUNTDOWN_TICKS) {
-            state.setStage(STAGE_LIGHTNING);
             broadcast(level, Component.translatable("message.sourceofmystery.boss.lightning")
                     .withStyle(ChatFormatting.RED));
+            spawnBoss(level, state.spawnPos);
+            state.setStage(STAGE_IDLE);
         }
     }
 
     /**
-     * 闪电阶段：在 Boss 即将生成的位置落 10 道闪电，结束后 Boss 出现
+     * 倒计时期间，金色光点从四面八方不断汇入祭坛，越接近结束越密集
+     */
+    private static void spawnAltarMotes(ServerLevel level, BlockPos altarPos, double progress) {
+        double cx = altarPos.getX() + 0.5;
+        double cy = altarPos.getY() + 1.1;
+        double cz = altarPos.getZ() + 0.5;
+        int count = 3 + (int) (progress * 9);
+        for (int i = 0; i < count; i++) {
+            double yaw = level.random.nextDouble() * Math.PI * 2;
+            double pitch = (level.random.nextDouble() - 0.3) * Math.PI * 0.6;
+            double r = 4 + level.random.nextDouble() * 9;
+            double x = cx + Math.cos(yaw) * Math.cos(pitch) * r;
+            double y = cy + Math.sin(pitch) * r;
+            double z = cz + Math.sin(yaw) * Math.cos(pitch) * r;
+            // count = 0：最后三个参数是粒子的位移，金色光点会沿着它滑进祭坛
+            level.sendParticles(ModParticles.GOLD_MOTE.get(), x, y, z, 0, cx - x, cy - y, cz - z, 1.0);
+        }
+        if (level.getGameTime() % 4 == 0) {
+            level.sendParticles(ParticleTypes.END_ROD, cx, cy, cz, 2, 0.15, 0.3, 0.15, 0.02);
+        }
+    }
+
+    /**
+     * 旧版本存档里停在"闪电阶段"的召唤：落 10 道闪电后 Boss 出现
      */
     private static void tickLightning(ServerLevel level, SummonState state) {
         if (state.stageTick % LIGHTNING_INTERVAL_TICKS == 0
@@ -163,11 +192,17 @@ public class BossSpawnHandler {
     }
 
     private static void spawnBoss(ServerLevel level, BlockPos spawnPos) {
-        DivineHeavenlyDaoBoss boss = ModEntities.DIVINE_HEAVENLY_DAO_BOSS.get().spawn(level, spawnPos, MobSpawnType.EVENT);
+        DivineHeavenlyDaoBoss boss = ModEntities.DIVINE_HEAVENLY_DAO_BOSS.get().create(level);
         if (boss == null) {
             SourceOfMystery.LOGGER.warn("Failed to spawn Divine Heavenly Dao Boss");
             return;
         }
+        Vec3 ground = Vec3.atBottomCenterOf(spawnPos);
+        boss.moveTo(ground.x, ground.y, ground.z, 0, 0);
+        boss.setInvisible(true); // 降临前隐身，先展开法阵
+        boss.finalizeSpawn(level, level.getCurrentDifficultyAt(spawnPos), MobSpawnType.EVENT, null, null);
+        level.addFreshEntity(boss);
+        boss.beginIntro(level, ground);
 
         SourceOfMystery.LOGGER.info("Divine Heavenly Dao Boss spawned at {} in {}", spawnPos, level.dimension().location());
         broadcast(level, Component.translatable("message.sourceofmystery.boss.arrived")

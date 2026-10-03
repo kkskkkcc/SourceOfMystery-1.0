@@ -47,6 +47,37 @@ public class ModEntities {
                             .clientTrackingRange(16)
                             .build(new ResourceLocation(SourceOfMystery.MOD_ID, "giant_wither").toString()));
 
+    // 出场演出 / 大招用的纯视觉实体：画面全部由各自的渲染器绘制
+    public static final RegistryObject<EntityType<VoidRift>> VOID_RIFT =
+            ENTITIES.register("void_rift",
+                    () -> EntityType.Builder.<VoidRift>of(VoidRift::new, MobCategory.MISC)
+                            .sized(0.5f, 0.5f)
+                            .noSave()
+                            .fireImmune()
+                            .clientTrackingRange(16)
+                            .updateInterval(20)
+                            .build(new ResourceLocation(SourceOfMystery.MOD_ID, "void_rift").toString()));
+
+    public static final RegistryObject<EntityType<HeavenSigil>> HEAVEN_SIGIL =
+            ENTITIES.register("heaven_sigil",
+                    () -> EntityType.Builder.<HeavenSigil>of(HeavenSigil::new, MobCategory.MISC)
+                            .sized(0.5f, 0.5f)
+                            .noSave()
+                            .fireImmune()
+                            .clientTrackingRange(16)
+                            .updateInterval(20)
+                            .build(new ResourceLocation(SourceOfMystery.MOD_ID, "heaven_sigil").toString()));
+
+    public static final RegistryObject<EntityType<AbyssOrb>> ABYSS_ORB =
+            ENTITIES.register("abyss_orb",
+                    () -> EntityType.Builder.<AbyssOrb>of(AbyssOrb::new, MobCategory.MISC)
+                            .sized(1.0f, 1.0f)
+                            .noSave()
+                            .fireImmune()
+                            .clientTrackingRange(16)
+                            .updateInterval(1)
+                            .build(new ResourceLocation(SourceOfMystery.MOD_ID, "abyss_orb").toString()));
+
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(DIVINE_HEAVENLY_DAO_BOSS.get(), DivineHeavenlyDaoBoss.createAttributes().build());
         event.put(DRAGON_SOUL_BOSS.get(), DragonSoulBoss.createAttributes().build());

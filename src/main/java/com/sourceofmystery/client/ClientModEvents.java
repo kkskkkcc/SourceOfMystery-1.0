@@ -3,9 +3,11 @@ package com.sourceofmystery.client;
 import com.sourceofmystery.SourceOfMystery;
 import com.sourceofmystery.entity.ModEntities;
 import com.sourceofmystery.hud.MysteryEnergyOverlay;
+import com.sourceofmystery.particle.ModParticles;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
+import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -22,6 +24,15 @@ public class ClientModEvents {
         event.registerEntityRenderer(ModEntities.DRAGON_SOUL_BOSS.get(), DragonSoulRenderer::new);
         event.registerEntityRenderer(ModEntities.GIANT_WITHER.get(), GiantWitherRenderer::new);
         event.registerEntityRenderer(ModEntities.DRAGON_SPEAR.get(), DragonSpearRenderer::new);
+        event.registerEntityRenderer(ModEntities.VOID_RIFT.get(), VoidRiftRenderer::new);
+        event.registerEntityRenderer(ModEntities.HEAVEN_SIGIL.get(), HeavenSigilRenderer::new);
+        event.registerEntityRenderer(ModEntities.ABYSS_ORB.get(), AbyssOrbRenderer::new);
+    }
+
+    @SubscribeEvent
+    public static void registerParticles(RegisterParticleProvidersEvent event) {
+        event.registerSpriteSet(ModParticles.GOLD_MOTE.get(), sprites -> new ConvergeParticle.Provider(sprites, true));
+        event.registerSpriteSet(ModParticles.DARK_MOTE.get(), sprites -> new ConvergeParticle.Provider(sprites, false));
     }
 
     @SubscribeEvent

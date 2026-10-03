@@ -37,7 +37,16 @@ public final class BossIntroCamera {
 
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || !ClientCinematicCache.active()) {
+        if (event.phase != TickEvent.Phase.END) {
+            return;
+        }
+        if (ClientCinematicCache.flashRemaining > 0) {
+            ClientCinematicCache.flashRemaining--;
+        }
+        if (ClientCinematicCache.shakeRemaining > 0) {
+            ClientCinematicCache.shakeRemaining--;
+        }
+        if (!ClientCinematicCache.active()) {
             return;
         }
         Minecraft mc = Minecraft.getInstance();
@@ -62,6 +71,7 @@ public final class BossIntroCamera {
     @SubscribeEvent
     public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         stop();
+        ClientCinematicCache.resetScreenEffects();
     }
 
     @SubscribeEvent
@@ -83,7 +93,11 @@ public final class BossIntroCamera {
     @SubscribeEvent
     public static void onCameraAngles(ViewportEvent.ComputeCameraAngles event) {
         Minecraft mc = Minecraft.getInstance();
-        if (!ClientCinematicCache.active() || mc.level == null || mc.player == null) {
+        if (mc.level == null || mc.player == null) {
+            return;
+        }
+        if (!ClientCinematicCache.active()) {
+            applyShake(event);
             return;
         }
         Entity boss = mc.level.getEntity(ClientCinematicCache.entityId);
@@ -105,6 +119,7 @@ public final class BossIntroCamera {
         camPitch = camPitch + (targetPitch - camPitch) * TURN_SPEED;
         event.setYaw(camYaw);
         event.setPitch(camPitch);
+        applyShake(event);
         // 让玩家本身也朝向镜头方向，镜头结束时不会突然跳回原来的视角
         mc.player.setYRot(camYaw);
         mc.player.setXRot(camPitch);
@@ -115,6 +130,20 @@ public final class BossIntroCamera {
         double distance = d.length();
         double wanted = Mth.clamp(distance / 40.0, 0.5, 1.0);
         fovScale += (wanted - fovScale) * 0.05;
+    }
+
+    /**
+     * 震屏：爆炸等事件期间镜头随机抖动，强度随剩余时间衰减
+     */
+    private static void applyShake(ViewportEvent.ComputeCameraAngles event) {
+        if (ClientCinematicCache.shakeRemaining <= 0) {
+            return;
+        }
+        float t = (float) (Minecraft.getInstance().level.getGameTime() + event.getPartialTick());
+        float strength = ClientCinematicCache.shakeStrength * Math.min(1.0f, ClientCinematicCache.shakeRemaining / 20.0f);
+        event.setYaw(event.getYaw() + Mth.sin(t * 2.3f) * strength);
+        event.setPitch(event.getPitch() + Mth.sin(t * 3.1f + 1.3f) * strength * 0.7f);
+        event.setRoll(event.getRoll() + Mth.sin(t * 1.7f + 0.5f) * strength * 0.5f);
     }
 
     @SubscribeEvent
@@ -130,13 +159,16 @@ public final class BossIntroCamera {
             return;
         }
         var id = event.getOverlay().id();
-        if (!id.equals(VanillaGuiOverlay.CHAT_PANEL.id()) && !id.equals(VanillaGuiOverlay.SUBTITLES.id())) {
+        // 保留聊天栏、字幕和动作栏（Boss 台词的中文字幕显示在动作栏）
+        if (!id.equals(VanillaGuiOverlay.CHAT_PANEL.id()) && !id.equals(VanillaGuiOverlay.SUBTITLES.id())
+                && !id.equals(VanillaGuiOverlay.RECORD_OVERLAY.id())) {
             event.setCanceled(true);
         }
     }
 
     @SubscribeEvent
     public static void onRenderGui(RenderGuiEvent.Post event) {
+        renderFlash(event);
         if (!ClientCinematicCache.active()) {
             return;
         }
@@ -150,6 +182,22 @@ public final class BossIntroCamera {
         if (bar > 0) {
             event.getGuiGraphics().fill(0, 0, width, bar, 0xFF000000);
             event.getGuiGraphics().fill(0, height - bar, width, height, 0xFF000000);
+        }
+    }
+
+    /**
+     * 闪白：从纯白慢慢淡出
+     */
+    private static void renderFlash(RenderGuiEvent.Post event) {
+        if (ClientCinematicCache.flashRemaining <= 0 || ClientCinematicCache.flashTotal <= 0) {
+            return;
+        }
+        float u = (ClientCinematicCache.flashRemaining - event.getPartialTick()) / ClientCinematicCache.flashTotal;
+        int alpha = (int) (255 * Mth.clamp(u * u, 0.0f, 1.0f));
+        if (alpha > 0) {
+            int width = event.getWindow().getGuiScaledWidth();
+            int height = event.getWindow().getGuiScaledHeight();
+            event.getGuiGraphics().fill(0, 0, width, height, (alpha << 24) | 0xFFFFFF);
         }
     }
 }

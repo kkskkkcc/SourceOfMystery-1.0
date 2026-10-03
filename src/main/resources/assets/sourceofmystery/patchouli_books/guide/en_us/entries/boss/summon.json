@@ -11,7 +11,7 @@
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:mystery_altar",
-      "text": "Carry the sources and right-click the $(item)Mystery Altar$() while holding a Dragon Soul: a 20-second countdown begins in that dimension, then lightning strikes and the $(l)Divine Heavenly Dao$() descends above the altar.$(br2)Nothing is consumed if something is missing or a summoning is already running in the dimension."
+      "text": "Carry the sources and right-click the $(item)Mystery Altar$() while holding a Dragon Soul: a 20-second countdown begins in that dimension while golden motes stream into the altar. Then a $(l)golden sigil$() unfolds in the sky and the $(l)Divine Heavenly Dao$() descends through it amid endless lightning (your camera follows).$(br2)Nothing is consumed if something is missing or a summoning is already running in the dimension."
     }
   ]
 }

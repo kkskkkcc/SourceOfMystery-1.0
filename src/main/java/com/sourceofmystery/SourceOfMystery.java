@@ -9,6 +9,7 @@ import com.sourceofmystery.item.ModItems;
 import com.sourceofmystery.loot.ModLootModifiers;
 import com.sourceofmystery.sound.ModSounds;
 import com.sourceofmystery.network.ModNetwork;
+import com.sourceofmystery.particle.ModParticles;
 import com.sourceofmystery.recipe.ModRecipes;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
@@ -33,6 +34,7 @@ public class SourceOfMystery {
         ModRecipes.SERIALIZERS.register(modEventBus);
         ModLootModifiers.SERIALIZERS.register(modEventBus);
         ModSounds.SOUNDS.register(modEventBus);
+        ModParticles.PARTICLES.register(modEventBus);
         modEventBus.addListener(ModEntities::registerAttributes);
         modEventBus.addListener(this::commonSetup);
 
