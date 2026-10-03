@@ -309,7 +309,7 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         return Monster.createMonsterAttributes()
                 .add(Attributes.ATTACK_DAMAGE, CLEAVE_DAMAGE)
                 .add(Attributes.ARMOR, 30.0)
-                .add(Attributes.MAX_HEALTH, 500.0)
+                .add(Attributes.MAX_HEALTH, 5000.0)
                 .add(Attributes.MOVEMENT_SPEED, 0.28)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0)
                 .add(Attributes.FOLLOW_RANGE, 100.0);
