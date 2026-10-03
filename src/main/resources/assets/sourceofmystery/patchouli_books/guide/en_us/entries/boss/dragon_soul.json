@@ -6,7 +6,7 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Once the Ender Dragon's death animation has completely finished, a $(l)void rift$() cracks open where it vanished: the Dragon Soul bursts out as a blur of afterimages, circles twice amid thunder, then descends in front of you and points her spear at you with one hand. Your camera follows her during the entrance, and she cannot be hurt until it ends.$(br2)The End pillars also regrow their $(l)End Crystals$(). Just like the Ender Dragon, crystals within 32 blocks keep healing her, so break them first."
+      "text": "Once the Ender Dragon's death animation has completely finished, a $(l)void rift$() cracks open where it vanished: the Dragon Soul bursts out and races twice around the sky amid thunder before diving in front of you. Until then you only see her afterimages; then she takes form and points her spear at you with one hand. Your camera follows her during the entrance, and she cannot be hurt until it ends.$(br2)The End pillars also regrow their $(l)End Crystals$(). Just like the Ender Dragon, crystals within 32 blocks keep healing her, so break them first."
     },
     {
       "type": "patchouli:text",

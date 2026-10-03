@@ -134,7 +134,7 @@ public class DragonSoulSpawnHandler {
             return;
         }
         boss.moveTo(riftPos.x, riftPos.y, riftPos.z, 0, 0);
-        boss.setInvisible(true); // 加入世界前就隐身：客户端收到的第一帧就是看不见的，直到她冲出裂缝
+        boss.prepareHidden(); // 加入世界前就隐藏：客户端收到的第一帧就是看不见的，直到她现出真身
         boss.finalizeSpawn(level, level.getCurrentDifficultyAt(BlockPos.containing(riftPos)), MobSpawnType.EVENT, null, null);
         level.addFreshEntity(boss);
         boss.beginIntro(level, riftPos);

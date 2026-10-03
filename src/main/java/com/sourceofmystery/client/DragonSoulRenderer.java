@@ -15,6 +15,7 @@ import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
 /**
  * 龙魂 Boss 的 GeckoLib 渲染器。高速冲刺 / 瞬移时在身后画出半透明的紫色残影（用当前姿势在过去的位置重画模型）。
+ * 出场时本体隐藏（{@link DragonSoulBoss#hidden()}），只画残影。
  */
 public class DragonSoulRenderer extends GeoEntityRenderer<DragonSoulBoss> {
 
@@ -27,7 +28,7 @@ public class DragonSoulRenderer extends GeoEntityRenderer<DragonSoulBoss> {
     public void render(DragonSoulBoss entity, float entityYaw, float partialTick, PoseStack poseStack,
                        MultiBufferSource bufferSource, int packedLight) {
         super.render(entity, entityYaw, partialTick, poseStack, bufferSource, packedLight);
-        if (entity.afterimages.isEmpty() || entity.isInvisible()) {
+        if (entity.afterimages.isEmpty() || entity.potionInvisible()) {
             return;
         }
         Vec3 current = entity.getPosition(partialTick);
@@ -35,6 +36,7 @@ public class DragonSoulRenderer extends GeoEntityRenderer<DragonSoulBoss> {
         float now = entity.tickCount + partialTick;
         RenderType type = RenderType.entityTranslucent(getTextureLocation(entity));
         BakedGeoModel model = getGeoModel().getBakedModel(getGeoModel().getModelResource(entity));
+        entity.renderingAfterimages = true; // 出场时本体隐藏，但残影要画出来
         for (DragonSoulBoss.Afterimage ghost : entity.afterimages) {
             float age = now - ghost.born();
             if (age < 0 || age >= DragonSoulBoss.AFTERIMAGE_LIFE) {
@@ -50,6 +52,7 @@ public class DragonSoulRenderer extends GeoEntityRenderer<DragonSoulBoss> {
                     LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, 0.7f, 0.5f, 1.0f, alpha);
             poseStack.popPose();
         }
+        entity.renderingAfterimages = false;
         this.animatable = null;
     }
 }

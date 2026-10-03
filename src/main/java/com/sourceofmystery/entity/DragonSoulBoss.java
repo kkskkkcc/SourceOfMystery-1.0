@@ -117,6 +117,9 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
             SynchedEntityData.defineId(DragonSoulBoss.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_SPEAR_OUT =
             SynchedEntityData.defineId(DragonSoulBoss.class, EntityDataSerializers.BOOLEAN);
+    /** 出场中隐藏本体，见 {@link #isInvisible()} */
+    private static final EntityDataAccessor<Boolean> DATA_HIDDEN =
+            SynchedEntityData.defineId(DragonSoulBoss.class, EntityDataSerializers.BOOLEAN);
     /** 高速移动中：客户端留下残影，并且不做位置插值的"瞬移判定" */
     private static final EntityDataAccessor<Boolean> DATA_TRAIL =
             SynchedEntityData.defineId(DragonSoulBoss.class, EntityDataSerializers.BOOLEAN);
@@ -128,9 +131,9 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     private static final int DASH_TICKS = 5;                                           // 0.25 秒冲出 20 格：只看得见残影
     private static final int DASH_END = DASH_START + DASH_TICKS;
     private static final int RIFT_CLOSE = DASH_END + 20;
-    private static final int CIRCLE_TICKS = 200;                                       // 盘旋两圈
+    private static final int CIRCLE_TICKS = 80;                                        // 4 秒盘旋两圈
     private static final int CIRCLE_END = DASH_END + CIRCLE_TICKS;
-    private static final int DESCEND_TICKS = 70;                                       // 缓缓下降到低空
+    private static final int DESCEND_TICKS = 36;                                       // 俯冲到低空
     private static final int DESCEND_END = CIRCLE_END + DESCEND_TICKS;
     private static final int POINT_START = DESCEND_END;
     private static final int ROAR_TICK = POINT_START + 8;
@@ -286,6 +289,8 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
 
     public static final int AFTERIMAGE_LIFE = 8;
     public final List<Afterimage> afterimages = new ArrayList<>();
+    /** 客户端：渲染器画残影期间为 true，让出场隐藏的本体也能画出残影 */
+    public boolean renderingAfterimages;
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private final ServerBossEvent bossEvent;
@@ -304,7 +309,7 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         return Monster.createMonsterAttributes()
                 .add(Attributes.ATTACK_DAMAGE, CLEAVE_DAMAGE)
                 .add(Attributes.ARMOR, 30.0)
-                .add(Attributes.MAX_HEALTH, 500.0)
+                .add(Attributes.MAX_HEALTH, 5000.0)
                 .add(Attributes.MOVEMENT_SPEED, 0.28)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0)
                 .add(Attributes.FOLLOW_RANGE, 100.0);
@@ -316,6 +321,7 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         this.entityData.define(DATA_MODE, MODE_FIGHT);
         this.entityData.define(DATA_SPEAR_OUT, false);
         this.entityData.define(DATA_TRAIL, false);
+        this.entityData.define(DATA_HIDDEN, false);
     }
 
     @Override
@@ -334,6 +340,33 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
 
     private boolean spearOut() {
         return this.entityData.get(DATA_SPEAR_OUT);
+    }
+
+    /** 由生成逻辑在加入世界之前调用 */
+    public void prepareHidden() {
+        setHidden(true);
+    }
+
+    /**
+     * 出场时隐藏本体，只看得见残影。不能用原版隐身标记：LivingEntity 第一次 tick 状态效果时
+     * 会按有没有隐身药水把它重置成可见，导致裂缝还没撕开就看见了她。
+     */
+    private void setHidden(boolean hidden) {
+        this.entityData.set(DATA_HIDDEN, hidden);
+    }
+
+    public boolean hidden() {
+        return this.entityData.get(DATA_HIDDEN);
+    }
+
+    /** 隐身药水造成的隐身（不算出场时的隐藏） */
+    public boolean potionInvisible() {
+        return super.isInvisible();
+    }
+
+    @Override
+    public boolean isInvisible() {
+        return (hidden() && !renderingAfterimages) || super.isInvisible();
     }
 
     public boolean trail() {
@@ -357,7 +390,7 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         this.introDone = false;
         this.introTick = 0;
         this.setPos(riftPos);
-        this.setInvisible(true);
+        this.setHidden(true);
         this.setMode(MODE_HIDDEN);
         this.bossEvent.setVisible(false);
 
@@ -397,7 +430,7 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
             rift.close();
         }
         if (introTick == DASH_START - 1) {
-            startTrail(DASH_TICKS + 6); // 先通知客户端，冲刺的每一步都按高速移动处理
+            startTrail(POINT_START - DASH_START + 1); // 先通知客户端；直到定格指向玩家之前都只看得见残影
         }
 
         Vec3 dashEnd = riftPos.add(emergeDir.scale(CIRCLE_RADIUS));
@@ -406,7 +439,6 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
             faceDirection(emergeDir, 1.0f);
         } else if (introTick < DASH_END) {
             if (introTick == DASH_START) {
-                this.setInvisible(false);
                 this.setMode(MODE_FLY);
                 this.playSound(ModSounds.DRAGON_SOUL_TELEPORT.get(), 3.0f, 0.8f);
                 this.playSound(ModSounds.DRAGON_SOUL_WINGS.get(), 3.0f, 0.7f);
@@ -445,6 +477,11 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
             }
         } else {
             if (introTick == POINT_START) {
+                // 现出真身：残影停止，本体出现在玩家上方
+                this.setHidden(false);
+                this.entityData.set(DATA_TRAIL, false);
+                trailTicks = 0;
+                level.sendParticles(ParticleTypes.REVERSE_PORTAL, this.getX(), this.getY() + 2, this.getZ(), 80, 1.2, 1.6, 1.2, 0.15);
                 this.setMode(MODE_HOVER);
                 this.triggerAnim(ACTION_CONTROLLER, "intro_point");
             }
@@ -512,7 +549,7 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     private void finishIntro() {
         introDone = true;
         engageSpoken = true; // 出场已经喊过台词
-        this.setInvisible(false);
+        this.setHidden(false);
         this.setMode(MODE_FIGHT);
         this.bossEvent.setVisible(true);
         this.cooldown = 20;
@@ -618,7 +655,8 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     private void tickAfterimages() {
         float now = this.tickCount;
         afterimages.removeIf(a -> now - a.born() > AFTERIMAGE_LIFE);
-        if (trail() && !this.isInvisible()) {
+        boolean moved = this.distanceToSqr(this.xo, this.yo, this.zo) > 0.01;
+        if (trail() && moved && !potionInvisible()) {
             for (int i = 0; i < 3; i++) {
                 double u = i / 3.0;
                 afterimages.add(new Afterimage(Mth.lerp(u, this.xo, this.getX()), Mth.lerp(u, this.yo, this.getY()),
@@ -1627,14 +1665,15 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         halfSpoken = tag.getBoolean("HalfSpoken");
         engageSpoken = true;
         if (introDone) {
-            this.setInvisible(false);
+            this.setHidden(false);
             this.setMode(MODE_FIGHT);
         } else {
             this.bossEvent.setVisible(false);
+            this.setHidden(introTick < POINT_START);
             if (introTick < DASH_START) {
                 // 裂缝实体不存档：从头重新撕开一次
                 introTick = Math.min(introTick, RIFT_START - 1);
-                this.setInvisible(true);
+                this.setHidden(true);
                 this.setMode(MODE_HIDDEN);
             }
         }

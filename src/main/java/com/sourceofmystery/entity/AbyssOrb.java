@@ -41,11 +41,12 @@ public class AbyssOrb extends Entity {
 
     private static final double SPEED = 1.6;
     private static final int MAX_FLIGHT = 120;
-    private static final int AFTERMATH_TICKS = 50;
-    private static final float TERRAIN_POWER = 10.0f;     // 原版 TNT 为 4
-    private static final double BLAST_RADIUS = 36.0;
+    private static final int AFTERMATH_TICKS = 80;
+    private static final float TERRAIN_POWER = 20.0f;     // 原版 TNT 为 4；再大会让服务器卡死
+    private static final double BLAST_RADIUS = 180.0;     // 伤害范围
     private static final float BLAST_DAMAGE = 160.0f;      // 中心伤害，向外线性衰减
-    private static final double EFFECT_RANGE = 220.0;      // 闪光、震屏、轰鸣能传多远
+    private static final double EFFECT_RANGE = 400.0;      // 闪光、震屏、轰鸣、粒子能传多远
+    private static final double VISUAL_SCALE = 5.0;        // 冲击波、烟柱、蘑菇云的尺寸倍率
 
     private enum Phase { CHARGING, FLYING, AFTERMATH }
 
@@ -180,9 +181,9 @@ public class AbyssOrb extends Entity {
             victim.hurtMarked = true;
         }
 
-        burst(level, ParticleTypes.EXPLOSION_EMITTER, c, 40, 9.0, 0);
-        burst(level, ParticleTypes.FLASH, c, 4, 2.0, 0);
-        burst(level, ModParticles.DARK_MOTE.get(), c, 300, 12.0, 0.6);
+        burst(level, ParticleTypes.EXPLOSION_EMITTER, c, 160, 9.0 * VISUAL_SCALE, 0);
+        burst(level, ParticleTypes.FLASH, c, 20, 2.0 * VISUAL_SCALE, 0);
+        burst(level, ModParticles.DARK_MOTE.get(), c, 1200, 12.0 * VISUAL_SCALE, 0.6 * VISUAL_SCALE);
 
         for (ServerPlayer player : level.players()) {
             double d = player.position().distanceTo(c);
@@ -203,25 +204,25 @@ public class AbyssOrb extends Entity {
     private void tickAftermath(ServerLevel level) {
         Vec3 c = this.position();
         double u = phaseTicks / (double) AFTERMATH_TICKS;
-        double ring = 4.0 + 56.0 * Math.sqrt(u);
-        int points = 48;
+        double ring = (4.0 + 56.0 * Math.sqrt(u)) * VISUAL_SCALE;
+        int points = 160;
         for (int i = 0; i < points; i++) {
             double a = i * Math.PI * 2 / points + phaseTicks * 0.03;
             double x = c.x + Math.cos(a) * ring;
             double z = c.z + Math.sin(a) * ring;
-            send(level, ParticleTypes.CLOUD, x, c.y + 0.5, z, 1, 0.3, 0.2, 0.3, 0.05);
+            send(level, ParticleTypes.CLOUD, x, c.y + 0.5, z, 2, 1.5, 0.6, 1.5, 0.05);
         }
-        double stemTop = c.y + 6 + 22 * Math.min(1.0, u * 1.6);
-        for (int i = 0; i < 6; i++) {
+        double stemTop = c.y + (6 + 22 * Math.min(1.0, u * 1.6)) * VISUAL_SCALE;
+        for (int i = 0; i < 20; i++) {
             double y = c.y + this.random.nextDouble() * (stemTop - c.y);
-            send(level, ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, c.x, y, c.z, 1, 1.5, 0.5, 1.5, 0.02);
+            send(level, ParticleTypes.CAMPFIRE_SIGNAL_SMOKE, c.x, y, c.z, 1, 1.5 * VISUAL_SCALE, 0.5, 1.5 * VISUAL_SCALE, 0.02);
         }
-        double cap = 4 + 10 * Math.min(1.0, u * 1.4);
-        for (int i = 0; i < 10; i++) {
+        double cap = (4 + 10 * Math.min(1.0, u * 1.4)) * VISUAL_SCALE;
+        for (int i = 0; i < 40; i++) {
             double a = this.random.nextDouble() * Math.PI * 2;
             double r = this.random.nextDouble() * cap;
             send(level, i % 3 == 0 ? ParticleTypes.LAVA : ParticleTypes.LARGE_SMOKE,
-                    c.x + Math.cos(a) * r, stemTop + this.random.nextDouble() * 4, c.z + Math.sin(a) * r, 1, 0.5, 0.5, 0.5, 0.02);
+                    c.x + Math.cos(a) * r, stemTop + this.random.nextDouble() * 4 * VISUAL_SCALE, c.z + Math.sin(a) * r, 2, 2.0, 2.0, 2.0, 0.02);
         }
         if (phaseTicks >= AFTERMATH_TICKS) {
             this.discard();
@@ -254,7 +255,7 @@ public class AbyssOrb extends Entity {
 
     @Override
     public boolean shouldRenderAtSqrDistance(double distance) {
-        return distance < 256.0 * 256.0;
+        return distance < EFFECT_RANGE * EFFECT_RANGE;
     }
 
     @Override
