@@ -1,0 +1,453 @@
+{
+  "dragon_soul.teleport_charge": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.teleport_charge",
+    "sounds": [
+      {
+        "name": "minecraft:mob/warden/sonic_charge1",
+        "pitch": 1.35,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:mob/warden/sonic_charge2",
+        "pitch": 1.35,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:mob/warden/sonic_charge3",
+        "pitch": 1.35,
+        "volume": 0.9
+      },
+      {
+        "name": "minecraft:mob/warden/sonic_charge4",
+        "pitch": 1.35,
+        "volume": 0.9
+      }
+    ]
+  },
+  "dragon_soul.teleport": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.teleport",
+    "sounds": [
+      {
+        "name": "minecraft:mob/endermen/portal",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/endermen/portal2",
+        "pitch": 0.7,
+        "volume": 1.0
+      }
+    ]
+  },
+  "dragon_soul.cleave": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.cleave",
+    "sounds": [
+      {
+        "name": "minecraft:entity/player/attack/strong1",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/player/attack/strong2",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/player/attack/strong3",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/player/attack/strong4",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/player/attack/strong5",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/player/attack/strong6",
+        "pitch": 0.7,
+        "volume": 1.0
+      }
+    ]
+  },
+  "dragon_soul.thrust": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.thrust",
+    "sounds": [
+      {
+        "name": "minecraft:item/trident/throw1",
+        "pitch": 1.25,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item/trident/throw2",
+        "pitch": 1.25,
+        "volume": 1.0
+      }
+    ]
+  },
+  "dragon_soul.slash": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.slash",
+    "sounds": [
+      {
+        "name": "minecraft:entity/player/attack/sweep1",
+        "pitch": 0.85,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/player/attack/sweep2",
+        "pitch": 0.85,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/player/attack/sweep3",
+        "pitch": 0.85,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/player/attack/sweep4",
+        "pitch": 0.85,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/player/attack/sweep5",
+        "pitch": 0.85,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/player/attack/sweep6",
+        "pitch": 0.85,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/player/attack/sweep7",
+        "pitch": 0.85,
+        "volume": 1.0
+      }
+    ]
+  },
+  "dragon_soul.hit": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.hit",
+    "sounds": [
+      {
+        "name": "minecraft:mob/warden/attack_impact_1",
+        "pitch": 1.2,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:mob/warden/attack_impact_2",
+        "pitch": 1.2,
+        "volume": 0.8
+      }
+    ]
+  },
+  "dragon_soul.kick": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.kick",
+    "sounds": [
+      {
+        "name": "minecraft:entity/player/attack/knockback1",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/player/attack/knockback2",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/player/attack/knockback3",
+        "pitch": 0.7,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:entity/player/attack/knockback4",
+        "pitch": 0.7,
+        "volume": 1.0
+      }
+    ]
+  },
+  "dragon_soul.grab": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.grab",
+    "sounds": [
+      {
+        "name": "minecraft:mob/phantom/swoop1",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/phantom/swoop2",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/phantom/swoop3",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/phantom/swoop4",
+        "pitch": 0.8,
+        "volume": 1.0
+      }
+    ]
+  },
+  "dragon_soul.magic_charge": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.magic_charge",
+    "sounds": [
+      {
+        "name": "minecraft:mob/evocation_illager/prepare_attack1",
+        "pitch": 0.8,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/evocation_illager/prepare_attack2",
+        "pitch": 0.8,
+        "volume": 1.0
+      }
+    ]
+  },
+  "dragon_soul.spear_throw": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.spear_throw",
+    "sounds": [
+      {
+        "name": "minecraft:item/trident/riptide1",
+        "pitch": 0.9,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item/trident/riptide2",
+        "pitch": 0.9,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item/trident/riptide3",
+        "pitch": 0.9,
+        "volume": 1.0
+      }
+    ]
+  },
+  "dragon_soul.spear_return": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.spear_return",
+    "sounds": [
+      {
+        "name": "minecraft:item/trident/return1",
+        "pitch": 0.9,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item/trident/return2",
+        "pitch": 0.9,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item/trident/return3",
+        "pitch": 0.9,
+        "volume": 1.0
+      }
+    ]
+  },
+  "dragon_soul.flourish": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.flourish",
+    "sounds": [
+      {
+        "name": "minecraft:entity/player/attack/sweep1",
+        "pitch": 1.3,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:entity/player/attack/sweep2",
+        "pitch": 1.3,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:entity/player/attack/sweep3",
+        "pitch": 1.3,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:entity/player/attack/sweep4",
+        "pitch": 1.3,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:entity/player/attack/sweep5",
+        "pitch": 1.3,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:entity/player/attack/sweep6",
+        "pitch": 1.3,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:entity/player/attack/sweep7",
+        "pitch": 1.3,
+        "volume": 0.6
+      }
+    ]
+  },
+  "dragon_soul.wings": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.wings",
+    "sounds": [
+      {
+        "name": "minecraft:mob/enderdragon/wings1",
+        "pitch": 1.3,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:mob/enderdragon/wings2",
+        "pitch": 1.3,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:mob/enderdragon/wings3",
+        "pitch": 1.3,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:mob/enderdragon/wings4",
+        "pitch": 1.3,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:mob/enderdragon/wings5",
+        "pitch": 1.3,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:mob/enderdragon/wings6",
+        "pitch": 1.3,
+        "volume": 0.7
+      }
+    ]
+  },
+  "dragon_soul.omen": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.omen",
+    "sounds": [
+      {
+        "name": "minecraft:event/raid/raidhorn_01",
+        "pitch": 0.6,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:event/raid/raidhorn_02",
+        "pitch": 0.6,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:event/raid/raidhorn_03",
+        "pitch": 0.6,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:event/raid/raidhorn_04",
+        "pitch": 0.6,
+        "volume": 1.0
+      }
+    ]
+  },
+  "dragon_soul.rift": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.rift",
+    "sounds": [
+      {
+        "name": "minecraft:block/end_portal/endportal",
+        "pitch": 0.55,
+        "volume": 1.0
+      }
+    ]
+  },
+  "dragon_soul.roar": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.roar",
+    "sounds": [
+      {
+        "name": "minecraft:mob/enderdragon/growl1",
+        "pitch": 0.9,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/enderdragon/growl2",
+        "pitch": 0.9,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/enderdragon/growl3",
+        "pitch": 0.9,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/enderdragon/growl4",
+        "pitch": 0.9,
+        "volume": 1.0
+      }
+    ]
+  },
+  "dragon_soul.hurt": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:mob/enderdragon/hit1",
+        "pitch": 1.4,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:mob/enderdragon/hit2",
+        "pitch": 1.4,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:mob/enderdragon/hit3",
+        "pitch": 1.4,
+        "volume": 0.8
+      },
+      {
+        "name": "minecraft:mob/enderdragon/hit4",
+        "pitch": 1.4,
+        "volume": 0.8
+      }
+    ]
+  },
+  "divine_heavenly_dao.ambient": {
+    "subtitle": "subtitles.sourceofmystery.divine_heavenly_dao.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:music/game/end/boss",
+        "pitch": 0.75,
+        "volume": 1.0,
+        "stream": true
+      }
+    ]
+  },
+  "divine_heavenly_dao.slam": {
+    "subtitle": "subtitles.sourceofmystery.divine_heavenly_dao.slam",
+    "sounds": [
+      {
+        "name": "minecraft:mob/warden/sonic_boom1",
+        "pitch": 0.6,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/warden/sonic_boom2",
+        "pitch": 0.6,
+        "volume": 1.0
+      }
+    ]
+  },
+  "divine_heavenly_dao.charge": {
+    "subtitle": "subtitles.sourceofmystery.divine_heavenly_dao.charge",
+    "sounds": [
+      {
+        "name": "minecraft:block/respawn_anchor/charge1",
+        "pitch": 0.6,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:block/respawn_anchor/charge2",
+        "pitch": 0.6,
+        "volume": 1.0
+      }
+    ]
+  }
+}

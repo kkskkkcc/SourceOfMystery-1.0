@@ -57,7 +57,7 @@ public class MysteryAltarBlock extends Block {
         ServerPlayer serverPlayer = (ServerPlayer) player;
         ServerLevel serverLevel = (ServerLevel) level;
 
-        // 手持龙魂右键：献祭龙魂，召唤神威天道
+        // 手持龙魂右键：献祭龙魂和五行之源，召唤神威天道
         ItemStack held = player.getItemInHand(hand);
         if (held.is(ModItems.DRAGON_SOUL.get())) {
             summonBoss(serverLevel, pos, player, held);
@@ -124,20 +124,61 @@ public class MysteryAltarBlock extends Block {
     }
 
     /**
-     * 消耗一个龙魂开始召唤；同一维度已有召唤在进行时不消耗
+     * 召唤神威天道需要的五行之源（加上手里的龙魂），各 1 个，从背包里扣
+     */
+    private static List<Item> summonOfferings() {
+        return List.of(ModItems.WOOD_SOURCE.get(), ModItems.GOLD_SOURCE.get(), ModItems.WATER_SOURCE.get(),
+                ModItems.FIRE_SOURCE.get(), ModItems.EARTH_SOURCE.get());
+    }
+
+    /**
+     * 献祭龙魂 + 五行之源开始召唤；材料不全或同一维度已有召唤在进行时什么都不消耗
      */
     private static void summonBoss(ServerLevel level, BlockPos pos, Player player, ItemStack soul) {
+        boolean creative = player.getAbilities().instabuild;
+        if (!creative) {
+            MutableComponent missing = Component.empty();
+            boolean anyMissing = false;
+            for (Item offering : summonOfferings()) {
+                if (player.getInventory().countItem(offering) <= 0) {
+                    if (anyMissing) {
+                        missing.append(Component.literal(", ").withStyle(ChatFormatting.GRAY));
+                    }
+                    missing.append(offering.getDescription().copy().withStyle(ChatFormatting.YELLOW));
+                    anyMissing = true;
+                }
+            }
+            if (anyMissing) {
+                player.sendSystemMessage(Component.translatable("message.sourceofmystery.altar.summon_missing", missing)
+                        .withStyle(ChatFormatting.RED));
+                return;
+            }
+        }
         if (!BossSpawnHandler.startSummon(level, pos)) {
             player.sendSystemMessage(Component.translatable("message.sourceofmystery.altar.summon_busy")
                     .withStyle(ChatFormatting.RED));
             return;
         }
-        if (!player.getAbilities().instabuild) {
+        if (!creative) {
             soul.shrink(1);
+            for (Item offering : summonOfferings()) {
+                consumeOne(player, offering);
+            }
         }
         level.playSound(null, pos, SoundEvents.WITHER_SPAWN, SoundSource.BLOCKS, 1.0F, 0.8F);
         level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, pos.getX() + 0.5, pos.getY() + 1.2, pos.getZ() + 0.5,
                 40, 0.4, 0.4, 0.4, 0.05);
+    }
+
+    private static void consumeOne(Player player, Item item) {
+        var inventory = player.getInventory();
+        for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
+            ItemStack stack = inventory.getItem(slot);
+            if (stack.is(item)) {
+                stack.shrink(1);
+                return;
+            }
+        }
     }
 
     private static MutableComponent value(Object value, ChatFormatting color) {

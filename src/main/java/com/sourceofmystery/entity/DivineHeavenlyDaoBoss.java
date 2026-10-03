@@ -3,9 +3,11 @@ package com.sourceofmystery.entity;
 import com.sourceofmystery.SourceOfMystery;
 import com.sourceofmystery.config.MysteryConfig;
 import com.sourceofmystery.item.ModItems;
+import com.sourceofmystery.sound.ModSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -16,6 +18,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
@@ -27,17 +30,11 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.ai.control.FlyingMoveControl;
-import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
-import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
-import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
-import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.EnderMan;
@@ -48,6 +45,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -60,9 +58,7 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
@@ -71,44 +67,59 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop(ANIM_PREFIX + "idle");
     private static final RawAnimation ATTACK = RawAnimation.begin().thenPlay(ANIM_PREFIX + "attack");
     private static final RawAnimation THUNDER = RawAnimation.begin().thenPlay(ANIM_PREFIX + "thunder_strike");
+    private static final RawAnimation SLAM = RawAnimation.begin().thenPlay(ANIM_PREFIX + "slam");
     private static final String BASE_CONTROLLER = "base";
     private static final String ACTION_CONTROLLER = "action";
     private static final String TRIGGER_ATTACK = "attack";
     private static final String TRIGGER_THUNDER = "thunder_strike";
+    private static final String TRIGGER_SLAM = "slam";
 
     private static final String TAG_SECOND_PHASE = "SecondPhase";
     private static final String TAG_SUMMONED_WITHERS = "SummonedWithers";
 
-    /** 二阶段召唤的凋灵带有此标签：不掉落物品和经验（它们原先是无敌的，不会掉任何东西） */
+    /** 二阶段召唤的凋灵带有此标签：不掉落物品和经验 */
     public static final String MINION_TAG = SourceOfMystery.MOD_ID + ".boss_minion";
+
+    /**
+     * 体型倍数（相对模型原始大小约 4 格高）：约 50 格高，接近凋零风暴完全体那样遮天蔽日。
+     * 碰撞箱在 ModEntities 里按同样倍数放大，渲染器用 GeckoLib 的 withScale 放大模型。
+     */
+    public static final float SCALE = 12.0f;
 
     private static final float SECOND_PHASE_HEAL_PER_SECOND = 10.0f;
     private static final float KILL_HEAL = 1000.0f;
-    private static final int LIGHTNING_INTERVAL = 200; // 10 秒
-    private static final double LIGHTNING_RANGE = 10.0;
     private static final double ENDERMAN_RANGE = 20.0;
 
-    // ==================== 技能（均有前摇，可以躲避） ====================
-    private static final int SKILL_COOLDOWN = 100; // 两次技能之间 5 秒
-    // 天罚雷印：标记目标脚下，前摇结束后在标记处落雷
-    private static final int JUDGEMENT_WINDUP = 30;
-    private static final double JUDGEMENT_RADIUS = 3.0;
-    private static final float JUDGEMENT_DAMAGE = 30.0f;
-    // 雷霆冲撞：蓄力后朝目标方向直线冲刺
-    private static final double CHARGE_MIN_RANGE = 8.0;
-    private static final double CHARGE_MAX_RANGE = 40.0;
-    private static final int CHARGE_WINDUP = 20;
-    private static final int CHARGE_DURATION = 15;
-    private static final double CHARGE_SPEED = 1.4;
-    private static final float CHARGE_DAMAGE = 40.0f;
-    // 雷环震荡：目标贴身时蓄力，向四周释放冲击波并击退
-    private static final double NOVA_TRIGGER_RANGE = 5.0;
-    private static final int NOVA_WINDUP = 20;
-    private static final double NOVA_RADIUS = 7.0;
-    private static final float NOVA_DAMAGE = 20.0f;
-    private static final double NOVA_KNOCKBACK = 2.5;
+    // ==================== 移动 ====================
+    // 体型太大，寻路必然失败，所以不用导航：直接穿过地形，悬停在目标面前，尾巴扫着地面
+    private static final double HOVER_GAP = 6.0;        // 身体边缘和目标之间保持的水平距离
+    private static final double HOVER_HEIGHT = 4.0;     // 脚底（模型原点）比目标高多少
+    private static final double MAX_SPEED = 0.45;
 
-    private enum Skill { NONE, JUDGEMENT, CHARGE, NOVA }
+    // ==================== 技能（均有前摇，可以躲避） ====================
+    private static final int SKILL_COOLDOWN = 60;
+    private static final int SKILL_COOLDOWN_PHASE_TWO = 40;
+    // 天威一击：直接攻击目标
+    private static final double STRIKE_REACH = 10.0;     // 身体边缘之外的攻击距离
+    private static final int STRIKE_WINDUP = 16;
+    private static final int STRIKE_HIT_DELAY = 4;       // attack 动画第 0.2 秒挥到最低点
+    private static final float STRIKE_DAMAGE = 50.0f;
+    // 撼地锤：双手高举锤击地面，站在地上的实体受到伤害并被抛上 20 格高空（跳起来可以躲开）
+    private static final int SLAM_WINDUP = 30;           // 对应 slam 动画 1.5 秒处砸到地面
+    private static final int SLAM_RECOVER = 20;
+    private static final double SLAM_REACH = 10.0;       // 身体边缘之外的波及范围
+    private static final float SLAM_DAMAGE = 50.0f;
+    private static final double SLAM_LAUNCH_SPEED = 2.0; // 竖直初速度 2.0 约等于升到 20 格高
+    // 雷环：以自身为中心，18 道闪电在 2.5 秒内随机落下，由内向外扩散到 20 格开外
+    private static final int RING_WINDUP = 20;
+    private static final int RING_DURATION = 50;
+    private static final int RING_BOLTS = 18;
+    private static final double RING_START_RADIUS = 4.0;  // 从身体边缘算起
+    private static final double RING_END_RADIUS = 22.0;
+    private static final double RING_HIT_RADIUS = 2.5;
+    private static final float RING_DAMAGE = 100.0f;
+
+    private enum Skill { NONE, STRIKE, SLAM, THUNDER_RING }
 
     private int tickCounter = 0;
     private boolean secondPhaseTriggered = false;
@@ -118,9 +129,9 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
     private Skill activeSkill = Skill.NONE;
     private int skillTicks = 0;
     private int skillCooldown = SKILL_COOLDOWN;
-    private Vec3 skillTargetPos = Vec3.ZERO;
-    private Vec3 chargeDirection = Vec3.ZERO;
-    private final Set<Integer> chargeHits = new HashSet<>();
+    private final int[] ringDelays = new int[RING_BOLTS];
+    private final double[] ringAngles = new double[RING_BOLTS];
+    private final double[] ringRadii = new double[RING_BOLTS];
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
@@ -134,24 +145,23 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
         this.setCustomName(name);
         this.setCustomNameVisible(true);
 
-        // 飞行移动控制：像凋零一样浮空飞行，而不是在地上跑
-        this.moveControl = new FlyingMoveControl(this, 10, true);
-        this.navigation = new FlyingPathNavigation(this, level);
         this.setNoGravity(true);
+        this.noPhysics = true;
+        this.noCulling = true;
 
         this.bossEvent = new ServerBossEvent(name, BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.PROGRESS);
+        this.bossEvent.setDarkenScreen(true);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
-        // FlyingMoveControl 需要 FLYING_SPEED 属性（否则报 Can't find attribute flying_speed）
         return Monster.createMonsterAttributes()
-                .add(Attributes.ATTACK_DAMAGE, 50.0)
+                .add(Attributes.ATTACK_DAMAGE, STRIKE_DAMAGE)
                 .add(Attributes.ARMOR, 50.0)
                 .add(Attributes.ARMOR_TOUGHNESS, 20.0)
                 .add(Attributes.MAX_HEALTH, 5000.0)
                 .add(Attributes.MOVEMENT_SPEED, 0.3)
-                .add(Attributes.FLYING_SPEED, 0.4)
-                .add(Attributes.FOLLOW_RANGE, 100.0);
+                .add(Attributes.KNOCKBACK_RESISTANCE, 1.0)
+                .add(Attributes.FOLLOW_RANGE, 128.0);
     }
 
     /**
@@ -173,17 +183,35 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
     protected void registerGoals() {
         // 攻击目标：玩家最高优先级，其次锁定所有其他 LivingEntity
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
-        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 10, true, false,
-                e -> !(e instanceof Player)));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, false));
+        this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, LivingEntity.class, 10, false, false,
+                e -> !(e instanceof Player) && !e.getTags().contains(MINION_TAG)));
+    }
 
-        this.goalSelector.addGoal(1, new MeleeAttackGoal(this, 1.0, false));
-        this.goalSelector.addGoal(2, new LookAtPlayerGoal(this, Player.class, 30.0F));
-        this.goalSelector.addGoal(3, new RandomLookAroundGoal(this));
+    /**
+     * 不走原版移动（会和地形碰撞），位置由 tickHover 直接控制
+     */
+    @Override
+    public void travel(Vec3 travelVector) {
+    }
+
+    @Override
+    public boolean isPushable() {
+        return false;
+    }
+
+    @Override
+    public void knockback(double strength, double x, double z) {
+    }
+
+    @Override
+    public boolean causeFallDamage(float distance, float multiplier, DamageSource source) {
+        return false;
     }
 
     @Override
     public void tick() {
+        this.noPhysics = true;
         super.tick();
         if (this.level().isClientSide) {
             return;
@@ -192,17 +220,13 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
 
         this.bossEvent.setProgress(this.getHealth() / this.getMaxHealth());
 
-        // 每 10 秒召唤一次闪电攻击周围 10 格内的所有实体（除自己外）
-        if (tickCounter % LIGHTNING_INTERVAL == 0) {
-            lightningAttack();
-        }
-
         // 每秒检测一次：20 格范围内若有末影人，则让它们愤怒攻击玩家；并清理已死亡的凋灵
         if (tickCounter % 20 == 0) {
             angerEndermen();
             refreshMinions();
         }
 
+        tickHover();
         tickSkills((ServerLevel) this.level());
 
         if (!secondPhaseTriggered && this.getHealth() < MysteryConfig.BOSS_SECOND_PHASE_HEALTH.get()) {
@@ -216,14 +240,48 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
     }
 
     /**
+     * 悬停在目标面前：身体边缘与目标保持 HOVER_GAP，高度跟随目标；出招期间原地不动
+     */
+    private void tickHover() {
+        LivingEntity target = this.getTarget();
+        if (target == null || !target.isAlive()) {
+            this.setDeltaMovement(Vec3.ZERO);
+            return;
+        }
+        Vec3 toTarget = new Vec3(target.getX() - this.getX(), 0, target.getZ() - this.getZ());
+        double horizontal = toTarget.length();
+        if (horizontal > 1.0E-3) {
+            float yaw = (float) (Mth.atan2(toTarget.z, toTarget.x) * Mth.RAD_TO_DEG) - 90.0f;
+            this.setYRot(Mth.rotLerp(0.15f, this.getYRot(), yaw));
+            this.yBodyRot = this.getYRot();
+            this.yHeadRot = this.getYRot();
+        }
+        if (activeSkill != Skill.NONE) {
+            this.setDeltaMovement(Vec3.ZERO);
+            return;
+        }
+
+        double keep = this.getBbWidth() / 2 + HOVER_GAP;
+        Vec3 desired = horizontal > 1.0E-3
+                ? target.position().subtract(toTarget.normalize().scale(keep))
+                : this.position();
+        desired = new Vec3(desired.x, target.getY() + HOVER_HEIGHT, desired.z);
+        Vec3 delta = desired.subtract(this.position());
+        Vec3 velocity = delta.scale(0.06);
+        if (velocity.length() > MAX_SPEED) {
+            velocity = velocity.normalize().scale(MAX_SPEED);
+        }
+        this.setDeltaMovement(velocity);
+        this.setPos(this.getX() + velocity.x, this.getY() + velocity.y, this.getZ() + velocity.z);
+    }
+
+    /**
      * 末影人协同：若 Boss 20 格范围内存在末影人，则让它们全部愤怒攻击玩家
      */
     private void angerEndermen() {
         ServerLevel serverLevel = (ServerLevel) this.level();
-        double rangeSq = ENDERMAN_RANGE * ENDERMAN_RANGE;
         List<EnderMan> endermen = serverLevel.getEntitiesOfClass(EnderMan.class,
-                new AABB(this.blockPosition()).inflate(ENDERMAN_RANGE),
-                e -> e.isAlive() && e.distanceToSqr(this) <= rangeSq);
+                this.getBoundingBox().inflate(ENDERMAN_RANGE), LivingEntity::isAlive);
         if (endermen.isEmpty()) {
             return;
         }
@@ -231,7 +289,7 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
         // 优先 Boss 当前锁定的玩家，否则找最近的玩家
         Player targetPlayer = this.getTarget() instanceof Player player
                 ? player
-                : serverLevel.getNearestPlayer(this.getX(), this.getY(), this.getZ(), ENDERMAN_RANGE * 2, true);
+                : serverLevel.getNearestPlayer(this.getX(), this.getY(), this.getZ(), this.getBbWidth() + ENDERMAN_RANGE * 2, true);
         if (targetPlayer == null || !targetPlayer.isAlive()) {
             return;
         }
@@ -241,31 +299,16 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
         }
     }
 
-    /**
-     * 闪电攻击：对周围 10 格范围内的所有实体（除自己外）各落一道原版闪电
-     */
-    private void lightningAttack() {
-        ServerLevel serverLevel = (ServerLevel) this.level();
-
-        // 触发闪电施法动画（GeckoLib 会同步到客户端）
-        this.triggerAnim(ACTION_CONTROLLER, TRIGGER_THUNDER);
-
-        double rangeSq = LIGHTNING_RANGE * LIGHTNING_RANGE;
-        List<LivingEntity> targets = serverLevel.getEntitiesOfClass(LivingEntity.class,
-                new AABB(this.blockPosition()).inflate(LIGHTNING_RANGE),
-                e -> e != this && e.isAlive() && e.distanceToSqr(this) <= rangeSq
-                        && !(e instanceof Player p && (p.isCreative() || p.isSpectator())));
-
-        for (LivingEntity target : targets) {
-            LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(serverLevel);
-            if (bolt != null) {
-                bolt.moveTo(target.getX(), target.getY(), target.getZ());
-                serverLevel.addFreshEntity(bolt);
-            }
-        }
-    }
-
     // ==================== 技能 ====================
+
+    /**
+     * 目标与身体边缘的水平距离
+     */
+    private double gapTo(Entity entity) {
+        double dx = entity.getX() - this.getX();
+        double dz = entity.getZ() - this.getZ();
+        return Math.sqrt(dx * dx + dz * dz) - this.getBbWidth() / 2;
+    }
 
     private void tickSkills(ServerLevel level) {
         if (activeSkill == Skill.NONE) {
@@ -277,131 +320,198 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
                 skillCooldown = 20;
                 return;
             }
-            double distance = this.distanceTo(target);
-            if (distance <= NOVA_TRIGGER_RANGE) {
-                startSkill(Skill.NOVA, TRIGGER_THUNDER);
-            } else if (distance >= CHARGE_MIN_RANGE && distance <= CHARGE_MAX_RANGE && this.random.nextBoolean()) {
-                startSkill(Skill.CHARGE, null);
+            double gap = gapTo(target);
+            double roll = this.random.nextDouble();
+            if (gap <= STRIKE_REACH) {
+                startSkill(roll < 0.45 ? Skill.STRIKE : roll < 0.75 ? Skill.SLAM : Skill.THUNDER_RING);
             } else {
-                skillTargetPos = target.position();
-                startSkill(Skill.JUDGEMENT, TRIGGER_THUNDER);
+                startSkill(roll < 0.6 ? Skill.THUNDER_RING : Skill.SLAM);
             }
             return;
         }
 
         skillTicks++;
         switch (activeSkill) {
-            case JUDGEMENT -> tickJudgement(level);
-            case CHARGE -> tickCharge(level);
-            case NOVA -> tickNova(level);
+            case STRIKE -> tickStrike(level);
+            case SLAM -> tickSlam(level);
+            case THUNDER_RING -> tickThunderRing(level);
             default -> endSkill();
         }
     }
 
-    private void startSkill(Skill skill, @Nullable String animation) {
+    private void startSkill(Skill skill) {
         activeSkill = skill;
         skillTicks = 0;
-        if (animation != null) {
-            this.triggerAnim(ACTION_CONTROLLER, animation);
+        switch (skill) {
+            case SLAM -> this.triggerAnim(ACTION_CONTROLLER, TRIGGER_SLAM);
+            case THUNDER_RING -> {
+                this.triggerAnim(ACTION_CONTROLLER, TRIGGER_THUNDER);
+                planThunderRing();
+            }
+            default -> {
+            }
         }
-        this.playSound(SoundEvents.BEACON_POWER_SELECT, 2.0f, 0.6f);
+        this.playSound(ModSounds.DIVINE_HEAVENLY_DAO_CHARGE.get(), 4.0f, 1.0f);
     }
 
     private void endSkill() {
         activeSkill = Skill.NONE;
         skillTicks = 0;
-        skillCooldown = SKILL_COOLDOWN;
-        chargeHits.clear();
+        skillCooldown = secondPhaseTriggered ? SKILL_COOLDOWN_PHASE_TWO : SKILL_COOLDOWN;
     }
 
     /**
-     * 天罚雷印：在目标原先的位置画出预警圈，前摇结束后落雷，圈内实体受到伤害
+     * 天威一击：蓄力后挥击当前目标，50 点伤害
      */
-    private void tickJudgement(ServerLevel level) {
-        if (skillTicks < JUDGEMENT_WINDUP) {
-            if (skillTicks % 2 == 0) {
-                spawnRing(level, skillTargetPos.add(0, 0.2, 0), JUDGEMENT_RADIUS);
-            }
+    private void tickStrike(ServerLevel level) {
+        LivingEntity target = this.getTarget();
+        if (target == null || !target.isAlive()) {
+            endSkill();
             return;
         }
-
-        LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(level);
-        if (bolt != null) {
-            bolt.moveTo(skillTargetPos.x, skillTargetPos.y, skillTargetPos.z);
-            bolt.setVisualOnly(true);
-            level.addFreshEntity(bolt);
-        }
-        for (LivingEntity victim : findVictims(level, new AABB(skillTargetPos, skillTargetPos).inflate(JUDGEMENT_RADIUS),
-                skillTargetPos, JUDGEMENT_RADIUS)) {
-            victim.hurt(this.damageSources().mobAttack(this), JUDGEMENT_DAMAGE);
-        }
-        endSkill();
-    }
-
-    /**
-     * 雷霆冲撞：先原地蓄力（电火花环绕），再朝目标方向直线冲刺，撞到的实体受到伤害并被击退
-     */
-    private void tickCharge(ServerLevel level) {
-        if (skillTicks < CHARGE_WINDUP) {
-            level.sendParticles(ParticleTypes.ELECTRIC_SPARK, this.getX(), this.getY() + 2, this.getZ(),
-                    8, 1.0, 1.5, 1.0, 0.1);
+        if (skillTicks < STRIKE_WINDUP) {
+            level.sendParticles(ParticleTypes.ELECTRIC_SPARK, target.getX(), target.getY() + 1, target.getZ(),
+                    4, 0.6, 1.0, 0.6, 0.05);
             return;
         }
-
-        if (skillTicks == CHARGE_WINDUP) {
-            LivingEntity target = this.getTarget();
-            if (target == null || !target.isAlive()) {
-                endSkill();
-                return;
-            }
-            Vec3 toTarget = target.position().subtract(this.position());
-            if (toTarget.lengthSqr() < 1.0E-4) {
-                endSkill();
-                return;
-            }
-            chargeDirection = toTarget.normalize();
-            this.getNavigation().stop();
+        if (skillTicks == STRIKE_WINDUP) {
             this.triggerAnim(ACTION_CONTROLLER, TRIGGER_ATTACK);
-            this.playSound(SoundEvents.LIGHTNING_BOLT_THUNDER, 1.5f, 1.4f);
+            return;
         }
-
-        this.move(MoverType.SELF, chargeDirection.scale(CHARGE_SPEED));
-        level.sendParticles(ParticleTypes.ELECTRIC_SPARK, this.getX(), this.getY() + 2, this.getZ(),
-                4, 0.5, 1.0, 0.5, 0.05);
-
-        for (LivingEntity victim : findVictims(level, this.getBoundingBox().inflate(1.0), null, 0)) {
-            if (chargeHits.add(victim.getId())) {
-                victim.hurt(this.damageSources().mobAttack(this), CHARGE_DAMAGE);
-                victim.knockback(1.5, this.getX() - victim.getX(), this.getZ() - victim.getZ());
+        if (skillTicks == STRIKE_WINDUP + STRIKE_HIT_DELAY) {
+            if (gapTo(target) <= STRIKE_REACH + 2.0 && isValidVictim(target)) {
+                boolean hurt = target.hurt(this.damageSources().mobAttack(this), STRIKE_DAMAGE);
+                if (hurt) {
+                    Vec3 push = horizontalDirection(this.position(), target.position()).scale(1.2);
+                    target.setDeltaMovement(push.x, 0.5, push.z);
+                    target.hurtMarked = true;
+                    if (!target.isAlive()) {
+                        this.heal(KILL_HEAL);
+                    }
+                }
             }
+            level.sendParticles(ParticleTypes.EXPLOSION, target.getX(), target.getY() + 1, target.getZ(), 2, 0.5, 0.5, 0.5, 0);
+            this.playSound(SoundEvents.GENERIC_EXPLODE, 3.0f, 0.6f);
         }
-
-        if (skillTicks >= CHARGE_WINDUP + CHARGE_DURATION || this.horizontalCollision) {
+        if (skillTicks >= STRIKE_WINDUP + 12) {
             endSkill();
         }
     }
 
     /**
-     * 雷环震荡：蓄力时地面出现收缩的预警圈，结束后对周围释放冲击波，造成伤害并强力击退
+     * 撼地锤：前摇期间地面出现收缩的预警圈；砸下时站在地上的实体受到 50 点伤害并被抛上 20 格高空
      */
-    private void tickNova(ServerLevel level) {
-        if (skillTicks < NOVA_WINDUP) {
-            if (skillTicks % 2 == 0) {
-                double radius = NOVA_RADIUS * (1.0 - (double) skillTicks / NOVA_WINDUP) + 1.0;
-                spawnRing(level, this.position().add(0, 0.2, 0), radius);
+    private void tickSlam(ServerLevel level) {
+        double radius = this.getBbWidth() / 2 + SLAM_REACH;
+        double groundY = groundYBelow(level, this.getX(), this.getZ(), this.getY());
+        if (skillTicks < SLAM_WINDUP) {
+            if (skillTicks % 3 == 0) {
+                spawnRing(level, new Vec3(this.getX(), groundY + 0.2, this.getZ()), radius);
             }
             return;
         }
-
-        level.sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY() + 1, this.getZ(), 6, 2.0, 1.0, 2.0, 0);
-        this.playSound(SoundEvents.GENERIC_EXPLODE, 2.0f, 0.8f);
-        for (LivingEntity victim : findVictims(level, this.getBoundingBox().inflate(NOVA_RADIUS), this.position(), NOVA_RADIUS)) {
-            victim.hurt(this.damageSources().mobAttack(this), NOVA_DAMAGE);
-            victim.knockback(NOVA_KNOCKBACK, this.getX() - victim.getX(), this.getZ() - victim.getZ());
-            victim.setDeltaMovement(victim.getDeltaMovement().add(0, 0.6, 0));
-            victim.hurtMarked = true;
+        if (skillTicks == SLAM_WINDUP) {
+            this.playSound(ModSounds.DIVINE_HEAVENLY_DAO_SLAM.get(), 6.0f, 1.0f);
+            this.playSound(SoundEvents.GENERIC_EXPLODE, 6.0f, 0.5f);
+            for (int i = 0; i < 24; i++) {
+                double angle = i * Math.PI * 2 / 24;
+                level.sendParticles(ParticleTypes.EXPLOSION,
+                        this.getX() + Math.cos(angle) * radius * 0.6, groundY + 0.5, this.getZ() + Math.sin(angle) * radius * 0.6,
+                        1, 1.0, 0.2, 1.0, 0);
+            }
+            double radiusSq = radius * radius;
+            for (LivingEntity victim : findVictims(level, new AABB(this.getX() - radius, groundY - 3, this.getZ() - radius,
+                    this.getX() + radius, groundY + 3, this.getZ() + radius), null, 0)) {
+                double dx = victim.getX() - this.getX();
+                double dz = victim.getZ() - this.getZ();
+                if (!victim.onGround() || dx * dx + dz * dz > radiusSq) {
+                    continue; // 只打站在地上的：起跳可以躲开
+                }
+                victim.hurt(this.damageSources().mobAttack(this), SLAM_DAMAGE);
+                Vec3 current = victim.getDeltaMovement();
+                victim.setDeltaMovement(current.x * 0.2, SLAM_LAUNCH_SPEED, current.z * 0.2);
+                victim.hurtMarked = true;
+            }
         }
-        endSkill();
+        if (skillTicks >= SLAM_WINDUP + SLAM_RECOVER) {
+            endSkill();
+        }
+    }
+
+    /**
+     * 为雷环规划 18 道闪电：每道占 20 度扇区，角度和出现时间随机，越晚出现的离得越远
+     */
+    private void planThunderRing() {
+        for (int i = 0; i < RING_BOLTS; i++) {
+            ringDelays[i] = this.random.nextInt(RING_DURATION);
+            double sector = Math.PI * 2 / RING_BOLTS;
+            ringAngles[i] = i * sector + (this.random.nextDouble() - 0.5) * sector * 0.8;
+            double progress = (double) ringDelays[i] / RING_DURATION;
+            ringRadii[i] = RING_START_RADIUS + (RING_END_RADIUS - RING_START_RADIUS) * progress
+                    + (this.random.nextDouble() - 0.5) * 2.0;
+        }
+    }
+
+    private void tickThunderRing(ServerLevel level) {
+        if (skillTicks < RING_WINDUP) {
+            level.sendParticles(ParticleTypes.ELECTRIC_SPARK, this.getX(), this.getY() + this.getBbHeight() * 0.7, this.getZ(),
+                    10, this.getBbWidth() * 0.3, 3.0, this.getBbWidth() * 0.3, 0.2);
+            return;
+        }
+        int t = skillTicks - RING_WINDUP;
+        for (int i = 0; i < RING_BOLTS; i++) {
+            if (ringDelays[i] == t) {
+                double distance = this.getBbWidth() / 2 + ringRadii[i];
+                double x = this.getX() + Math.cos(ringAngles[i]) * distance;
+                double z = this.getZ() + Math.sin(ringAngles[i]) * distance;
+                strikeBolt(level, x, groundYBelow(level, x, z, this.getY()), z);
+            }
+        }
+        if (t >= RING_DURATION + 10) {
+            endSkill();
+        }
+    }
+
+    /**
+     * 一道雷环闪电：画面为原版闪电（不点火、不伤害），伤害由这里结算，Boss 自己不受影响
+     */
+    private void strikeBolt(ServerLevel level, double x, double y, double z) {
+        LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(level);
+        if (bolt != null) {
+            bolt.moveTo(x, y, z);
+            bolt.setVisualOnly(true);
+            level.addFreshEntity(bolt);
+        }
+        Vec3 impact = new Vec3(x, y, z);
+        DamageSource source = new DamageSource(level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE)
+                .getHolderOrThrow(DamageTypes.LIGHTNING_BOLT), this);
+        AABB area = new AABB(x - RING_HIT_RADIUS, y - 2, z - RING_HIT_RADIUS, x + RING_HIT_RADIUS, y + 5, z + RING_HIT_RADIUS);
+        for (LivingEntity victim : findVictims(level, area, null, 0)) {
+            double dx = victim.getX() - impact.x;
+            double dz = victim.getZ() - impact.z;
+            if (dx * dx + dz * dz <= RING_HIT_RADIUS * RING_HIT_RADIUS) {
+                victim.invulnerableTime = 0; // 多道闪电先后落在同一个目标身上时各自结算
+                victim.hurt(source, RING_DAMAGE);
+            }
+        }
+    }
+
+    /**
+     * 地面高度；脚下是虚空（末地边缘）时用参考高度兜底
+     */
+    private static double groundYBelow(ServerLevel level, double x, double z, double fallbackY) {
+        int y = level.getHeight(Heightmap.Types.MOTION_BLOCKING, Mth.floor(x), Mth.floor(z));
+        return y <= level.getMinBuildHeight() ? fallbackY : y;
+    }
+
+    private static Vec3 horizontalDirection(Vec3 from, Vec3 to) {
+        Vec3 d = new Vec3(to.x - from.x, 0, to.z - from.z);
+        return d.lengthSqr() < 1.0E-6 ? new Vec3(1, 0, 0) : d.normalize();
+    }
+
+    private boolean isValidVictim(LivingEntity e) {
+        return e != this && e.isAlive() && !e.getTags().contains(MINION_TAG)
+                && !(e instanceof Player p && (p.isCreative() || p.isSpectator()));
     }
 
     /**
@@ -409,14 +519,12 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
      */
     private List<LivingEntity> findVictims(ServerLevel level, AABB area, @Nullable Vec3 center, double radius) {
         double radiusSq = radius * radius;
-        return level.getEntitiesOfClass(LivingEntity.class, area, e -> e != this && e.isAlive()
-                && !e.getTags().contains(MINION_TAG)
-                && !(e instanceof Player p && (p.isCreative() || p.isSpectator()))
+        return level.getEntitiesOfClass(LivingEntity.class, area, e -> isValidVictim(e)
                 && (center == null || e.position().distanceToSqr(center) <= radiusSq));
     }
 
     private static void spawnRing(ServerLevel level, Vec3 center, double radius) {
-        int points = Math.max(12, (int) (radius * 8));
+        int points = Math.max(12, (int) (radius * 4));
         for (int i = 0; i < points; i++) {
             double angle = i * 2 * Math.PI / points;
             level.sendParticles(ParticleTypes.ELECTRIC_SPARK,
@@ -448,21 +556,19 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
         secondPhaseTriggered = true;
         ServerLevel serverLevel = (ServerLevel) this.level();
 
-        // 召唤 3 只凋灵：可以被击杀，存活期间 Boss 受到的伤害降低
+        // 召唤 3 只末影龙大小的巨型凋灵：可以被击杀，存活期间 Boss 受到的伤害降低
         for (int i = 0; i < 3; i++) {
-            double offsetX = (random.nextDouble() - 0.5) * 10;
-            double offsetZ = (random.nextDouble() - 0.5) * 10;
-            WitherBoss wither = EntityType.WITHER.spawn(serverLevel,
-                    BlockPos.containing(this.getX() + offsetX, this.getY(), this.getZ() + offsetZ),
+            double angle = i * Math.PI * 2 / 3 + random.nextDouble();
+            double distance = this.getBbWidth() / 2 + 12;
+            WitherBoss wither = ModEntities.GIANT_WITHER.get().spawn(serverLevel,
+                    BlockPos.containing(this.getX() + Math.cos(angle) * distance, this.getY() + 8,
+                            this.getZ() + Math.sin(angle) * distance),
                     MobSpawnType.MOB_SUMMONED);
             if (wither != null) {
                 wither.addTag(MINION_TAG);
                 summonedWithers.add(wither.getUUID());
             }
         }
-
-        // 飞 30 格高
-        this.setPos(this.getX(), this.getY() + 30, this.getZ());
 
         this.bossEvent.setColor(BossEvent.BossBarColor.PURPLE);
 
@@ -566,24 +672,11 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
             return true;
         }
         if (damageSource.is(DamageTypes.WITHER) || damageSource.is(DamageTypes.WITHER_SKULL)
-                || damageSource.getEntity() instanceof WitherBoss) {
+                || damageSource.getEntity() instanceof WitherBoss || damageSource.is(DamageTypes.LIGHTNING_BOLT)
+                || damageSource.is(DamageTypes.IN_WALL)) {
             return true;
         }
         return super.isInvulnerableTo(damageSource);
-    }
-
-    /**
-     * 击杀回复 - 仅当 Boss 本次攻击真正击杀目标时回复 1000 HP，并播放攻击动画
-     */
-    @Override
-    public boolean doHurtTarget(Entity target) {
-        this.triggerAnim(ACTION_CONTROLLER, TRIGGER_ATTACK);
-
-        boolean result = super.doHurtTarget(target);
-        if (result && !this.level().isClientSide && target instanceof LivingEntity living && !living.isAlive()) {
-            this.heal(KILL_HEAL);
-        }
-        return result;
     }
 
     @Override
@@ -630,14 +723,15 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
 
     /**
      * GeckoLib 动画控制器注册
-     * base 控制器循环播放 idle 漂浮动画；action 控制器用于触发 attack / thunder_strike 一次性动画。
+     * base 控制器循环播放 idle 漂浮动画；action 控制器用于触发 attack / thunder_strike / slam 一次性动画。
      */
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
         controllers.add(new AnimationController<>(this, BASE_CONTROLLER, 5, state -> state.setAndContinue(IDLE)));
         controllers.add(new AnimationController<>(this, ACTION_CONTROLLER, 0, state -> PlayState.STOP)
                 .triggerableAnim(TRIGGER_ATTACK, ATTACK)
-                .triggerableAnim(TRIGGER_THUNDER, THUNDER));
+                .triggerableAnim(TRIGGER_THUNDER, THUNDER)
+                .triggerableAnim(TRIGGER_SLAM, SLAM));
     }
 
     @Override

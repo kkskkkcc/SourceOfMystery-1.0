@@ -1,6 +1,10 @@
 {
   "replace": false,
   "entries": [
-    "sourceofmystery:mystery_ingot_in_chests"
+    "sourceofmystery:mystery_ingot_in_chests",
+    "sourceofmystery:wood_source_from_zombies",
+    "sourceofmystery:gold_source_from_iron_golems",
+    "sourceofmystery:fire_source_from_blazes",
+    "sourceofmystery:earth_source_from_dirt"
   ]
 }

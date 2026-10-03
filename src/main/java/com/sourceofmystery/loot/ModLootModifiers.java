@@ -15,6 +15,9 @@ public final class ModLootModifiers {
     public static final RegistryObject<Codec<AddChestLootModifier>> ADD_CHEST_LOOT =
             SERIALIZERS.register("add_chest_loot", AddChestLootModifier.CODEC);
 
+    public static final RegistryObject<Codec<AddItemModifier>> ADD_ITEM =
+            SERIALIZERS.register("add_item", AddItemModifier.CODEC);
+
     private ModLootModifiers() {
     }
 }

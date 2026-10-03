@@ -16,5 +16,6 @@ public class ClientForgeEvents {
     public static void onLoggingOut(ClientPlayerNetworkEvent.LoggingOut event) {
         ClientEnergyCache.reset();
         ClientSatelliteCache.busyMask = 0;
+        ClientCinematicCache.reset();
     }
 }
