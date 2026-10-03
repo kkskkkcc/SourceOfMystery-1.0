@@ -18,6 +18,9 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -70,6 +73,10 @@ import java.util.List;
 import java.util.UUID;
 
 public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
+
+    /** 降临前隐藏本体（不用原版隐身标记：LivingEntity 第一次 tick 状态效果时会把它重置成可见） */
+    private static final EntityDataAccessor<Boolean> DATA_HIDDEN =
+            SynchedEntityData.defineId(DivineHeavenlyDaoBoss.class, EntityDataSerializers.BOOLEAN);
 
     private static final String ANIM_PREFIX = "animation.divine_heavenly_dao_boss.";
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop(ANIM_PREFIX + "idle");
@@ -126,8 +133,8 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
     private static final double SLAM_LAUNCH_SPEED = 2.0; // 竖直初速度 2.0 约等于升到 20 格高
     // 天雷：5 秒内落下 18 道闪电，其中一道必定劈中当前目标，其余随机劈向周围的生物，周围没有生物就随机落下
     private static final int STORM_WINDUP = 20;
-    private static final int STORM_DURATION = 100;
-    private static final int STORM_BOLTS = 18;
+    private static final int STORM_DURATION = 200;          // 10 秒
+    private static final int STORM_BOLTS = 36;
     private static final double STORM_RANGE = 48.0;        // 随机劈向这个范围内的生物
     private static final double STORM_MIN_RADIUS = 6.0;    // 没有生物时随机落点（从身体边缘算起）
     private static final double STORM_MAX_RADIUS = 30.0;
@@ -199,7 +206,7 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
                 .add(Attributes.ATTACK_DAMAGE, STRIKE_DAMAGE)
                 .add(Attributes.ARMOR, 50.0)
                 .add(Attributes.ARMOR_TOUGHNESS, 20.0)
-                .add(Attributes.MAX_HEALTH, 10000.0)
+                .add(Attributes.MAX_HEALTH, 30000.0)
                 .add(Attributes.MOVEMENT_SPEED, 0.3)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0)
                 .add(Attributes.FOLLOW_RANGE, 128.0);
@@ -499,7 +506,7 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
     }
 
     /**
-     * 为天雷规划 18 道闪电的落下时间：均匀分布在 5 秒内并带一点随机；第 0 道是必中目标的那一道
+     * 为天雷规划 36 道闪电的落下时间：均匀分布在 10 秒内并带一点随机；第 0 道是必中目标的那一道
      */
     private void planThunderStorm() {
         stormStruck.clear();
@@ -656,7 +663,7 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
         this.groundPos = groundPos;
         this.introDone = false;
         this.introTick = 0;
-        this.setInvisible(true);
+        this.setHidden(true);
         this.bossEvent.setVisible(false);
         double sigilY = groundPos.y + SIGIL_HEIGHT;
         this.setPos(groundPos.x, sigilY + 2, groundPos.z);
@@ -701,7 +708,7 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
             }
         }
         if (introTick == SIGIL_OPEN) {
-            this.setInvisible(false);
+            this.setHidden(false);
             this.triggerAnim(ACTION_CONTROLLER, TRIGGER_DESCEND);
             notifyNearby(level, ModSounds.DIVINE_HEAVENLY_DAO_CHARGE.get(), 0.7f, INTRO_CAMERA_RANGE);
         }
@@ -748,7 +755,7 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
         }
         if (introTick >= INTRO_TICKS) {
             introDone = true;
-            this.setInvisible(false);
+            this.setHidden(false);
             this.bossEvent.setVisible(true);
             skillCooldown = SKILL_COOLDOWN;
         }
@@ -942,7 +949,7 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
         this.bossEvent.setProgress(this.getHealth() / this.getMaxHealth());
         // 降临演出中途存档：法阵实体不存档，直接开战
         introDone = true;
-        this.setInvisible(false);
+        this.setHidden(false);
         abyssCooldown = tag.contains("AbyssCooldown") ? tag.getInt("AbyssCooldown") : abyssCooldown;
     }
 
@@ -970,6 +977,26 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
     /**
      * 远程免疫 + 凋灵伤害免疫
      */
+    @Override
+    protected void defineSynchedData() {
+        super.defineSynchedData();
+        this.entityData.define(DATA_HIDDEN, false);
+    }
+
+    /** 由生成逻辑在加入世界之前调用 */
+    public void prepareHidden() {
+        setHidden(true);
+    }
+
+    private void setHidden(boolean hidden) {
+        this.entityData.set(DATA_HIDDEN, hidden);
+    }
+
+    @Override
+    public boolean isInvisible() {
+        return this.entityData.get(DATA_HIDDEN) || super.isInvisible();
+    }
+
     @Override
     public boolean isInvulnerableTo(DamageSource damageSource) {
         if (damageSource.getDirectEntity() instanceof Projectile || damageSource.is(DamageTypeTags.IS_PROJECTILE)) {

@@ -199,8 +199,8 @@ public class BossSpawnHandler {
         }
         Vec3 ground = Vec3.atBottomCenterOf(spawnPos);
         boss.moveTo(ground.x, ground.y, ground.z, 0, 0);
-        boss.setInvisible(true); // 降临前隐身，先展开法阵
         boss.finalizeSpawn(level, level.getCurrentDifficultyAt(spawnPos), MobSpawnType.EVENT, null, null);
+        boss.prepareHidden(); // 加入世界前就隐藏：法阵展开之前客户端看不到她
         level.addFreshEntity(boss);
         boss.beginIntro(level, ground);
 
