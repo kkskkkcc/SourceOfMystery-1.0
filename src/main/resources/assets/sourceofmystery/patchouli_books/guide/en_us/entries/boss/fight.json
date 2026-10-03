@@ -6,11 +6,15 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "The Divine Heavenly Dao is $(l)about 50 blocks tall$(), drifts through terrain to hover over you, and fills the air with an oppressive hum while it lives. It is $(l)immune to all ranged attacks$() and enrages nearby Endermen.$(br2)All three of its attacks have a wind-up:"
+      "text": "The Divine Heavenly Dao has $(l)10,000 health$(), stands $(l)about 50 blocks tall$(), drifts through terrain to hover over you, and fills the air with an oppressive hum while it lives. It is $(l)immune to all ranged attacks$() and enrages nearby Endermen.$(br2)Its attacks have a wind-up:"
     },
     {
       "type": "patchouli:text",
-      "text": "$(li)$(l)Earthshaker$(): both arms rise while a ring of sparks marks the ground, then it smashes down. Entities standing on the ground take 50 damage and are thrown 20 blocks up, so $(l)jump$() at the right moment.$(li)$(l)Thunder Ring$(): 18 lightning bolts fall at random around it, spreading out past 20 blocks, 100 damage each.$(li)$(l)Heaven's Strike$(): a charged direct blow for 50 damage."
+      "text": "$(li)$(l)Earthshaker$(): a ring of sparks marks the ground, then it smashes down. Entities standing on the ground take 50 damage and are thrown 20 blocks up, so $(l)jump$() at the right moment.$(li)$(l)Heavenly Thunder$(): 18 bolts over 5 seconds, 100 damage each. $(l)One of them always strikes you$() (only once, and armor still applies); the rest strike nearby creatures.$(li)$(l)Heaven's Strike$(): a charged direct blow for 50 damage."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(l)Abyss$(): it raises both hands and gathers a black orb overhead while dark mist pours into it. After 10 seconds it hurls the orb at you for a cataclysmic explosion (damage falls off over 36 blocks and is almost certainly lethal up close, and it blows up terrain). When you see the hands go up, $(l)run$() or get behind thick cover. It is not hurt by its own blast."
     },
     {
       "type": "patchouli:text",

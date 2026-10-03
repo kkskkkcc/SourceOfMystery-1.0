@@ -30,7 +30,8 @@ import java.util.UUID;
 
 /**
  * 龙魂 Boss 召唤流程：
- * 末影龙死亡 -> 跟踪原版死亡动画（升空约 10 秒）直到末影龙消失，记下它最后的位置
+ * 末影龙血量归零 -> 原版里它会先飞回传送门上空，再播放约 10 秒的死亡动画（升空、光束、爆裂）后才消失；
+ * 这里一直跟着它，直到它真正消失、再等 1 秒，记下它最后的位置
  * -> 刷新末地的末地水晶 -> 龙魂在该位置撕开空间裂缝出场（出场动画见 DragonSoulBoss）。
  * 流程状态保存在末影龙所在维度的 SavedData 中，服务器重启不丢进度。
  */
@@ -38,11 +39,14 @@ import java.util.UUID;
 public class DragonSoulSpawnHandler {
 
     private static final int STAGE_IDLE = 0;
-    private static final int STAGE_WAIT_DEATH = 1;   // 等末影龙死亡动画结束
-    // 旧版本的 2~4 阶段（龙吟 / 闪电 / 卫星）已经由龙魂的出场动画取代，读到时直接生成
+    private static final int STAGE_WAIT_DEATH = 1;   // 等末影龙飞回传送门并播完死亡动画
+    private static final int STAGE_AFTER_DEATH = 2;  // 末影龙已消失，稍等片刻再出场
+    // 旧版本的 3~4 阶段（闪电 / 卫星）已经由龙魂的出场动画取代，读到时直接生成
 
-    // 原版死亡动画约 10 秒（200 tick）后末影龙被移除；超过这个时间还在就不再等
-    private static final int DEATH_ANIM_TIMEOUT = 260;
+    // 末影龙飞回传送门的时间不固定，只在异常情况下（比如被卡住）才放弃等待
+    private static final int DEATH_WAIT_LIMIT = 2400;
+    // 末影龙消失后（死亡光束、经验球、传送门生成）再等 1 秒
+    private static final int AFTER_DEATH_DELAY = 20;
 
     /**
      * 末影龙死亡时启动召唤流程
@@ -63,6 +67,16 @@ public class DragonSoulSpawnHandler {
         state.spawnPos = event.getEntity().position();
         state.setStage(STAGE_WAIT_DEATH);
         SourceOfMystery.LOGGER.info("Dragon Soul summoning started in {}", level.dimension().location());
+    }
+
+    /**
+     * 龙魂击杀玩家时说一句台词
+     */
+    @SubscribeEvent
+    public static void onPlayerKilled(LivingDeathEvent event) {
+        if (event.getEntity() instanceof ServerPlayer && event.getSource().getEntity() instanceof DragonSoulBoss boss) {
+            boss.onKilledPlayer();
+        }
     }
 
     /**
@@ -93,14 +107,17 @@ public class DragonSoulSpawnHandler {
         state.setDirty();
 
         if (state.stage == STAGE_WAIT_DEATH) {
-            // 末影龙死亡动画期间会缓缓升空：一直跟着它，直到它消失，用它最后的位置作为裂缝位置
+            // 末影龙飞回传送门、死亡动画期间缓缓升空：一直跟着它，直到它消失，用它最后的位置作为裂缝位置
             Entity dragon = state.dragon == null ? null : level.getEntity(state.dragon);
-            if (dragon != null) {
+            if (dragon != null && !dragon.isRemoved() && state.stageTick < DEATH_WAIT_LIMIT) {
                 state.spawnPos = dragon.position();
-                if (state.stageTick < DEATH_ANIM_TIMEOUT) {
-                    return;
-                }
+                return;
             }
+            state.setStage(STAGE_AFTER_DEATH);
+            return;
+        }
+        if (state.stage == STAGE_AFTER_DEATH && state.stageTick < AFTER_DEATH_DELAY) {
+            return;
         }
         spawnBoss(level, state.spawnPos);
         state.dragon = null;
@@ -117,6 +134,7 @@ public class DragonSoulSpawnHandler {
             return;
         }
         boss.moveTo(riftPos.x, riftPos.y, riftPos.z, 0, 0);
+        boss.setInvisible(true); // 加入世界前就隐身：客户端收到的第一帧就是看不见的，直到她冲出裂缝
         boss.finalizeSpawn(level, level.getCurrentDifficultyAt(BlockPos.containing(riftPos)), MobSpawnType.EVENT, null, null);
         level.addFreshEntity(boss);
         boss.beginIntro(level, riftPos);

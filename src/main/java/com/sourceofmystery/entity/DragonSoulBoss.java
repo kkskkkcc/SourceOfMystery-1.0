@@ -25,6 +25,7 @@ import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AreaEffectCloud;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -40,6 +41,7 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.DragonFireball;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
@@ -55,18 +57,29 @@ import software.bernie.geckolib.core.object.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 /**
- * 龙魂 Boss：末影龙死亡动画结束的位置撕开空间裂缝出场，之后是一位敏捷的持枪女将军。
+ * 龙魂 Boss：末影龙死亡动画完全播完后，在它消失的位置撕开空间裂缝出场，之后是一位敏捷的持枪女将军。
  * <p>
- * 出场：威压音效 → 空间裂缝撕开 → 从裂缝飞出 → 雷鸣中盘旋两圈 → 缓缓降到低空 → 举枪俯指玩家、龙吟、定格 2 秒。
- * 期间附近玩家的镜头会自动对准她（BossIntroPacket），她本人无敌。
+ * 出场：威压音效 → 空间裂缝（VoidRift，虚空模型）裂开、撕开 → 龙魂化作残影高速冲出 → 雷鸣中盘旋两圈
+ * → 缓缓降到低空 → 单手持枪俯指玩家、龙吟、喊出台词、定格 2 秒。期间附近玩家的镜头会自动对准她（BossIntroPacket），她本人无敌。
  * <p>
- * 战斗（魂类）：每一招都有前摇和后摇。近战（劈 20 / 刺 15 / 砍 10）、踢（击飞 10 格）、
- * 抓（带上 20 格高空后抛下）都会先蓄力瞬移到玩家面前，落地后再出招；远程有法阵龙息（5 发）和掷枪（命中后飞回手中）。
- * 出招后按概率接转枪、挑衅或喘息等后摇，这些时间就是玩家的反击窗口。半血以下近战有概率接一段连招。
+ * 战斗（魂类）：每一招都有前摇和后摇。近战（劈 20 / 刺 15 / 砍 10，均为范围判定）、踢（击飞 10 格）、
+ * 抓（带上 20 格高空后抛下）离得远时先瞬移：通常有蓄力前摇，但也会突然无前摇瞬移、直接出快招。
+ * 远程有法阵龙息（5 发）和掷枪（命中后飞回手中）。出招后按概率接转枪、挑衅或喘息等后摇，这些时间就是玩家的反击窗口。
+ * 玩家吃东西 / 喝药时她一定会大前摇瞬移过去抓人。
+ * <p>
+ * 大招「龙魂解放」：每次出招有 20% 概率改为大招（冷却 2 分钟）——瞬移贴身，5 秒内每秒 3 击，期间无敌，
+ * 被打中的玩家陷入黑暗直到大招结束。
+ * <p>
+ * 语音：日语女声台词，播放时触发对应表情和口型（face 控制器），并在动作栏显示中文字幕。
  * <p>
  * 和末影龙一样，32 格内有末地水晶时会被水晶治疗（每 0.5 秒 1 点），正在治疗她的水晶被打爆时她受到 10 点伤害。
  */
@@ -77,6 +90,7 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     private static final String ACTION_CONTROLLER = "action";
     private static final String BLINK_CONTROLLER = "blink";
     private static final String SPEAR_CONTROLLER = "spear";
+    private static final String FACE_CONTROLLER = "face";
 
     private static final RawAnimation HOVER = RawAnimation.begin().thenLoop("boss_hover");
     private static final RawAnimation STANCE = RawAnimation.begin().thenLoop("boss_stance");
@@ -88,8 +102,10 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     // 一次性动作：触发名与动画名一致（动画名去掉 boss_ 前缀）
     private static final String[] ACTIONS = {
             "teleport_charge", "teleport_arrive", "cleave", "thrust", "slash", "kick", "grab", "grab_throw",
-            "magic", "spear_throw", "spear_catch", "flourish", "taunt", "pant", "intro_emerge", "intro_point"
+            "magic", "spear_throw", "spear_catch", "flourish", "taunt", "pant", "intro_emerge", "intro_point",
+            "cleave_fast", "thrust_fast", "slash_fast", "grab_fast"
     };
+    private static final String ULTIMATE_ANIM = "ultimate";
 
     // ==================== 同步数据 ====================
     private static final int MODE_HIDDEN = 0; // 出场：还在裂缝里
@@ -101,22 +117,25 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
             SynchedEntityData.defineId(DragonSoulBoss.class, EntityDataSerializers.INT);
     private static final EntityDataAccessor<Boolean> DATA_SPEAR_OUT =
             SynchedEntityData.defineId(DragonSoulBoss.class, EntityDataSerializers.BOOLEAN);
+    /** 高速移动中：客户端留下残影，并且不做位置插值的"瞬移判定" */
+    private static final EntityDataAccessor<Boolean> DATA_TRAIL =
+            SynchedEntityData.defineId(DragonSoulBoss.class, EntityDataSerializers.BOOLEAN);
 
     // ==================== 出场时间轴（tick） ====================
-    private static final int RIFT_START = 40;       // 前 2 秒只有威压音效
-    private static final int RIFT_TEAR = 80;        // 裂缝被撕开
-    private static final int EMERGE_START = 90;     // 从裂缝飞出
-    private static final int EMERGE_END = 115;
-    private static final int CIRCLE_TICKS = 240;    // 盘旋两圈
-    private static final int CIRCLE_END = EMERGE_END + CIRCLE_TICKS;
-    private static final int DESCEND_TICKS = 70;    // 缓缓下降到低空
+    private static final int RIFT_START = 30;                                          // 前 1.5 秒只有威压音效
+    private static final int RIFT_TORN = RIFT_START + VoidRift.GROW_TICKS + VoidRift.TEAR_TICKS; // 裂缝被撕开
+    private static final int DASH_START = RIFT_TORN + 22;                              // 撕开后虚空静止约 1 秒，她才冲出来
+    private static final int DASH_TICKS = 5;                                           // 0.25 秒冲出 20 格：只看得见残影
+    private static final int DASH_END = DASH_START + DASH_TICKS;
+    private static final int RIFT_CLOSE = DASH_END + 20;
+    private static final int CIRCLE_TICKS = 200;                                       // 盘旋两圈
+    private static final int CIRCLE_END = DASH_END + CIRCLE_TICKS;
+    private static final int DESCEND_TICKS = 70;                                       // 缓缓下降到低空
     private static final int DESCEND_END = CIRCLE_END + DESCEND_TICKS;
     private static final int POINT_START = DESCEND_END;
-    private static final int ROAR_TICK = POINT_START + 12;
-    public static final int INTRO_TICKS = POINT_START + 60; // 举枪 0.8 秒 + 定格约 2 秒
-    private static final int RIFT_CLOSE_START = EMERGE_END + 60;
-    private static final int RIFT_CLOSE_END = RIFT_CLOSE_START + 30;
-    private static final double EMERGE_DISTANCE = 6.0;
+    private static final int ROAR_TICK = POINT_START + 8;
+    private static final int LINE_TICK = POINT_START + 22;
+    public static final int INTRO_TICKS = POINT_START + 76;                            // 举枪 + 台词 + 定格约 2 秒
     private static final double CIRCLE_RADIUS = 20.0;
     private static final double LANDING_DISTANCE = 9.0;   // 降落点距玩家的水平距离
     private static final double LANDING_HEIGHT = 5.0;     // 降落后离地高度（居高临下）
@@ -128,15 +147,23 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     private static final double MAX_MOVE_SPEED = 0.45;
     private static final double TELEPORT_TRIGGER_DISTANCE = 4.5; // 比这远就先瞬移
     private static final double TELEPORT_FACE_DISTANCE = 2.6;    // 瞬移落点离目标的距离
-    private static final int TELEPORT_CHARGE_TICKS = 20;    // 蓄力 1 秒（期间落点出现预警）
-    private static final int TELEPORT_LOCK_TICK = 10;       // 这一刻锁定落点，之后玩家移动就能躲开
-    private static final int ARRIVE_TICKS = 7;              // 落地后稍作停顿，再起手出招
+    private static final int TELEPORT_CHARGE_TICKS = 16;    // 普通瞬移蓄力 0.8 秒（期间落点出现预警）
+    private static final int TELEPORT_LOCK_TICK = 8;        // 这一刻锁定落点，之后玩家移动就能躲开
+    private static final int PUNISH_CHARGE_TICKS = 20;      // 吃东西被抓：1 秒大前摇
+    private static final int PUNISH_LOCK_TICK = 17;         // 落点几乎到最后才锁定，吃东西时很难躲
+    private static final int ARRIVE_TICKS = 4;              // 落地后稍作停顿，再起手出招
+    private static final double QUICK_BLINK_CHANCE = 0.3;   // 无前摇瞬移直接出快招的概率
+    private static final double QUICK_BLINK_CHANCE_LOW_HP = 0.45;
+    private static final int FAST_HIT_TICK = 5;             // 快招 0.25 秒就命中
 
     private static final float CLEAVE_DAMAGE = 20.0f;
     private static final float THRUST_DAMAGE = 15.0f;
     private static final float SLASH_DAMAGE = 10.0f;
     private static final float KICK_DAMAGE = 6.0f;
     private static final float GRAB_DAMAGE = 6.0f;
+    private static final double CLEAVE_RADIUS = 3.8;         // 劈：枪尖砸地，落点周围一圈
+    private static final double SLASH_RANGE = 5.0;           // 砍：身前约 230 度的大横扫
+    private static final double THRUST_RANGE = 6.0;          // 刺：一条直线上的都会被贯穿
     private static final double KICK_HORIZONTAL = 1.0;       // 约击飞 10 格
     private static final double KICK_VERTICAL = 0.45;
     private static final double CARRY_HEIGHT = 20.0;
@@ -148,20 +175,40 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     private static final int BASE_COOLDOWN = 30;
     private static final int BASE_COOLDOWN_LOW_HP = 18;
     private static final int GRAB_COOLDOWN = 400;
+    private static final int PUNISH_COOLDOWN = 200;
     private static final int MAGIC_COOLDOWN = 160;
     private static final int SPEAR_COOLDOWN = 200;
     private static final double COMBO_CHANCE = 0.45;       // 半血以下近战后接连招的概率
     private static final int MAX_COMBO = 2;
 
+    // 大招「龙魂解放」
+    private static final double ULTIMATE_CHANCE = 0.2;
+    private static final int ULTIMATE_COOLDOWN = 2400;     // 2 分钟
+    private static final int ULT_START_TICKS = 10;         // 起手（boss_ult_start 0.5 秒）
+    private static final int ULT_FLURRY_TICKS = 100;       // 5 秒乱舞（boss_ult_flurry 1 秒 × 5）
+    private static final int ULT_FINISH_TICKS = 16;        // 收招（boss_ult_finish 0.8 秒）
+    private static final int ULT_TOTAL = ULT_START_TICKS + ULT_FLURRY_TICKS + ULT_FINISH_TICKS;
+    private static final int[] ULT_HIT_TICKS = {3, 10, 16}; // 乱舞每秒的三次命中（对应动画 0.15 / 0.48 / 0.81 秒）
+    private static final float ULT_HIT_DAMAGE = 3.0f;
+    private static final float ULT_FINISH_DAMAGE = 8.0f;
+    private static final double ULT_RANGE = 4.0;
+
     private static final float DRAGON_BREATH_HEAL = 10.0f; // 站在龙息里每秒回 10 点
     private static final double CRYSTAL_RANGE = 32.0;      // 同末影龙
     private static final float CRYSTAL_DESTROYED_DAMAGE = 10.0f;
 
-    private static final DustParticleOptions RIFT_EDGE = new DustParticleOptions(new Vector3f(0.75f, 0.35f, 1.0f), 2.0f);
+    // 语音：台词时长（tick），说话期间不会被别的台词打断（强制台词除外）
+    private static final Map<String, Integer> VOICE_TICKS = Map.ofEntries(
+            Map.entry("intro", 52), Map.entry("engage", 42), Map.entry("quick", 14), Map.entry("grab", 19),
+            Map.entry("punish", 17), Map.entry("throw", 15), Map.entry("spear", 15), Map.entry("magic", 50),
+            Map.entry("taunt", 26), Map.entry("pant", 36), Map.entry("half", 50), Map.entry("ultimate", 43),
+            Map.entry("kill", 44), Map.entry("death", 36), Map.entry("kiai1", 12), Map.entry("kiai2", 14));
+    private static final double VOICE_SUBTITLE_RANGE = 48.0;
+
     private static final DustParticleOptions MAGIC_CIRCLE = new DustParticleOptions(new Vector3f(0.85f, 0.4f, 1.0f), 1.5f);
 
     /**
-     * 出招种类，带各自动画里命中帧和总时长（tick）
+     * 出招种类，带各自动画里命中帧和总时长（tick）；快招版本见 {@link #hitTick()} / {@link #length()}
      */
     private enum Attack {
         CLEAVE("cleave", 17, 34, true),
@@ -183,9 +230,14 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
             this.length = length;
             this.melee = melee;
         }
+
+        /** 劈 / 刺 / 砍 / 抓有压缩了前摇的快招动画 */
+        boolean hasFast() {
+            return this == CLEAVE || this == THRUST || this == SLASH || this == GRAB;
+        }
     }
 
-    private enum State { IDLE, TELEPORT_CHARGE, TELEPORT_ARRIVE, ATTACK, CARRY_UP, THROW, WAIT_SPEAR, CATCH, RECOVERY }
+    private enum State { IDLE, TELEPORT_CHARGE, TELEPORT_ARRIVE, ATTACK, CARRY_UP, THROW, WAIT_SPEAR, CATCH, RECOVERY, ULTIMATE }
 
     // ==================== 状态 ====================
     private boolean introDone = true; // 用 /summon 直接召唤时没有出场动画
@@ -194,15 +246,21 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     private Vec3 emergeDir = new Vec3(1, 0, 0);
     private Vec3 descendFrom = Vec3.ZERO;
     private Vec3 descendTo = Vec3.ZERO;
+    @Nullable
+    private VoidRift rift;
 
     private State state = State.IDLE;
     private int stateTick;
     private Attack attack = Attack.SLASH;
+    private boolean fastAttack;
+    private boolean punishing;
     private int cooldown = BASE_COOLDOWN;
     private int comboCount;
     private int grabCooldown = GRAB_COOLDOWN / 2;
+    private int punishCooldown;
     private int magicCooldown;
     private int spearCooldown;
+    private int ultimateCooldown = 600;   // 开战 30 秒内不放大招
     private int strafeSign = 1;
     private int strafeTimer;
     @Nullable
@@ -211,10 +269,23 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     private boolean releasing;
     private double carryStartY;
     private boolean hitLanded;
+    private int trailTicks;
+    private final Set<UUID> darkened = new HashSet<>();
+
+    private int voiceBusy;
+    private boolean engageSpoken;
+    private boolean halfSpoken;
 
     @Nullable
     private EndCrystal healingCrystal;
     private int tickCounter;
+
+    /** 客户端：残影（位置、朝向、产生时刻） */
+    public record Afterimage(double x, double y, double z, float yaw, float born) {
+    }
+
+    public static final int AFTERIMAGE_LIFE = 8;
+    public final List<Afterimage> afterimages = new ArrayList<>();
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private final ServerBossEvent bossEvent;
@@ -244,6 +315,7 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         super.defineSynchedData();
         this.entityData.define(DATA_MODE, MODE_FIGHT);
         this.entityData.define(DATA_SPEAR_OUT, false);
+        this.entityData.define(DATA_TRAIL, false);
     }
 
     @Override
@@ -264,10 +336,21 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         return this.entityData.get(DATA_SPEAR_OUT);
     }
 
+    public boolean trail() {
+        return this.entityData.get(DATA_TRAIL);
+    }
+
+    /** 开启残影 ticks 个 tick */
+    private void startTrail(int ticks) {
+        trailTicks = Math.max(trailTicks, ticks);
+        this.entityData.set(DATA_TRAIL, true);
+    }
+
     // ==================== 出场 ====================
 
     /**
-     * 由 DragonSoulSpawnHandler 在生成后立即调用：从 riftPos 撕开裂缝出场
+     * 由 DragonSoulSpawnHandler 在生成后立即调用：从 riftPos 撕开裂缝出场。
+     * （生成前就已经设成隐身，避免客户端在第一帧看到她）
      */
     public void beginIntro(ServerLevel level, Vec3 riftPos) {
         this.riftPos = riftPos;
@@ -297,35 +380,45 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         if (introTick == 1) {
             notifyNearby(level, ModSounds.DRAGON_SOUL_OMEN.get(), 1.0f);
         }
-        if (introTick < RIFT_START && introTick % 4 == 0) {
-            level.sendParticles(ParticleTypes.REVERSE_PORTAL, riftPos.x, riftPos.y + 2, riftPos.z, 8, 0.4, 2.0, 0.4, 0.02);
-        }
         if (introTick == RIFT_START) {
+            // 空间裂缝：虚空模型，平面朝向玩家
+            rift = ModEntities.VOID_RIFT.get().create(level);
+            if (rift != null) {
+                rift.moveTo(riftPos.x, riftPos.y + 2.0, riftPos.z, yawOf(emergeDir), 0);
+                level.addFreshEntity(rift);
+            }
             notifyNearby(level, ModSounds.DRAGON_SOUL_RIFT.get(), 0.7f);
         }
-        if (introTick == RIFT_TEAR) {
+        if (introTick == RIFT_TORN) {
             notifyNearby(level, ModSounds.DRAGON_SOUL_RIFT.get(), 1.0f);
-            level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, riftPos.x, riftPos.y + 2, riftPos.z, 1, 0, 0, 0, 0);
+            notifyNearby(level, SoundEvents.GLASS_BREAK, 0.5f);
         }
-        if (introTick >= RIFT_START && introTick < RIFT_CLOSE_END) {
-            drawRift(level);
+        if (introTick == RIFT_CLOSE && rift != null) {
+            rift.close();
         }
-
-        if (introTick == EMERGE_START) {
-            this.setInvisible(false);
-            this.setMode(MODE_FLY);
-            this.triggerAnim(ACTION_CONTROLLER, "intro_emerge");
-            this.playSound(ModSounds.DRAGON_SOUL_WINGS.get(), 3.0f, 0.8f);
+        if (introTick == DASH_START - 1) {
+            startTrail(DASH_TICKS + 6); // 先通知客户端，冲刺的每一步都按高速移动处理
         }
 
-        if (introTick < EMERGE_START) {
+        Vec3 dashEnd = riftPos.add(emergeDir.scale(CIRCLE_RADIUS));
+        if (introTick < DASH_START) {
             this.setPos(riftPos);
             faceDirection(emergeDir, 1.0f);
-        } else if (introTick < EMERGE_END) {
-            double u = easeOut((introTick - EMERGE_START) / (double) (EMERGE_END - EMERGE_START));
-            moveSmoothlyTo(riftPos.add(emergeDir.scale(EMERGE_DISTANCE * u)));
+        } else if (introTick < DASH_END) {
+            if (introTick == DASH_START) {
+                this.setInvisible(false);
+                this.setMode(MODE_FLY);
+                this.playSound(ModSounds.DRAGON_SOUL_TELEPORT.get(), 3.0f, 0.8f);
+                this.playSound(ModSounds.DRAGON_SOUL_WINGS.get(), 3.0f, 0.7f);
+            }
+            double u = easeOut((introTick - DASH_START + 1) / (double) DASH_TICKS);
+            moveSmoothlyTo(riftPos.lerp(dashEnd, u));
             faceDirection(emergeDir, 1.0f);
         } else if (introTick < CIRCLE_END) {
+            if (introTick == DASH_END) {
+                this.triggerAnim(ACTION_CONTROLLER, "intro_emerge"); // 急停、展翼
+                this.playSound(ModSounds.DRAGON_SOUL_WINGS.get(), 3.0f, 0.9f);
+            }
             tickCircle(level);
         } else if (introTick < DESCEND_END) {
             if (introTick == CIRCLE_END) {
@@ -359,11 +452,13 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
             Player nearest = nearestPlayer(level);
             if (nearest != null) {
                 faceDirection(nearest.position().subtract(this.position()), 0.25f);
-                this.setXRot(30.0f);
             }
             if (introTick == ROAR_TICK) {
                 notifyNearby(level, ModSounds.DRAGON_SOUL_ROAR.get(), 1.0f);
                 level.sendParticles(ParticleTypes.SONIC_BOOM, this.getX(), this.getY() + 2, this.getZ(), 1, 0, 0, 0, 0);
+            }
+            if (introTick == LINE_TICK) {
+                speak("intro", true);
             }
         }
 
@@ -373,12 +468,11 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     }
 
     private void tickCircle(ServerLevel level) {
-        double u = (introTick - EMERGE_END) / (double) CIRCLE_TICKS;
+        double u = (introTick - DASH_END) / (double) CIRCLE_TICKS;
         double startAngle = Math.atan2(emergeDir.z, emergeDir.x);
         double angle = startAngle + u * Math.PI * 4; // 两圈
-        double radius = EMERGE_DISTANCE + (CIRCLE_RADIUS - EMERGE_DISTANCE) * Math.min(1.0, u * 4);
-        double y = riftPos.y + 2.0 * Math.sin(u * Math.PI * 4);
-        Vec3 pos = new Vec3(riftPos.x + Math.cos(angle) * radius, y, riftPos.z + Math.sin(angle) * radius);
+        double y = riftPos.y + 3.0 * Math.sin(u * Math.PI * 4);
+        Vec3 pos = new Vec3(riftPos.x + Math.cos(angle) * CIRCLE_RADIUS, y, riftPos.z + Math.sin(angle) * CIRCLE_RADIUS);
         moveSmoothlyTo(pos);
         faceDirection(new Vec3(-Math.sin(angle), 0, Math.cos(angle)), 0.5f);
 
@@ -401,7 +495,7 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     }
 
     /**
-     * 降落点：最近玩家与裂缝连线上、距玩家 9 格、离地 5 格的位置，这样定格时正好居高临下地俯视玩家
+     * 降落点：最近玩家与当前位置连线上、距玩家 9 格、离地 5 格的位置，这样定格时正好居高临下地俯视玩家
      */
     private Vec3 landingPoint(ServerLevel level) {
         Player player = nearestPlayer(level);
@@ -417,50 +511,17 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
 
     private void finishIntro() {
         introDone = true;
+        engageSpoken = true; // 出场已经喊过台词
         this.setInvisible(false);
         this.setMode(MODE_FIGHT);
         this.bossEvent.setVisible(true);
         this.cooldown = 20;
+        if (rift != null && rift.isAlive()) {
+            rift.close();
+        }
         if (this.level() instanceof ServerLevel level) {
             DragonSoulSpawnHandler.announceArrival(level);
         }
-    }
-
-    /**
-     * 空间裂缝：竖直的椭圆缝隙，先出现一道细缝，然后被撕开，龙魂飞出后慢慢合拢
-     */
-    private void drawRift(ServerLevel level) {
-        double height;
-        double width;
-        if (introTick < RIFT_TEAR) {
-            double u = (introTick - RIFT_START) / (double) (RIFT_TEAR - RIFT_START);
-            height = 8.0 * u;
-            width = 0.3;
-        } else if (introTick < RIFT_CLOSE_START) {
-            double u = Math.min(1.0, (introTick - RIFT_TEAR) / 10.0);
-            height = 8.0 + u;
-            width = 0.3 + 3.2 * easeOut(u);
-        } else {
-            double u = (introTick - RIFT_CLOSE_START) / (double) (RIFT_CLOSE_END - RIFT_CLOSE_START);
-            height = 9.0 * (1 - u);
-            width = 3.5 * (1 - u);
-        }
-        if (height <= 0.05) {
-            return;
-        }
-        Vec3 across = new Vec3(-emergeDir.z, 0, emergeDir.x); // 裂缝的宽度方向垂直于飞出方向
-        Vec3 center = riftPos.add(0, 2.0, 0);
-        int points = 24;
-        for (int i = 0; i < points; i++) {
-            double a = i * Math.PI * 2 / points + introTick * 0.05;
-            Vec3 p = center.add(across.scale(Math.cos(a) * width / 2)).add(0, Math.sin(a) * height / 2, 0);
-            level.sendParticles(RIFT_EDGE, p.x, p.y, p.z, 1, 0, 0, 0, 0);
-        }
-        // 裂缝内部：虚空般的暗紫色和向外逸散的传送门粒子
-        level.sendParticles(ParticleTypes.REVERSE_PORTAL, center.x, center.y, center.z, 10,
-                Math.abs(across.x) * width * 0.25, height * 0.25, Math.abs(across.z) * width * 0.25, 0.05);
-        level.sendParticles(ParticleTypes.DRAGON_BREATH, center.x, center.y, center.z, 4,
-                Math.abs(across.x) * width * 0.2, height * 0.2, Math.abs(across.z) * width * 0.2, 0.01);
     }
 
     private void notifyNearby(ServerLevel level, SoundEvent sound, float pitch) {
@@ -471,17 +532,61 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         }
     }
 
+    // ==================== 语音 ====================
+
+    /**
+     * 说一句台词：播放语音、触发同名表情 / 口型动画，并在附近玩家的动作栏显示字幕。
+     * 说话期间（voiceBusy）普通台词会被跳过，force 的台词总会说出来。
+     */
+    private void speak(String id, boolean force) {
+        if (!force && voiceBusy > 0) {
+            return;
+        }
+        var sound = ModSounds.DRAGON_SOUL_VOICES.get(id);
+        if (sound == null || !(this.level() instanceof ServerLevel level)) {
+            return;
+        }
+        level.playSound(null, this.getX(), this.getEyeY(), this.getZ(), sound.get(), SoundSource.HOSTILE, 3.0f, 1.0f);
+        this.triggerAnim(FACE_CONTROLLER, "voice_" + id);
+        voiceBusy = VOICE_TICKS.getOrDefault(id, 30) + 10;
+        Component line = Component.translatable("voice.sourceofmystery.dragon_soul.format",
+                Component.translatable("entity.sourceofmystery.dragon_soul"),
+                Component.translatable("voice.sourceofmystery.dragon_soul." + id))
+                .withStyle(ChatFormatting.LIGHT_PURPLE);
+        for (ServerPlayer player : level.players()) {
+            if (player.distanceToSqr(this) < VOICE_SUBTITLE_RANGE * VOICE_SUBTITLE_RANGE) {
+                player.displayClientMessage(line, true);
+            }
+        }
+    }
+
+    private void maybeSpeak(String id, double chance) {
+        if (this.random.nextDouble() < chance) {
+            speak(id, false);
+        }
+    }
+
+    /** 由 DragonSoulSpawnHandler 在她击杀玩家时调用 */
+    public void onKilledPlayer() {
+        speak("kill", true);
+    }
+
     // ==================== 主循环 ====================
 
     @Override
     public void tick() {
         super.tick();
         if (this.level().isClientSide) {
+            tickAfterimages();
             return;
         }
         ServerLevel level = (ServerLevel) this.level();
         tickCounter++;
         this.bossEvent.setProgress(this.getHealth() / this.getMaxHealth());
+        if (voiceBusy > 0) voiceBusy--;
+        if (trailTicks > 0 && --trailTicks == 0) {
+            this.entityData.set(DATA_TRAIL, false);
+        }
 
         if (!introDone) {
             tickIntro(level);
@@ -494,10 +599,32 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         tickCrystalHealing(level);
 
         if (grabCooldown > 0) grabCooldown--;
+        if (punishCooldown > 0) punishCooldown--;
         if (magicCooldown > 0) magicCooldown--;
         if (spearCooldown > 0) spearCooldown--;
+        if (ultimateCooldown > 0) ultimateCooldown--;
+
+        if (!halfSpoken && this.getHealth() < this.getMaxHealth() * 0.5f) {
+            halfSpoken = true;
+            speak("half", true);
+        }
 
         tickFight(level);
+    }
+
+    /**
+     * 客户端：高速移动时每 tick 在上一位置和当前位置之间补三个残影，残影 8 tick 内淡出
+     */
+    private void tickAfterimages() {
+        float now = this.tickCount;
+        afterimages.removeIf(a -> now - a.born() > AFTERIMAGE_LIFE);
+        if (trail() && !this.isInvisible()) {
+            for (int i = 0; i < 3; i++) {
+                double u = i / 3.0;
+                afterimages.add(new Afterimage(Mth.lerp(u, this.xo, this.getX()), Mth.lerp(u, this.yo, this.getY()),
+                        Mth.lerp(u, this.zo, this.getZ()), this.yBodyRot, now - 1 + (float) u));
+            }
+        }
     }
 
     /**
@@ -513,7 +640,8 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         if (state == State.IDLE) {
             this.setMode(hasTarget ? MODE_FIGHT : MODE_HOVER);
         }
-        if (!hasTarget && state != State.CARRY_UP && state != State.THROW && state != State.WAIT_SPEAR && state != State.CATCH) {
+        if (!hasTarget && state != State.CARRY_UP && state != State.THROW && state != State.WAIT_SPEAR
+                && state != State.CATCH && state != State.ULTIMATE) {
             if (state != State.IDLE && state != State.RECOVERY) {
                 enterState(State.IDLE);
             }
@@ -522,6 +650,14 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
                 return;
             }
         }
+        if (hasTarget && !engageSpoken) {
+            engageSpoken = true;
+            speak("engage", false);
+        }
+        // 玩家吃东西 / 喝药：立刻大前摇瞬移过去抓人
+        if (hasTarget && (state == State.IDLE || state == State.RECOVERY) && isEatingPlayer(target)) {
+            startPunish(target);
+        }
         stateTick++;
         switch (state) {
             case IDLE -> tickIdle(level, target);
@@ -529,7 +665,7 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
             case TELEPORT_ARRIVE -> {
                 faceTowards(target, 1.0f);
                 if (stateTick >= ARRIVE_TICKS) {
-                    startAttack(attack);
+                    startAttack(attack, fastAttack);
                 }
             }
             case ATTACK -> tickAttack(level, target);
@@ -553,6 +689,7 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
                             + this.random.nextInt(20);
                 }
             }
+            case ULTIMATE -> tickUltimate(level, target);
         }
     }
 
@@ -597,6 +734,12 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     }
 
     private void chooseAttack(ServerLevel level, LivingEntity target) {
+        comboCount = 0;
+        // 大招：每次出招都有 20% 概率改为龙魂解放（冷却 2 分钟）
+        if (ultimateCooldown <= 0 && this.random.nextDouble() < ULTIMATE_CHANCE && canBeUltimateTarget(target)) {
+            startUltimate(level, target);
+            return;
+        }
         double distance = this.distanceTo(target);
         boolean far = distance > 16.0;
         boolean canGrab = grabCooldown <= 0 && target instanceof Player player && !player.isCreative()
@@ -617,36 +760,72 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         else if ((roll -= grab) < 0) next = Attack.GRAB;
         else if ((roll -= magic) < 0) next = Attack.MAGIC;
         else next = Attack.SPEAR;
-        comboCount = 0;
-        engage(next, target);
+        engage(level, next, target);
     }
 
     /**
-     * 近身招式离得远就先蓄力瞬移，其余直接起手
+     * 近身招式离得远就先瞬移：大多数时候有蓄力前摇，但有一定概率无前摇瞬移、落地直接出快招
      */
-    private void engage(Attack next, LivingEntity target) {
+    private void engage(ServerLevel level, Attack next, LivingEntity target) {
         attack = next;
+        punishing = false;
         if (next.melee && this.distanceTo(target) > TELEPORT_TRIGGER_DISTANCE) {
+            boolean lowHp = this.getHealth() < this.getMaxHealth() * 0.5;
+            double quick = lowHp ? QUICK_BLINK_CHANCE_LOW_HP : QUICK_BLINK_CHANCE;
+            if (next.hasFast() && this.random.nextDouble() < quick) {
+                Vec3 spot = findTeleportSpot(level, target);
+                if (spot != null) {
+                    blinkTo(level, spot, target);
+                    maybeSpeak("quick", 0.5);
+                    startAttack(next, true);
+                    return;
+                }
+            }
             enterState(State.TELEPORT_CHARGE);
             teleportDest = null;
             this.triggerAnim(ACTION_CONTROLLER, "teleport_charge");
             this.playSound(ModSounds.DRAGON_SOUL_TELEPORT_CHARGE.get(), 2.0f, 1.0f);
         } else {
-            startAttack(next);
+            startAttack(next, false);
         }
+    }
+
+    // ---------- 吃东西时的惩罚抓取 ----------
+
+    private boolean isEatingPlayer(LivingEntity target) {
+        if (punishCooldown > 0 || !(target instanceof Player player) || player.isCreative() || player.isSpectator()
+                || player.isPassenger() || !player.isUsingItem()) {
+            return false;
+        }
+        UseAnim anim = player.getUseItem().getUseAnimation();
+        return anim == UseAnim.EAT || anim == UseAnim.DRINK;
+    }
+
+    private void startPunish(LivingEntity target) {
+        punishCooldown = PUNISH_COOLDOWN;
+        punishing = true;
+        attack = Attack.GRAB;
+        speak("punish", true);
+        enterState(State.TELEPORT_CHARGE);
+        teleportDest = null;
+        this.triggerAnim(ACTION_CONTROLLER, "teleport_charge");
+        this.playSound(ModSounds.DRAGON_SOUL_TELEPORT_CHARGE.get(), 2.5f, 0.8f);
     }
 
     private void tickTeleportCharge(ServerLevel level, LivingEntity target) {
         faceTowards(target, 0.5f);
         this.setDeltaMovement(Vec3.ZERO);
+        int charge = punishing ? PUNISH_CHARGE_TICKS : TELEPORT_CHARGE_TICKS;
+        int lock = punishing ? PUNISH_LOCK_TICK : TELEPORT_LOCK_TICK;
         level.sendParticles(ParticleTypes.REVERSE_PORTAL, this.getX(), this.getY() + 1.5, this.getZ(),
-                6, 0.4, 0.9, 0.4, 0.05);
-        if (stateTick == TELEPORT_LOCK_TICK) {
+                punishing ? 14 : 6, 0.4, 0.9, 0.4, 0.05);
+        if (stateTick == lock) {
             teleportDest = findTeleportSpot(level, target);
             if (teleportDest == null) {
                 // 玩家周围没有落脚点：改用远程
+                punishing = false;
                 attack = magicCooldown <= 0 ? Attack.MAGIC : Attack.SPEAR;
-                startAttack(attack);
+                startAttack(attack, false);
                 return;
             }
         }
@@ -655,16 +834,26 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
             level.sendParticles(ParticleTypes.PORTAL, teleportDest.x, teleportDest.y + 1.0, teleportDest.z,
                     10, 0.3, 0.8, 0.3, 0.6);
         }
-        if (stateTick >= TELEPORT_CHARGE_TICKS && teleportDest != null) {
-            spawnTeleportBurst(level);
-            this.teleportTo(teleportDest.x, teleportDest.y, teleportDest.z);
-            this.setDeltaMovement(Vec3.ZERO);
-            faceTowards(target, 1.0f);
-            spawnTeleportBurst(level);
-            this.playSound(ModSounds.DRAGON_SOUL_TELEPORT.get(), 2.0f, 1.0f);
-            this.triggerAnim(ACTION_CONTROLLER, "teleport_arrive");
-            enterState(State.TELEPORT_ARRIVE);
+        if (stateTick >= charge && teleportDest != null) {
+            blinkTo(level, teleportDest, target);
+            if (punishing) {
+                startAttack(Attack.GRAB, true); // 吃东西被抓：落地立刻伸手
+            } else {
+                this.triggerAnim(ACTION_CONTROLLER, "teleport_arrive");
+                fastAttack = false;
+                enterState(State.TELEPORT_ARRIVE);
+            }
         }
+    }
+
+    /** 瞬移到 spot 并面向目标，原地留下残影和粒子 */
+    private void blinkTo(ServerLevel level, Vec3 spot, @Nullable LivingEntity target) {
+        spawnTeleportBurst(level);
+        this.teleportTo(spot.x, spot.y, spot.z);
+        this.setDeltaMovement(Vec3.ZERO);
+        faceTowards(target, 1.0f);
+        spawnTeleportBurst(level);
+        this.playSound(ModSounds.DRAGON_SOUL_TELEPORT.get(), 2.0f, 1.0f);
     }
 
     @Nullable
@@ -689,36 +878,52 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
 
     // ==================== 出招 ====================
 
-    private void startAttack(Attack next) {
+    private int hitTick() {
+        return fastAttack ? FAST_HIT_TICK : attack.hitTick;
+    }
+
+    private int attackLength() {
+        return fastAttack ? attack.length - attack.hitTick + FAST_HIT_TICK : attack.length;
+    }
+
+    private void startAttack(Attack next, boolean fast) {
         attack = next;
+        fastAttack = fast && next.hasFast();
         hitLanded = false;
         enterState(State.ATTACK);
         this.setDeltaMovement(Vec3.ZERO);
-        this.triggerAnim(ACTION_CONTROLLER, next.anim);
+        this.triggerAnim(ACTION_CONTROLLER, next.anim + (fastAttack ? "_fast" : ""));
         switch (next) {
             case MAGIC -> {
                 magicCooldown = MAGIC_COOLDOWN;
                 this.playSound(ModSounds.DRAGON_SOUL_MAGIC_CHARGE.get(), 2.0f, 1.0f);
+                maybeSpeak("magic", 0.6);
             }
-            case SPEAR -> spearCooldown = SPEAR_COOLDOWN;
+            case SPEAR -> {
+                spearCooldown = SPEAR_COOLDOWN;
+                maybeSpeak("spear", 0.6);
+            }
             case GRAB -> grabCooldown = GRAB_COOLDOWN;
             default -> {
+                if (next.melee) {
+                    maybeSpeak(this.random.nextBoolean() ? "kiai1" : "kiai2", 0.3);
+                }
             }
         }
     }
 
     private void tickAttack(ServerLevel level, LivingEntity target) {
-        int hit = attack.hitTick;
+        int hit = hitTick();
         // 前摇前 70% 会跟着目标转身，之后锁定方向：看准时机侧移就能躲开
         if (stateTick < hit * 0.7) {
-            faceTowards(target, 0.35f);
+            faceTowards(target, fastAttack ? 0.8f : 0.35f);
         }
         this.setDeltaMovement(Vec3.ZERO);
 
         switch (attack) {
             case CLEAVE -> {
                 if (stateTick == hit - 3) this.playSound(ModSounds.DRAGON_SOUL_CLEAVE.get(), 1.5f, 1.0f);
-                if (stateTick == hit) meleeHit(level, 4.5, 0.5, CLEAVE_DAMAGE, false);
+                if (stateTick == hit) cleaveImpact(level);
             }
             case THRUST -> {
                 if (stateTick == hit - 2) this.playSound(ModSounds.DRAGON_SOUL_THRUST.get(), 1.5f, 1.0f);
@@ -726,11 +931,18 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
                     // 突刺时向前冲一小段
                     this.move(MoverType.SELF, forward().scale(0.55));
                 }
-                if (stateTick == hit) meleeHit(level, 5.5, 0.75, THRUST_DAMAGE, false);
+                if (stateTick == hit) {
+                    Vec3 tip = this.position().add(forward().scale(THRUST_RANGE * 0.6)).add(0, 1.2, 0);
+                    level.sendParticles(ParticleTypes.CRIT, tip.x, tip.y, tip.z, 14, 1.6, 0.3, 1.6, 0.1);
+                    hitAll(victimsInFront(level, THRUST_RANGE, 0.75), THRUST_DAMAGE);
+                }
             }
             case SLASH -> {
                 if (stateTick == hit - 2) this.playSound(ModSounds.DRAGON_SOUL_SLASH.get(), 1.5f, 1.0f);
-                if (stateTick == hit) meleeHit(level, 4.5, -0.1, SLASH_DAMAGE, true);
+                if (stateTick == hit) {
+                    sweepParticles(level, SLASH_RANGE * 0.7);
+                    hitAll(victimsInFront(level, SLASH_RANGE, -0.4), SLASH_DAMAGE);
+                }
             }
             case KICK -> {
                 if (stateTick == hit) {
@@ -761,13 +973,13 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
             }
         }
 
-        if (stateTick >= attack.length) {
-            finishAttack(target);
+        if (stateTick >= attackLength()) {
+            finishAttack(level, target);
         }
     }
 
-    private void finishAttack(LivingEntity target) {
-        // 半血以下：近战有概率直接接下一招（不再瞬移前摇），最多连两段
+    private void finishAttack(ServerLevel level, LivingEntity target) {
+        // 半血以下：近战有概率直接接下一招，最多连两段
         boolean lowHp = this.getHealth() < this.getMaxHealth() * 0.5;
         if (attack.melee && attack != Attack.GRAB && lowHp && comboCount < MAX_COMBO
                 && target != null && target.isAlive() && this.random.nextDouble() < COMBO_CHANCE) {
@@ -777,7 +989,7 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
             if (next == attack) {
                 next = chain[(next.ordinal() + 1) % chain.length];
             }
-            engage(next, target);
+            engage(level, next, target);
             return;
         }
         switch (attack) {
@@ -803,9 +1015,11 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
             recoveryTicks = 28;
         } else if ((roll -= tauntChance) < 0) {
             this.triggerAnim(ACTION_CONTROLLER, "taunt");
+            speak("taunt", false);
             recoveryTicks = 32;
         } else if (roll - pantChance < 0) {
             this.triggerAnim(ACTION_CONTROLLER, "pant");
+            maybeSpeak("pant", 0.5);
             recoveryTicks = 40;
         } else {
             recoveryTicks = 10;
@@ -813,16 +1027,21 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     }
 
     /**
-     * 枪尖前方扇形范围内的目标：range 为距离，minDot 为与朝向夹角余弦的下限（越小扇形越宽）
+     * 能被攻击判定命中的实体：除她自己、她抓着的人、创造 / 旁观模式玩家外的所有生物（范围攻击会波及周围所有人）
+     */
+    private boolean canHit(LivingEntity e) {
+        return e != this && e.isAlive() && !e.isSpectator() && !this.hasPassenger(e)
+                && !(e instanceof Player p && p.isCreative());
+    }
+
+    /**
+     * 身前扇形范围内的目标：range 为距离，minDot 为与朝向夹角余弦的下限（越小扇形越宽，-1 为一整圈）
      */
     private List<LivingEntity> victimsInFront(ServerLevel level, double range, double minDot) {
         Vec3 look = forward();
         return level.getEntitiesOfClass(LivingEntity.class, this.getBoundingBox().inflate(range), e -> {
-            if (e == this || !e.isAlive() || e.isSpectator() || e instanceof Player p && p.isCreative()) {
+            if (!canHit(e)) {
                 return false;
-            }
-            if (!(e instanceof Player) && e != this.getTarget()) {
-                return false; // 只打玩家和当前目标，不误伤路过的生物
             }
             Vec3 to = e.position().subtract(this.position());
             Vec3 flat = horizontal(to);
@@ -833,15 +1052,45 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         });
     }
 
-    private void meleeHit(ServerLevel level, double range, double minDot, float damage, boolean sweep) {
-        Vec3 tip = this.position().add(forward().scale(range * 0.6)).add(0, 1.2, 0);
-        level.sendParticles(sweep ? ParticleTypes.SWEEP_ATTACK : ParticleTypes.CRIT, tip.x, tip.y, tip.z,
-                sweep ? 3 : 10, sweep ? 1.2 : 0.4, 0.3, sweep ? 1.2 : 0.4, 0.1);
-        for (LivingEntity victim : victimsInFront(level, range, minDot)) {
+    private void hitAll(List<LivingEntity> victims, float damage) {
+        for (LivingEntity victim : victims) {
             if (victim.hurt(this.damageSources().mobAttack(this), damage)) {
                 hitLanded = true;
                 this.playSound(ModSounds.DRAGON_SOUL_HIT.get(), 1.2f, 1.0f);
             }
+        }
+    }
+
+    /**
+     * 劈：枪尖砸进地面，以落点为圆心一圈都受到伤害
+     */
+    private void cleaveImpact(ServerLevel level) {
+        Vec3 impact = this.position().add(forward().scale(2.2));
+        double surface = groundY(level, impact.x, impact.z, this.getY() - 1);
+        double ground = surface > this.getY() || surface < this.getY() - 6 ? this.getY() : surface;
+        int points = 20;
+        for (int i = 0; i < points; i++) {
+            double a = i * Math.PI * 2 / points;
+            level.sendParticles(ParticleTypes.CLOUD, impact.x + Math.cos(a) * CLEAVE_RADIUS, ground + 0.2,
+                    impact.z + Math.sin(a) * CLEAVE_RADIUS, 1, 0.1, 0.05, 0.1, 0.02);
+        }
+        level.sendParticles(ParticleTypes.EXPLOSION, impact.x, ground + 0.5, impact.z, 1, 0, 0, 0, 0);
+        level.sendParticles(ParticleTypes.SWEEP_ATTACK, impact.x, ground + 1.0, impact.z, 4, 1.5, 0.2, 1.5, 0);
+        this.playSound(SoundEvents.GENERIC_EXPLODE, 1.0f, 1.4f);
+        double radius = CLEAVE_RADIUS;
+        List<LivingEntity> victims = level.getEntitiesOfClass(LivingEntity.class,
+                new AABB(impact, impact).inflate(radius + 1, 4, radius + 1),
+                e -> canHit(e) && horizontal(e.position().subtract(impact)).length() <= radius + e.getBbWidth() / 2
+                        && Math.abs(e.getY() - ground) < 4.0);
+        hitAll(victims, CLEAVE_DAMAGE);
+    }
+
+    private void sweepParticles(ServerLevel level, double radius) {
+        Vec3 look = forward();
+        for (int i = -3; i <= 3; i++) {
+            Vec3 dir = rotateY(look, i * 30.0);
+            Vec3 p = this.position().add(dir.scale(radius)).add(0, 1.2, 0);
+            level.sendParticles(ParticleTypes.SWEEP_ATTACK, p.x, p.y, p.z, 1, 0, 0, 0, 0);
         }
     }
 
@@ -851,18 +1100,23 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         if (!(target instanceof Player player) || player.isCreative() || player.isSpectator()) {
             return false;
         }
-        if (!victimsInFront(level, 3.5, 0.4).contains(target)) {
+        // 惩罚抓取刚瞬移到身边，判定更宽
+        boolean inReach = punishing ? this.distanceTo(target) <= 4.5 : victimsInFront(level, 3.5, 0.4).contains(target);
+        punishing = false;
+        if (!inReach) {
             return false; // 抓空，按普通动作收尾（后摇里喘息）
         }
         target.hurt(this.damageSources().mobAttack(this), GRAB_DAMAGE);
         if (!target.isAlive() || !target.startRiding(this, true)) {
             return false;
         }
+        player.stopUsingItem(); // 嘴里的东西掉了
         releasing = false;
         carryStartY = this.getY();
         this.setMode(MODE_CARRY);
         enterState(State.CARRY_UP);
         this.playSound(ModSounds.DRAGON_SOUL_WINGS.get(), 2.0f, 1.0f);
+        speak("grab", false);
         return true;
     }
 
@@ -876,6 +1130,7 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         boolean high = this.getY() - carryStartY >= CARRY_HEIGHT;
         if (high || this.verticalCollision || stateTick > CARRY_MAX_TICKS || this.getPassengers().isEmpty()) {
             this.triggerAnim(ACTION_CONTROLLER, "grab_throw");
+            speak("throw", true);
             enterState(State.THROW);
         }
     }
@@ -922,6 +1177,92 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     @Override
     public boolean shouldRiderSit() {
         return false;
+    }
+
+    // ---------- 大招：龙魂解放 ----------
+
+    private boolean canBeUltimateTarget(LivingEntity target) {
+        return !(target instanceof Player p && (p.isCreative() || p.isSpectator())) && !target.isPassenger();
+    }
+
+    private void startUltimate(ServerLevel level, LivingEntity target) {
+        ultimateCooldown = ULTIMATE_COOLDOWN;
+        enterState(State.ULTIMATE);
+        darkened.clear();
+        Vec3 spot = findTeleportSpot(level, target);
+        if (spot != null) {
+            startTrail(4);
+            blinkTo(level, spot, target);
+        }
+        this.triggerAnim(ACTION_CONTROLLER, ULTIMATE_ANIM);
+        this.playSound(ModSounds.DRAGON_SOUL_ULTIMATE.get(), 3.0f, 1.0f);
+        speak("ultimate", true);
+        level.sendParticles(ParticleTypes.SONIC_BOOM, this.getX(), this.getY() + 1.5, this.getZ(), 1, 0, 0, 0, 0);
+    }
+
+    /**
+     * 5 秒乱舞：紧贴目标（目标跑开就瞬移跟上），每秒三击范围伤害；被打中的玩家陷入黑暗直到大招结束。期间她无敌。
+     */
+    private void tickUltimate(ServerLevel level, @Nullable LivingEntity target) {
+        this.setDeltaMovement(Vec3.ZERO);
+        boolean hasTarget = target != null && target.isAlive();
+        if (hasTarget) {
+            faceTowards(target, 0.6f);
+            if (stateTick < ULT_START_TICKS + ULT_FLURRY_TICKS
+                    && horizontal(target.position().subtract(this.position())).length() > 3.2) {
+                Vec3 spot = findTeleportSpot(level, target);
+                if (spot != null) {
+                    startTrail(3);
+                    blinkTo(level, spot, target);
+                }
+            }
+        }
+        level.sendParticles(ParticleTypes.DRAGON_BREATH, this.getX(), this.getY() + 1.2, this.getZ(), 3, 0.5, 0.8, 0.5, 0.01);
+
+        int t = stateTick - ULT_START_TICKS;
+        if (t >= 0 && t < ULT_FLURRY_TICKS) {
+            int inCycle = t % 20;
+            for (int hit : ULT_HIT_TICKS) {
+                if (inCycle == hit) {
+                    this.playSound(inCycle == 10 ? ModSounds.DRAGON_SOUL_SLASH.get() : ModSounds.DRAGON_SOUL_THRUST.get(), 1.5f, 1.2f);
+                    sweepParticles(level, 2.5);
+                    ultimateHit(level, ULT_HIT_DAMAGE, ULT_TOTAL - stateTick);
+                }
+            }
+        }
+        if (stateTick == ULT_START_TICKS + ULT_FLURRY_TICKS + 6) {
+            this.playSound(ModSounds.DRAGON_SOUL_CLEAVE.get(), 2.0f, 0.8f);
+            cleaveImpact(level);
+            ultimateHit(level, ULT_FINISH_DAMAGE, 0);
+        }
+        if (stateTick >= ULT_TOTAL) {
+            endUltimate(level);
+        }
+    }
+
+    private void ultimateHit(ServerLevel level, float damage, int darknessTicks) {
+        for (LivingEntity victim : victimsInFront(level, ULT_RANGE, -0.3)) {
+            victim.invulnerableTime = 0; // 一秒三击，不能被受击无敌帧吃掉
+            if (victim.hurt(this.damageSources().mobAttack(this), damage)) {
+                this.playSound(ModSounds.DRAGON_SOUL_HIT.get(), 1.2f, 1.1f);
+                if (victim instanceof Player && darknessTicks > 0) {
+                    victim.addEffect(new MobEffectInstance(MobEffects.DARKNESS, darknessTicks + 10, 0, false, false), this);
+                    darkened.add(victim.getUUID());
+                }
+            }
+        }
+    }
+
+    private void endUltimate(ServerLevel level) {
+        for (UUID id : darkened) {
+            Entity e = level.getEntity(id);
+            if (e instanceof LivingEntity living) {
+                living.removeEffect(MobEffects.DARKNESS);
+            }
+        }
+        darkened.clear();
+        // 大招后一定喘口气：这是全场最好的反击机会
+        beginRecovery(0.0, 0.0, 1.0);
     }
 
     // ---------- 法阵龙息 ----------
@@ -1061,12 +1402,15 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         if (flat.lengthSqr() < 1.0E-4) {
             return;
         }
-        float yaw = (float) (Mth.atan2(flat.z, flat.x) * Mth.RAD_TO_DEG) - 90.0f;
-        float next = Mth.rotLerp(speed, this.getYRot(), yaw);
+        float next = Mth.rotLerp(speed, this.getYRot(), yawOf(flat));
         this.setYRot(next);
         this.yBodyRot = next;
         this.yHeadRot = next;
         this.setXRot(0);
+    }
+
+    private static float yawOf(Vec3 direction) {
+        return (float) (Mth.atan2(direction.z, direction.x) * Mth.RAD_TO_DEG) - 90.0f;
     }
 
     private void moveSmoothlyTo(Vec3 pos) {
@@ -1104,20 +1448,34 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     }
 
     /**
-     * 客户端：瞬移等大距离位移直接到位，不做 3 tick 插值（否则看起来像分几段才到，像卡住一样）
+     * 客户端位置插值：
+     * - 正常移动（包括出场盘旋，每 tick 约 1 格）用 2 步插值，连续平滑；
+     * - 高速冲刺（DATA_TRAIL）用 1 步插值，每 tick 精确到位，渲染时在两 tick 之间平滑过渡并留下残影；
+     * - 和上一个目标点相差 4 格以上视为瞬移，直接到位（不然会看到她分几段"滑"过去），原地留一个残影。
      */
     @Override
     public void lerpTo(double x, double y, double z, float yRot, float xRot, int steps, boolean teleport) {
-        if (this.level().isClientSide && this.distanceToSqr(x, y, z) > 6.25) {
-            this.setPos(x, y, z);
-            this.xo = x;
-            this.yo = y;
-            this.zo = z;
-            this.xOld = x;
-            this.yOld = y;
-            this.zOld = z;
-            super.lerpTo(x, y, z, yRot, xRot, 1, teleport);
-            return;
+        if (this.level().isClientSide) {
+            boolean lerping = this.lerpSteps > 0;
+            double fromX = lerping ? this.lerpX : this.getX();
+            double fromY = lerping ? this.lerpY : this.getY();
+            double fromZ = lerping ? this.lerpZ : this.getZ();
+            double jumpSqr = (x - fromX) * (x - fromX) + (y - fromY) * (y - fromY) + (z - fromZ) * (z - fromZ);
+            if (!trail() && jumpSqr > 16.0) {
+                if (!this.isInvisible()) {
+                    afterimages.add(new Afterimage(this.getX(), this.getY(), this.getZ(), this.yBodyRot, this.tickCount));
+                }
+                this.setPos(x, y, z);
+                this.xo = x;
+                this.yo = y;
+                this.zo = z;
+                this.xOld = x;
+                this.yOld = y;
+                this.zOld = z;
+                super.lerpTo(x, y, z, yRot, xRot, 1, teleport);
+                return;
+            }
+            steps = trail() ? 1 : 2;
         }
         super.lerpTo(x, y, z, yRot, xRot, steps, teleport);
     }
@@ -1126,8 +1484,8 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
 
     @Override
     public boolean hurt(DamageSource source, float amount) {
-        // 出场期间无敌（/kill 之类绕过无敌的伤害除外）
-        if (!introDone && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
+        // 出场期间、大招期间无敌（/kill 之类绕过无敌的伤害除外）
+        if ((!introDone || state == State.ULTIMATE) && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             return false;
         }
         return super.hurt(source, amount);
@@ -1195,6 +1553,12 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     @Override
     public void die(DamageSource damageSource) {
         this.bossEvent.removeAllPlayers();
+        if (!this.level().isClientSide && !this.dead) {
+            speak("death", true);
+        }
+        if (!this.level().isClientSide && this.level() instanceof ServerLevel level && state == State.ULTIMATE) {
+            endUltimate(level);
+        }
         super.die(damageSource);
     }
 
@@ -1204,6 +1568,9 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
             releasePassengers(false);
             if (healingCrystal != null && healingCrystal.isAlive()) {
                 healingCrystal.setBeamTarget(null);
+            }
+            if (rift != null && rift.isAlive()) {
+                rift.discard();
             }
         }
         super.remove(reason);
@@ -1240,6 +1607,8 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         tag.putDouble("RiftZ", riftPos.z);
         tag.putDouble("EmergeX", emergeDir.x);
         tag.putDouble("EmergeZ", emergeDir.z);
+        tag.putInt("UltimateCooldown", ultimateCooldown);
+        tag.putBoolean("HalfSpoken", halfSpoken);
     }
 
     @Override
@@ -1252,12 +1621,20 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         if (tag.contains("EmergeX")) {
             emergeDir = new Vec3(tag.getDouble("EmergeX"), 0, tag.getDouble("EmergeZ"));
         }
+        if (tag.contains("UltimateCooldown")) {
+            ultimateCooldown = tag.getInt("UltimateCooldown");
+        }
+        halfSpoken = tag.getBoolean("HalfSpoken");
+        engageSpoken = true;
         if (introDone) {
             this.setInvisible(false);
             this.setMode(MODE_FIGHT);
         } else {
             this.bossEvent.setVisible(false);
-            if (introTick < EMERGE_START) {
+            if (introTick < DASH_START) {
+                // 裂缝实体不存档：从头重新撕开一次
+                introTick = Math.min(introTick, RIFT_START - 1);
+                this.setInvisible(true);
                 this.setMode(MODE_HIDDEN);
             }
         }
@@ -1275,17 +1652,25 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
             case MODE_FIGHT -> state.setAndContinue(STANCE);
             default -> state.setAndContinue(HOVER);
         }));
-        // action：一次性动作（出招、后摇、出场），覆盖 base 的同名骨骼
+        // action：一次性动作（出招、后摇、出场、大招），覆盖 base 的同名骨骼
         AnimationController<DragonSoulBoss> action = new AnimationController<>(this, ACTION_CONTROLLER, 3, state -> PlayState.STOP);
         for (String name : ACTIONS) {
             action.triggerableAnim(name, RawAnimation.begin().thenPlay("boss_" + name));
         }
+        action.triggerableAnim(ULTIMATE_ANIM, RawAnimation.begin().thenPlay("boss_ult_start")
+                .thenPlayXTimes("boss_ult_flurry", 5).thenPlay("boss_ult_finish"));
         controllers.add(action);
         // blink：只动眼睛，每隔几秒眨一次
         controllers.add(new AnimationController<>(this, BLINK_CONTROLLER, 0, state -> state.setAndContinue(BLINK)));
         // spear：长枪掷出后到飞回之前，手里的枪隐藏
         controllers.add(new AnimationController<>(this, SPEAR_CONTROLLER, 0,
                 state -> spearOut() ? state.setAndContinue(SPEAR_HIDDEN) : PlayState.STOP));
+        // face：说台词时的表情（眉毛、眼睛）和口型，说话期间覆盖眨眼
+        AnimationController<DragonSoulBoss> face = new AnimationController<>(this, FACE_CONTROLLER, 2, state -> PlayState.STOP);
+        for (String id : ModSounds.DRAGON_SOUL_VOICE_IDS) {
+            face.triggerableAnim("voice_" + id, RawAnimation.begin().thenPlay("boss_voice_" + id));
+        }
+        controllers.add(face);
     }
 
     @Override

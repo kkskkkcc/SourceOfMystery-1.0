@@ -6,15 +6,19 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "Where the Ender Dragon's death animation ends, a $(l)rift$() tears open: the Dragon Soul flies out, circles twice amid thunder, then descends in front of you and levels her spear at you. Your camera follows her during the entrance, and she cannot be hurt until it ends.$(br2)The End pillars also regrow their $(l)End Crystals$(). Just like the Ender Dragon, crystals within 32 blocks keep healing her, so break them first."
+      "text": "Once the Ender Dragon's death animation has completely finished, a $(l)void rift$() cracks open where it vanished: the Dragon Soul bursts out as a blur of afterimages, circles twice amid thunder, then descends in front of you and points her spear at you with one hand. Your camera follows her during the entrance, and she cannot be hurt until it ends.$(br2)The End pillars also regrow their $(l)End Crystals$(). Just like the Ender Dragon, crystals within 32 blocks keep healing her, so break them first."
     },
     {
       "type": "patchouli:text",
-      "text": "Every move has a $(l)wind-up$(), so a well-timed sidestep avoids it:$(li)$(l)Blink$(): she folds her wings and charges for a second. A purple swirl at your feet marks where she will land, so get out of it.$(li)$(l)Cleave / Thrust / Slash$(): 20 / 15 / 10 damage. The cleave raises the spear overhead, the thrust twists back first, the slash swings the spear out to the side.$(li)$(l)Kick$(): a chambered front kick that launches you about 10 blocks."
+      "text": "Most moves have a $(l)wind-up$(), so a well-timed sidestep avoids them:$(li)$(l)Blink$(): she usually folds her wings and charges, and a purple swirl at your feet marks where she will land, but she can also $(l)blink in without warning$() and strike immediately.$(li)$(l)Cleave / Thrust / Slash$(): 20 / 15 / 10 damage, all $(l)area attacks$(): the cleave hits a ring around its impact, the thrust pierces a line, the slash sweeps a wide arc.$(li)$(l)Kick$(): a front kick that launches you about 10 blocks."
     },
     {
       "type": "patchouli:text",
-      "text": "$(li)$(l)Grab$(): her left hand draws back and lunges. If caught you are carried 20 blocks up and dropped, so keep a water bucket or slow falling ready.$(li)$(l)Sigil Breath$(): she raises a hand, draws a magic circle and fires a fan of 5 dragon fireballs.$(li)$(l)Spear Throw$(): a javelin throw. The spear flies back to her hand.$(br2)After attacking she often twirls her spear, taunts or catches her breath. Those are your $(l)openings$(). Below half health her melee can chain into a second strike."
+      "text": "$(li)$(l)Grab$(): if caught you are carried 20 blocks up and dropped. $(l)Eating or drinking in front of her$() always makes her blink over and grab you.$(li)$(l)Sigil Breath$(): a fan of 5 dragon fireballs.$(li)$(l)Spear Throw$(): the spear flies back to her hand.$(br2)After attacking she often twirls her spear, taunts or catches her breath. Those are your $(l)openings$(). Below half health her melee can chain into a second strike."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(l)Dragon Soul Unleashed$(): any attack has a 20% chance to become her ultimate (then not again for 2 minutes). She blinks right next to you and strikes 3 times a second for 5 seconds while $(l)invulnerable$(); anyone she hits is plunged into $(l)Darkness$() until it ends. Running away does not help, she keeps blinking after you. Survive it and she always stops to catch her breath: the best opening of the fight."
     },
     {
       "type": "patchouli:spotlight",

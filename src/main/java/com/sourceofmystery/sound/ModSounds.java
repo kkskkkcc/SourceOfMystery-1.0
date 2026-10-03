@@ -7,6 +7,9 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * 模组音效。音频文件复用原版素材，在 assets/sourceofmystery/sounds.json 里调过音高和音量，
  * 想换成自制音频时只需改 sounds.json 指向新的 .ogg，不用改代码。
@@ -75,6 +78,34 @@ public final class ModSounds {
 
     /** 技能前摇 */
     public static final RegistryObject<SoundEvent> DIVINE_HEAVENLY_DAO_CHARGE = register("divine_heavenly_dao.charge");
+
+    /** 降临：法阵展开、天雷滚滚 */
+    public static final RegistryObject<SoundEvent> DIVINE_HEAVENLY_DAO_DESCEND = register("divine_heavenly_dao.descend");
+
+    /** 大招：凝聚黑色球体 */
+    public static final RegistryObject<SoundEvent> DIVINE_HEAVENLY_DAO_ORB_CHARGE = register("divine_heavenly_dao.orb_charge");
+
+    /** 大招：黑色球体爆炸 */
+    public static final RegistryObject<SoundEvent> DIVINE_HEAVENLY_DAO_ORB_EXPLODE = register("divine_heavenly_dao.orb_explode");
+
+    /** 龙魂大招：龙魂解放的爆发声 */
+    public static final RegistryObject<SoundEvent> DRAGON_SOUL_ULTIMATE = register("dragon_soul.ultimate");
+
+    /**
+     * 龙魂语音（日语女声，HTS Voice "Mei"，CC BY 3.0，见 assets/sourceofmystery/sounds/voice/CREDITS.txt）。
+     * 每条语音都有同名的口型 + 表情动画 boss_voice_&lt;id&gt;，由 DragonSoulBoss.speak 一起触发。
+     */
+    public static final String[] DRAGON_SOUL_VOICE_IDS = {
+            "intro", "engage", "quick", "grab", "punish", "throw", "spear", "magic", "taunt", "pant",
+            "half", "ultimate", "kill", "death", "kiai1", "kiai2"
+    };
+    public static final Map<String, RegistryObject<SoundEvent>> DRAGON_SOUL_VOICES = new HashMap<>();
+
+    static {
+        for (String id : DRAGON_SOUL_VOICE_IDS) {
+            DRAGON_SOUL_VOICES.put(id, register("dragon_soul.voice." + id));
+        }
+    }
 
     private ModSounds() {
     }

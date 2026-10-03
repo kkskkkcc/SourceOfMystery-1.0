@@ -449,5 +449,198 @@
         "volume": 1.0
       }
     ]
+  },
+  "divine_heavenly_dao.descend": {
+    "subtitle": "subtitles.sourceofmystery.divine_heavenly_dao.descend",
+    "sounds": [
+      {
+        "name": "minecraft:ambient/weather/thunder1",
+        "pitch": 0.5,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:ambient/weather/thunder2",
+        "pitch": 0.5,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:ambient/weather/thunder3",
+        "pitch": 0.5,
+        "volume": 1.0
+      }
+    ]
+  },
+  "divine_heavenly_dao.orb_charge": {
+    "subtitle": "subtitles.sourceofmystery.divine_heavenly_dao.orb_charge",
+    "sounds": [
+      {
+        "name": "minecraft:block/beacon/ambient",
+        "pitch": 0.5,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:portal/portal",
+        "pitch": 0.5,
+        "volume": 0.8
+      }
+    ]
+  },
+  "divine_heavenly_dao.orb_explode": {
+    "subtitle": "subtitles.sourceofmystery.divine_heavenly_dao.orb_explode",
+    "sounds": [
+      {
+        "name": "minecraft:mob/warden/sonic_boom1",
+        "pitch": 0.5,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/warden/sonic_boom2",
+        "pitch": 0.5,
+        "volume": 1.0
+      }
+    ]
+  },
+  "dragon_soul.ultimate": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.ultimate",
+    "sounds": [
+      {
+        "name": "minecraft:mob/enderdragon/growl1",
+        "pitch": 1.3,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:mob/enderdragon/growl2",
+        "pitch": 1.3,
+        "volume": 1.0
+      }
+    ]
+  },
+  "dragon_soul.voice.intro": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.voice.intro",
+    "sounds": [
+      {
+        "name": "sourceofmystery:voice/dragon_soul/intro"
+      }
+    ]
+  },
+  "dragon_soul.voice.engage": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.voice.engage",
+    "sounds": [
+      {
+        "name": "sourceofmystery:voice/dragon_soul/engage"
+      }
+    ]
+  },
+  "dragon_soul.voice.quick": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.voice.quick",
+    "sounds": [
+      {
+        "name": "sourceofmystery:voice/dragon_soul/quick"
+      }
+    ]
+  },
+  "dragon_soul.voice.grab": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.voice.grab",
+    "sounds": [
+      {
+        "name": "sourceofmystery:voice/dragon_soul/grab"
+      }
+    ]
+  },
+  "dragon_soul.voice.punish": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.voice.punish",
+    "sounds": [
+      {
+        "name": "sourceofmystery:voice/dragon_soul/punish"
+      }
+    ]
+  },
+  "dragon_soul.voice.throw": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.voice.throw",
+    "sounds": [
+      {
+        "name": "sourceofmystery:voice/dragon_soul/throw"
+      }
+    ]
+  },
+  "dragon_soul.voice.spear": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.voice.spear",
+    "sounds": [
+      {
+        "name": "sourceofmystery:voice/dragon_soul/spear"
+      }
+    ]
+  },
+  "dragon_soul.voice.magic": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.voice.magic",
+    "sounds": [
+      {
+        "name": "sourceofmystery:voice/dragon_soul/magic"
+      }
+    ]
+  },
+  "dragon_soul.voice.taunt": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.voice.taunt",
+    "sounds": [
+      {
+        "name": "sourceofmystery:voice/dragon_soul/taunt"
+      }
+    ]
+  },
+  "dragon_soul.voice.pant": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.voice.pant",
+    "sounds": [
+      {
+        "name": "sourceofmystery:voice/dragon_soul/pant"
+      }
+    ]
+  },
+  "dragon_soul.voice.half": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.voice.half",
+    "sounds": [
+      {
+        "name": "sourceofmystery:voice/dragon_soul/half"
+      }
+    ]
+  },
+  "dragon_soul.voice.ultimate": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.voice.ultimate",
+    "sounds": [
+      {
+        "name": "sourceofmystery:voice/dragon_soul/ultimate"
+      }
+    ]
+  },
+  "dragon_soul.voice.kill": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.voice.kill",
+    "sounds": [
+      {
+        "name": "sourceofmystery:voice/dragon_soul/kill"
+      }
+    ]
+  },
+  "dragon_soul.voice.death": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.voice.death",
+    "sounds": [
+      {
+        "name": "sourceofmystery:voice/dragon_soul/death"
+      }
+    ]
+  },
+  "dragon_soul.voice.kiai1": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.voice.kiai1",
+    "sounds": [
+      {
+        "name": "sourceofmystery:voice/dragon_soul/kiai1"
+      }
+    ]
+  },
+  "dragon_soul.voice.kiai2": {
+    "subtitle": "subtitles.sourceofmystery.dragon_soul.voice.kiai2",
+    "sounds": [
+      {
+        "name": "sourceofmystery:voice/dragon_soul/kiai2"
+      }
+    ]
   }
 }
