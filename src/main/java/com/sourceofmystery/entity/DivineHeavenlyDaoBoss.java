@@ -162,6 +162,8 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
     private int skillTicks = 0;
     private int skillCooldown = SKILL_COOLDOWN;
     private final int[] boltDelays = new int[STORM_BOLTS];
+    // 这一轮天雷已经劈中过的生物：每个生物一轮最多被劈一次（必中玩家的那一道也只有一下）
+    private final java.util.Set<UUID> stormStruck = new java.util.HashSet<>();
     private int abyssCooldown = 600;   // 开战 30 秒内不放大招
     @Nullable
     private AbyssOrb orb;
@@ -500,6 +502,7 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
      * 为天雷规划 18 道闪电的落下时间：均匀分布在 5 秒内并带一点随机；第 0 道是必中目标的那一道
      */
     private void planThunderStorm() {
+        stormStruck.clear();
         for (int i = 0; i < STORM_BOLTS; i++) {
             boltDelays[i] = (int) ((i + this.random.nextDouble()) * STORM_DURATION / STORM_BOLTS);
         }
@@ -542,21 +545,21 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
     }
 
     /**
-     * 随机挑一个周围的生物劈：优先挑当前目标以外的；只剩当前目标时也会劈它
+     * 随机挑一个周围还没被劈过的生物：当前目标只吃那一道必中的雷，不会被随机的雷再选中
      */
     @Nullable
     private LivingEntity randomStormVictim(ServerLevel level, @Nullable LivingEntity target) {
-        List<LivingEntity> candidates = findVictims(level, this.getBoundingBox().inflate(STORM_RANGE), this.position(),
+        List<LivingEntity> pool = findVictims(level, this.getBoundingBox().inflate(STORM_RANGE), this.position(),
                 this.getBbWidth() / 2 + STORM_RANGE);
-        List<LivingEntity> others = new ArrayList<>(candidates);
-        others.remove(target);
-        List<LivingEntity> pool = others.isEmpty() ? candidates : others;
+        pool.removeIf(e -> e == target || stormStruck.contains(e.getUUID()));
         return pool.isEmpty() ? null : pool.get(this.random.nextInt(pool.size()));
     }
 
     /**
      * 一道天雷：画面为原版闪电（不点火、不伤害），伤害由这里结算，Boss 自己不受影响。
-     * aimed 不为 null 时这道雷是冲着它去的，无论它此刻在不在落点范围内都会受到伤害
+     * aimed 不为 null 时这道雷是冲着它去的，无论它此刻在不在落点范围内都会受到伤害。
+     * 伤害类型是原版闪电，不无视护甲（护甲、保护附魔、本模组的额外减伤都照常生效）；
+     * 每个生物一轮天雷最多被劈一次
      */
     private void strikeBolt(ServerLevel level, double x, double y, double z, @Nullable LivingEntity aimed) {
         LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(level);
@@ -576,8 +579,9 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
         for (LivingEntity victim : victims) {
             double dx = victim.getX() - impact.x;
             double dz = victim.getZ() - impact.z;
-            if (victim == aimed || dx * dx + dz * dz <= BOLT_HIT_RADIUS * BOLT_HIT_RADIUS) {
-                victim.invulnerableTime = 0; // 多道闪电先后落在同一个目标身上时各自结算
+            boolean inRange = victim == aimed || dx * dx + dz * dz <= BOLT_HIT_RADIUS * BOLT_HIT_RADIUS;
+            if (inRange && stormStruck.add(victim.getUUID())) {
+                victim.invulnerableTime = 0; // 不被其他伤害的受击无敌帧吞掉
                 victim.hurt(source, BOLT_DAMAGE);
             }
         }

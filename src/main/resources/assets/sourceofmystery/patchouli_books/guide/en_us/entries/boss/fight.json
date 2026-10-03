@@ -10,7 +10,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "$(li)$(l)Earthshaker$(): a ring of sparks marks the ground, then it smashes down. Entities standing on the ground take 50 damage and are thrown 20 blocks up, so $(l)jump$() at the right moment.$(li)$(l)Heavenly Thunder$(): 18 bolts over 5 seconds, 100 damage each. $(l)One of them always strikes you$(); the rest strike nearby creatures.$(li)$(l)Heaven's Strike$(): a charged direct blow for 50 damage."
+      "text": "$(li)$(l)Earthshaker$(): a ring of sparks marks the ground, then it smashes down. Entities standing on the ground take 50 damage and are thrown 20 blocks up, so $(l)jump$() at the right moment.$(li)$(l)Heavenly Thunder$(): 18 bolts over 5 seconds, 100 damage each. $(l)One of them always strikes you$() (only once, and armor still applies); the rest strike nearby creatures.$(li)$(l)Heaven's Strike$(): a charged direct blow for 50 damage."
     },
     {
       "type": "patchouli:text",
