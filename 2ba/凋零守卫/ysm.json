@@ -1,0 +1,102 @@
+{
+	"spec": 2,
+	"metadata": {
+		"name": "Default",
+		"tips": "默认模型（Default Model）",
+		"license": {
+			"type": "All Rights Reserved"
+		},
+		"authors": [
+			{
+				"name": "blibli八奈八奈八",
+				"avatar": "avatar/《神秘之源》模组封面设计.png",
+				"role": "全职者"
+			}
+		],
+		"link": {
+			"home": "https://modrinth.com/mod/yes-steve-model",
+			"donate": "https://afdian.com/a/ysmmod"
+		}
+	},
+	"properties": {
+		"height_scale": 1.25,
+		"width_scale": 1.25,
+		"extra_animation": {
+			"extra0": "#extra_config",
+			"extra1": "",
+			"extra2": "",
+			"extra3": "",
+			"extra4": "",
+			"extra5": "",
+			"extra6": "",
+			"#extra_classify": "Extra Classify"
+		},
+		"extra_animation_classify": [
+			{
+				"id": "extra_classify",
+				"extra_animation": {
+					"extra0": "Extra In Classify 1",
+					"extra1": "Extra In Classify 2"
+				}
+			}
+		],
+		"extra_animation_buttons": [
+			{
+				"id": "extra_config",
+				"name": "Simple Config",
+				"config_forms": [
+					{
+						"type": "range",
+						"title": "Size/大小: ",
+						"description": "Change the player size (改变玩家大小)",
+						"value": "v.player_size",
+						"step": 0.05,
+						"min": 0.2,
+						"max": 3
+					}
+				]
+			}
+		],
+		"preview_animation": "idle",
+		"default_texture": "default",
+		"render_layers_first": false,
+		"free": true,
+		"disable_preview_rotation": false,
+		"all_cutout": false
+	},
+	"files": {
+		"player": {
+			"model": {
+				"main": "models/main.json",
+				"arm": "models/arm.json"
+			},
+			"animation": {
+				"main": "animations/main.animation.json",
+				"arm": "animations/arm.animation.json",
+				"extra": "animations/extra.animation.json",
+				"tac": "animations/tac.animation.json",
+				"carryon": "animations/carryon.animation.json",
+				"parcool": "animations/parcool.animation.json",
+				"swem": "animations/swem.animation.json",
+				"slashblade": "animations/slashblade.animation.json",
+				"tlm": "animations/tlm.animation.json"
+			},
+			"animation_controllers": ["controller/main.animation_controllers.json"],
+			"texture": [
+				{
+					"uv": "textures/default.png"
+				},
+				{
+					"uv": "textures/blue.png"
+				}
+			]
+		},
+		"arrow": {
+			"model": "models/arrow.json",
+			"animation": "animations/arrow.animation.json",
+			"texture": {
+				"uv": "textures/arrow.png"
+			}
+		}
+	}
+}
