@@ -91,6 +91,33 @@ public final class ModSounds {
     /** 龙魂大招：龙魂解放的爆发声 */
     public static final RegistryObject<SoundEvent> DRAGON_SOUL_ULTIMATE = register("dragon_soul.ultimate");
 
+    /** 泣死之主：凋灵躯壳爆开 */
+    public static final RegistryObject<SoundEvent> WEEPING_HUSK_BURST = register("weeping_death_lord.husk_burst");
+
+    /** 泣死之主：出场咆哮 */
+    public static final RegistryObject<SoundEvent> WEEPING_ROAR = register("weeping_death_lord.roar");
+
+    /** 泣死之主：挥动镰刀 */
+    public static final RegistryObject<SoundEvent> WEEPING_SWING = register("weeping_death_lord.swing");
+
+    /** 泣死之主：劈斩砸地、地震 */
+    public static final RegistryObject<SoundEvent> WEEPING_QUAKE = register("weeping_death_lord.quake");
+
+    /** 泣死之主：掷出镰刀 */
+    public static final RegistryObject<SoundEvent> WEEPING_THROW = register("weeping_death_lord.throw");
+
+    /** 泣死之主：凋灵头发射骷髅 */
+    public static final RegistryObject<SoundEvent> WEEPING_SKULL = register("weeping_death_lord.skull");
+
+    /** 泣死之主：吸附蓄力 */
+    public static final RegistryObject<SoundEvent> WEEPING_CHARGE = register("weeping_death_lord.charge");
+
+    /** 泣死之主：抓住玩家 */
+    public static final RegistryObject<SoundEvent> WEEPING_GRAB = register("weeping_death_lord.grab");
+
+    /** 泣死之主：斩碎空间 */
+    public static final RegistryObject<SoundEvent> WEEPING_SHATTER = register("weeping_death_lord.shatter");
+
     /**
      * 龙魂语音（日语女声，HTS Voice "Mei"，CC BY 3.0，见 assets/sourceofmystery/sounds/voice/CREDITS.txt）。
      * 每条语音都有同名的口型 + 表情动画 boss_voice_&lt;id&gt;，由 DragonSoulBoss.speak 一起触发。

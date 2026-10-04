@@ -78,9 +78,58 @@ public class ModEntities {
                             .updateInterval(1)
                             .build(new ResourceLocation(SourceOfMystery.MOD_ID, "abyss_orb").toString()));
 
+    public static final RegistryObject<EntityType<WeepingDeathLord>> WEEPING_DEATH_LORD =
+            ENTITIES.register("weeping_death_lord",
+                    () -> EntityType.Builder.of(WeepingDeathLord::new, MobCategory.MONSTER)
+                            .sized(1.4f, 3.6f)
+                            .fireImmune()
+                            .clientTrackingRange(16)
+                            .updateInterval(1)
+                            .build(new ResourceLocation(SourceOfMystery.MOD_ID, "weeping_death_lord").toString()));
+
+    public static final RegistryObject<EntityType<WitherHusk>> WITHER_HUSK =
+            ENTITIES.register("wither_husk",
+                    () -> EntityType.Builder.<WitherHusk>of(WitherHusk::new, MobCategory.MISC)
+                            .sized(0.9f, 3.5f)
+                            .noSave()
+                            .fireImmune()
+                            .clientTrackingRange(16)
+                            .updateInterval(20)
+                            .build(new ResourceLocation(SourceOfMystery.MOD_ID, "wither_husk").toString()));
+
+    public static final RegistryObject<EntityType<ThrownScythe>> THROWN_SCYTHE =
+            ENTITIES.register("thrown_scythe",
+                    () -> EntityType.Builder.<ThrownScythe>of(ThrownScythe::new, MobCategory.MISC)
+                            .sized(1.2f, 1.2f)
+                            .noSave()
+                            .fireImmune()
+                            .clientTrackingRange(8)
+                            .updateInterval(1)
+                            .build(new ResourceLocation(SourceOfMystery.MOD_ID, "thrown_scythe").toString()));
+
+    public static final RegistryObject<EntityType<DeathSkull>> DEATH_SKULL =
+            ENTITIES.register("death_skull",
+                    () -> EntityType.Builder.<DeathSkull>of(DeathSkull::new, MobCategory.MISC)
+                            .sized(0.3125f, 0.3125f)
+                            .noSave()
+                            .clientTrackingRange(4)
+                            .updateInterval(1)
+                            .build(new ResourceLocation(SourceOfMystery.MOD_ID, "death_skull").toString()));
+
+    public static final RegistryObject<EntityType<SpaceShatter>> SPACE_SHATTER =
+            ENTITIES.register("space_shatter",
+                    () -> EntityType.Builder.<SpaceShatter>of(SpaceShatter::new, MobCategory.MISC)
+                            .sized(0.5f, 0.5f)
+                            .noSave()
+                            .fireImmune()
+                            .clientTrackingRange(16)
+                            .updateInterval(20)
+                            .build(new ResourceLocation(SourceOfMystery.MOD_ID, "space_shatter").toString()));
+
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(DIVINE_HEAVENLY_DAO_BOSS.get(), DivineHeavenlyDaoBoss.createAttributes().build());
         event.put(DRAGON_SOUL_BOSS.get(), DragonSoulBoss.createAttributes().build());
         event.put(GIANT_WITHER.get(), WitherBoss.createAttributes().build());
+        event.put(WEEPING_DEATH_LORD.get(), WeepingDeathLord.createAttributes().build());
     }
 }

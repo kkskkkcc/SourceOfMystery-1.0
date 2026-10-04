@@ -125,5 +125,22 @@
   "message.sourceofmystery.boss.abyss": "The Divine Heavenly Dao raises its hands as darkness gathers... RUN!",
   "entity.sourceofmystery.void_rift": "Void Rift",
   "entity.sourceofmystery.heaven_sigil": "Heaven Sigil",
-  "entity.sourceofmystery.abyss_orb": "Abyss Orb"
+  "entity.sourceofmystery.abyss_orb": "Abyss Orb",
+  "entity.sourceofmystery.weeping_death_lord": "Weeping Death Lord",
+  "entity.sourceofmystery.wither_husk": "Wither Husk",
+  "entity.sourceofmystery.thrown_scythe": "Weeping Death Lord's Scythe",
+  "entity.sourceofmystery.death_skull": "Weeping Wither Skull",
+  "entity.sourceofmystery.space_shatter": "Shattered Space",
+  "message.sourceofmystery.weeping_death_lord.prefix": "[Weeping Death Lord]",
+  "message.sourceofmystery.weeping_death_lord.omen": "The Wither's remains turn pale... something is coming out.",
+  "message.sourceofmystery.weeping_death_lord.arrived": "The Weeping Death Lord opens her eyes. She will not turn on you - unless you strike first.",
+  "subtitles.sourceofmystery.weeping_death_lord.husk_burst": "Wither husk bursts",
+  "subtitles.sourceofmystery.weeping_death_lord.roar": "Weeping Death Lord roars",
+  "subtitles.sourceofmystery.weeping_death_lord.swing": "Scythe swings",
+  "subtitles.sourceofmystery.weeping_death_lord.quake": "Ground quakes",
+  "subtitles.sourceofmystery.weeping_death_lord.throw": "Scythe thrown",
+  "subtitles.sourceofmystery.weeping_death_lord.skull": "Wither skull fired",
+  "subtitles.sourceofmystery.weeping_death_lord.charge": "Darkness gathers",
+  "subtitles.sourceofmystery.weeping_death_lord.grab": "Weeping Death Lord seizes her prey",
+  "subtitles.sourceofmystery.weeping_death_lord.shatter": "Space shatters"
 }
