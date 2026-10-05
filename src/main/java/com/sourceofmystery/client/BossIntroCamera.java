@@ -46,6 +46,9 @@ public final class BossIntroCamera {
         if (ClientCinematicCache.shakeRemaining > 0) {
             ClientCinematicCache.shakeRemaining--;
         }
+        if (ClientCinematicCache.rootTicks > 0) {
+            ClientCinematicCache.rootTicks--;
+        }
         if (!ClientCinematicCache.active()) {
             return;
         }
@@ -63,6 +66,7 @@ public final class BossIntroCamera {
     }
 
     private static void stop() {
+        WeepingIntroDirector.stop();
         ClientCinematicCache.reset();
         tracking = false;
         fovScale = 1.0;
@@ -76,7 +80,7 @@ public final class BossIntroCamera {
 
     @SubscribeEvent
     public static void onMovementInput(MovementInputUpdateEvent event) {
-        if (!ClientCinematicCache.active()) {
+        if (!ClientCinematicCache.active() && ClientCinematicCache.rootTicks <= 0) {
             return;
         }
         Input input = event.getInput();
@@ -97,6 +101,11 @@ public final class BossIntroCamera {
             return;
         }
         if (!ClientCinematicCache.active()) {
+            applyShake(event);
+            return;
+        }
+        if (ClientCinematicCache.scripted) {
+            WeepingIntroDirector.applyAngles(event);
             applyShake(event);
             return;
         }
@@ -135,7 +144,7 @@ public final class BossIntroCamera {
     /**
      * 震屏：爆炸等事件期间镜头随机抖动，强度随剩余时间衰减
      */
-    private static void applyShake(ViewportEvent.ComputeCameraAngles event) {
+    static void applyShake(ViewportEvent.ComputeCameraAngles event) {
         if (ClientCinematicCache.shakeRemaining <= 0) {
             return;
         }
@@ -148,7 +157,9 @@ public final class BossIntroCamera {
 
     @SubscribeEvent
     public static void onFov(ViewportEvent.ComputeFov event) {
-        if (ClientCinematicCache.active() && event.usedConfiguredFov()) {
+        if (ClientCinematicCache.active() && ClientCinematicCache.scripted) {
+            WeepingIntroDirector.applyFov(event);
+        } else if (ClientCinematicCache.active() && event.usedConfiguredFov()) {
             event.setFOV(event.getFOV() * fovScale);
         }
     }

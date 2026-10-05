@@ -1,0 +1,24 @@
+{
+  "name": "Weeping Death Lord",
+  "icon": "minecraft:wither_skeleton_skull",
+  "category": "sourceofmystery:boss",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:text",
+      "text": "When a $(l)vanilla Wither$() dies it no longer just falls over: the camera pulls back, the Wither turns white and spins faster and faster, then bursts after 2 seconds and the $(l)Weeping Death Lord$() is born from the blast. She floats curled up, her eyes glow white as she opens them, then she flings her arms open with a Wither's roar and shoulders her scythe. During the scripted entrance day and night race across the sky and she cannot be hurt.$(br2)The Nether Star still drops."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "She is $(l)neutral$(): if you never attack her, she never attacks you. She drifts like a jellyfish within 120 blocks of where she was born and hunts the $(l)animals and monsters$() there.$(br2)She swings a huge, heavy scythe: every move winds up in at most 2 seconds and leaves at least 3 seconds of recovery - that is your window."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(li)$(l)Cleave$(): the scythe swings behind her, grows and crashes down, the impact sets off an $(l)earthquake$() for 30 damage.$(li)$(l)Wither Heads$(): she hurls the scythe first - if it hits you, you are $(l)pinned in place$(). Then her two wither heads float to her hands and fire 3 fast wither skulls per second for 5 seconds, 10 damage each plus Wither. The scythe only returns when they are done."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(li)$(l)Absorb$(): she raises the scythe and gathers a black orb for 10 seconds, pulling everyone nearby $(l)2 blocks per second$() towards her (you can still run). Get within 3 blocks and she seizes you in mid-air and shatters space with her scythe: $(l)100$() damage.$(li)$(l)Rapid Strikes$(): for 5 seconds she weaves around you leaving afterimages, 3 slashes per second, 5 damage each."
+    }
+  ]
+}

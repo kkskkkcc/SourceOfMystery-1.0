@@ -4,6 +4,7 @@ import com.sourceofmystery.SourceOfMystery;
 import com.sourceofmystery.entity.ModEntities;
 import com.sourceofmystery.hud.MysteryEnergyOverlay;
 import com.sourceofmystery.particle.ModParticles;
+import net.minecraft.client.renderer.entity.WitherSkullRenderer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
@@ -27,6 +28,11 @@ public class ClientModEvents {
         event.registerEntityRenderer(ModEntities.VOID_RIFT.get(), VoidRiftRenderer::new);
         event.registerEntityRenderer(ModEntities.HEAVEN_SIGIL.get(), HeavenSigilRenderer::new);
         event.registerEntityRenderer(ModEntities.ABYSS_ORB.get(), AbyssOrbRenderer::new);
+        event.registerEntityRenderer(ModEntities.WEEPING_DEATH_LORD.get(), WeepingDeathLordRenderer::new);
+        event.registerEntityRenderer(ModEntities.WITHER_HUSK.get(), WitherHuskRenderer::new);
+        event.registerEntityRenderer(ModEntities.THROWN_SCYTHE.get(), ThrownScytheRenderer::new);
+        event.registerEntityRenderer(ModEntities.DEATH_SKULL.get(), WitherSkullRenderer::new);
+        event.registerEntityRenderer(ModEntities.SPACE_SHATTER.get(), SpaceShatterRenderer::new);
     }
 
     @SubscribeEvent

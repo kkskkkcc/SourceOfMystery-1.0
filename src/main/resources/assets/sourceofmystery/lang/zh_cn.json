@@ -125,5 +125,22 @@
   "message.sourceofmystery.boss.abyss": "神威天道高举双手，黑暗正在汇聚……快逃！",
   "entity.sourceofmystery.void_rift": "空间裂缝",
   "entity.sourceofmystery.heaven_sigil": "天道法阵",
-  "entity.sourceofmystery.abyss_orb": "天渊"
+  "entity.sourceofmystery.abyss_orb": "天渊",
+  "entity.sourceofmystery.weeping_death_lord": "泣死之主",
+  "entity.sourceofmystery.wither_husk": "凋灵躯壳",
+  "entity.sourceofmystery.thrown_scythe": "泣死之主的镰刀",
+  "entity.sourceofmystery.death_skull": "泣死凋灵之首",
+  "entity.sourceofmystery.space_shatter": "斩碎的空间",
+  "message.sourceofmystery.weeping_death_lord.prefix": "【泣死之主】",
+  "message.sourceofmystery.weeping_death_lord.omen": "凋灵的残骸开始泛白……有什么东西要从里面出来了。",
+  "message.sourceofmystery.weeping_death_lord.arrived": "泣死之主睁开了双眼。她不会主动与你为敌——除非你先动手。",
+  "subtitles.sourceofmystery.weeping_death_lord.husk_burst": "凋灵躯壳爆裂",
+  "subtitles.sourceofmystery.weeping_death_lord.roar": "泣死之主咆哮",
+  "subtitles.sourceofmystery.weeping_death_lord.swing": "镰刀挥舞",
+  "subtitles.sourceofmystery.weeping_death_lord.quake": "大地震颤",
+  "subtitles.sourceofmystery.weeping_death_lord.throw": "镰刀掷出",
+  "subtitles.sourceofmystery.weeping_death_lord.skull": "凋灵之首发射",
+  "subtitles.sourceofmystery.weeping_death_lord.charge": "黑暗凝聚",
+  "subtitles.sourceofmystery.weeping_death_lord.grab": "泣死之主抓住了猎物",
+  "subtitles.sourceofmystery.weeping_death_lord.shatter": "空间碎裂"
 }
