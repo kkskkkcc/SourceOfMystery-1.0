@@ -10,7 +10,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "She is $(l)neutral$(): if you never attack her, she never attacks you. She drifts like a jellyfish within 120 blocks of where she was born and hunts the $(l)animals and monsters$() there.$(br2)She swings a huge, heavy scythe: every move winds up in at most 2 seconds and leaves at least 3 seconds of recovery - that is your window."
+      "text": "She is $(l)neutral$(): if you never attack her, she never attacks you. She drifts like a jellyfish within 120 blocks of where she was born and hunts the $(l)animals and monsters$() there.$(br2)She swings a huge, heavy scythe: every move winds up in at most 2 seconds and leaves at least 3 seconds of recovery - that is your window.$(br2)A $(l)black halo$() always hangs behind her, breathing out the smell of death and now and then a floating skull. 2000 health, 20 armor."
     },
     {
       "type": "patchouli:text",
@@ -19,6 +19,14 @@
     {
       "type": "patchouli:text",
       "text": "$(li)$(l)Absorb$(): she raises the scythe and gathers a black orb for 10 seconds, pulling everyone nearby $(l)2 blocks per second$() towards her (you can still run). Get within 3 blocks and she seizes you in mid-air and shatters space with her scythe: $(l)100$() damage.$(li)$(l)Rapid Strikes$(): for 5 seconds she weaves around you leaving afterimages, 3 slashes per second, 5 damage each."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(li)$(l)Death Laser$() (ultimate): she lets go of the scythe, raises both hands to gather a black magic circle, presses it to her chest and throws her arms open - a white laser $(l)1 block in radius and 30 blocks long$() bursts from her chest for 5 seconds. It keeps tracking you but $(l)lags one body length behind$(): keep running and it misses, stand still and it burns through you. The laser $(l)destroys terrain$() (respects mobGriefing; bedrock, obsidian and other wither-proof blocks survive) and ignores armor."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(l)Drops$(): 3 Nether Stars, 5-10 Netherite Ingots, 15-32 Golden Carrots and 500 experience."
     }
   ]
 }

@@ -214,10 +214,13 @@ public class ThrownScythe extends Projectile implements GeoEntity {
             return;
         }
         float yaw = (float) (Mth.atan2(velocity.x, velocity.z) * Mth.RAD_TO_DEG);
+        float pitch = (float) (Mth.atan2(velocity.y, velocity.horizontalDistance()) * Mth.RAD_TO_DEG);
         if (snap) {
             this.yRotO = yaw;
+            this.xRotO = pitch;
         }
         this.setYRot(yaw);
+        this.setXRot(pitch);
     }
 
     @Override

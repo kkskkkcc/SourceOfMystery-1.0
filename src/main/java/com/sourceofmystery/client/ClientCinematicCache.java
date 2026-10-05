@@ -16,8 +16,10 @@ public final class ClientCinematicCache {
     public static int shakeRemaining = 0;
     public static float shakeStrength = 0;
 
-    // 脚本运镜（泣死之主出场）：镜头位置由 WeepingIntroDirector 按时间表计算，anchor 为凋灵死亡的位置
+    // 脚本运镜（泣死之主出场）：镜头位置由 WeepingIntroDirector 按时间表计算，anchor 为凋灵死亡的位置。
+    // 脚本运镜按现实时间计时（scriptedStartMillis），不受客户端 tick 波动影响
     public static boolean scripted = false;
+    public static long scriptedStartMillis;
     public static double anchorX;
     public static double anchorY;
     public static double anchorZ;
@@ -37,9 +39,15 @@ public final class ClientCinematicCache {
     public static void startScripted(int id, double x, double y, double z, int ticks) {
         start(id, ticks);
         scripted = true;
+        scriptedStartMillis = net.minecraft.Util.getMillis();
         anchorX = x;
         anchorY = y;
         anchorZ = z;
+    }
+
+    /** 脚本运镜开始后经过的时间（tick，带小数，按现实时间） */
+    public static float scriptedElapsedTicks() {
+        return (net.minecraft.Util.getMillis() - scriptedStartMillis) / 50.0f;
     }
 
     public static void reset() {

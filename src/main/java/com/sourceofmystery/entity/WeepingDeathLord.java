@@ -13,7 +13,6 @@ import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -23,6 +22,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
@@ -44,7 +44,8 @@ import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LightBlock;
@@ -52,53 +53,70 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.network.PacketDistributor;
 import org.joml.Vector3f;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.core.animation.AnimationController;
+import software.bernie.geckolib.core.animation.AnimationState;
 import software.bernie.geckolib.core.animation.RawAnimation;
 import software.bernie.geckolib.core.object.PlayState;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
  * 泣死之主：原版凋灵死亡后，在它爆开的位置诞生的中立 Boss。
  * <p>
- * 出场（约 19.5 秒，期间附近玩家进入电影镜头，她无敌，天空日夜交替越来越快）：
- * 凋灵变白、加速旋转 2 秒后爆炸 → 她蜷缩抱膝漂浮 2 秒（镰刀竖着漂浮在身旁冒紫色粒子）→ 脸部特写，5 秒内缓缓睁眼，
+ * 出场（22 秒，按现实时间计时，期间附近玩家进入电影镜头，她无敌，天空日夜交替越来越快）：
+ * 凋灵变白、加速旋转 2 秒后爆炸 → 她蜷缩抱膝漂浮 2 秒（镰刀竖着漂浮在身旁冒紫色粒子）→ 脸部特写，整整 5 秒缓缓睁眼，
  * 眼睛发出白光（亮度同火把，完全睁开时最亮）→ 猛地张开双臂，凋灵咆哮 3 秒 → 镰刀飞回手中，扛在肩上看向玩家
- * → 镜头从玩家身前绕到身后，定格 2 秒。镜头由客户端 WeepingIntroDirector 按 {@link #INTRO_TICKS} 的时间表播放。
+ * → 镜头从玩家身前绕到身后，定格 2 秒。整段出场是一个连续的动画（wl_intro），镜头由客户端 WeepingIntroDirector 播放。
  * <p>
  * 中立：玩家不攻击她，她就不攻击玩家；但会主动攻击出生点 120 格内的动物和怪物。平时在出生点 120 格内像水母一样漂荡。
  * <p>
  * 招式（扛着笨重的镰刀甩打，前摇都在 2 秒内，后摇都在 3 秒以上）：
  * 劈斩（镰刀变大砸地，地震 30）、凋灵头（掷出镰刀定身，双手两个凋灵头每秒 3 发、持续 5 秒，每发 10）、
- * 吸附（10 秒内每秒把人拉近 2 格，进入 3 格就抓住斩碎空间，100）、快速攻击（5 秒带残影，每秒 3 刀，每刀 5）。
+ * 吸附（10 秒内每秒把人拉近 2 格，进入 3 格就抓住斩碎空间，100）、快速攻击（5 秒带残影，每秒 3 刀，每刀 5）、
+ * 大招死亡激光（凝聚黑色魔法阵，胸口发射半径 1 格、长 30 格的白色激光 5 秒，慢一个身位追踪玩家，会破坏地形）。
+ * <p>
+ * 动画：所有姿势都由同一个 main 控制器播放，服务端只同步「当前动画编号 + 序号」。控制器每次换动画都有
+ * {@link #BLEND} tick 的过渡，GeckoLib 会把每根骨骼从当前姿势平滑地接到新动画的第一帧，不会穿模错位。
+ * 因为有这段过渡，动画里的时间点在服务端都要加上 BLEND（见 {@link #at}）。
  */
 public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
 
     // ==================== 动画 ====================
-    private static final String PHYSICS_CONTROLLER = "physics";
-    private static final String BASE_CONTROLLER = "base";
+    private static final String MAIN_CONTROLLER = "main";
     private static final String BLINK_CONTROLLER = "blink";
-    private static final String ACTION_CONTROLLER = "action";
+    /** main 控制器换动画时的过渡时长（tick），与 tools/weeping_death_lord/anims.py 的 BLEND 一致 */
+    public static final int BLEND = 6;
 
-    private static final RawAnimation PHYS_CALM = RawAnimation.begin().thenLoop("wl_phys_calm");
-    private static final RawAnimation PHYS_COMBAT = RawAnimation.begin().thenLoop("wl_phys_combat");
+    /** 动画编号 = 下标；0 是待机（客户端按是否在漂荡 / 战斗选择四种待机动画之一） */
+    private static final String[] ANIMS = {"idle", "intro", "toss", "cleave", "skull_throw", "skull_raise", "skull_fire",
+            "skull_end", "absorb_start", "absorb_hold", "absorb_grab", "absorb_slash", "absorb_end", "rapid_start",
+            "rapid_loop", "rapid_end", "laser_start", "laser_fire", "laser_end"};
+    private static final RawAnimation[] ANIM_RAW = new RawAnimation[ANIMS.length];
+
+    static {
+        // thenPlay 使用 json 里写的循环方式：循环动画循环，其余停在最后一帧（等服务端切下一个动画）
+        for (int i = 1; i < ANIMS.length; i++) {
+            ANIM_RAW[i] = RawAnimation.begin().thenPlay("wl_" + ANIMS[i]);
+        }
+    }
+
     private static final RawAnimation HOVER = RawAnimation.begin().thenLoop("wl_hover");
+    private static final RawAnimation HOVER_COMBAT = RawAnimation.begin().thenLoop("wl_hover_combat");
     private static final RawAnimation DRIFT = RawAnimation.begin().thenLoop("wl_drift");
+    private static final RawAnimation DRIFT_COMBAT = RawAnimation.begin().thenLoop("wl_drift_combat");
     private static final RawAnimation BLINK = RawAnimation.begin().thenLoop("wl_blink");
-
-    private static final String[] PLAY_ONCE = {"toss", "cleave", "skull_end", "absorb_slash", "absorb_end", "rapid_end"};
-    private static final String[] PLAY_AND_HOLD = {"intro_wake", "intro_roar", "intro_shoulder", "skull_throw", "skull_raise",
-            "absorb_start", "absorb_grab", "rapid_start"};
-    private static final String[] LOOPS = {"intro_curl", "skull_fire", "absorb_hold", "rapid_loop"};
 
     // ==================== 同步数据 ====================
     private static final EntityDataAccessor<Boolean> DATA_HIDDEN =
@@ -115,17 +133,31 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
             SynchedEntityData.defineId(WeepingDeathLord.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> DATA_EYE_GLOW =
             SynchedEntityData.defineId(WeepingDeathLord.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Integer> DATA_ANIM =
+            SynchedEntityData.defineId(WeepingDeathLord.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Integer> DATA_ANIM_SEQ =
+            SynchedEntityData.defineId(WeepingDeathLord.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Float> DATA_SCYTHE_CHARGE =
+            SynchedEntityData.defineId(WeepingDeathLord.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> DATA_CIRCLE =
+            SynchedEntityData.defineId(WeepingDeathLord.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Boolean> DATA_LASER =
+            SynchedEntityData.defineId(WeepingDeathLord.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Vector3f> DATA_LASER_END =
+            SynchedEntityData.defineId(WeepingDeathLord.class, EntityDataSerializers.VECTOR3);
 
-    // ==================== 出场时间表（tick） ====================
-    public static final int HUSK_TICKS = 40;          // 凋灵变白旋转 2 秒后爆炸
-    public static final int CLOSEUP_START = 80;       // 蜷缩漂浮 2 秒后：脸部特写，开始睁眼
-    public static final int ROAR_START = 180;         // 5 秒睁眼后：张开双臂咆哮
-    public static final int SHOULDER_START = 240;     // 3 秒咆哮后：镰刀飞回手中，扛在肩上
-    private static final int SHOULDER_CATCH = SHOULDER_START + 14;
-    public static final int DOLLY_START = 280;        // 镜头从玩家身前绕到身后
-    public static final int FREEZE_START = 350;       // 定格 2 秒
-    public static final int INTRO_TICKS = 390;
-    private static final int DAY_SPIN_DAYS = 4;       // 出场期间天空转过整整 4 天，结束时回到原来的时间
+    // ==================== 出场时间表（秒，现实时间） ====================
+    public static final float INTRO_EXPLODE = 2.0f;      // 凋灵变白旋转 2 秒后爆炸，她出现，蜷缩漂浮
+    public static final float INTRO_WAKE = 4.0f;         // 蜷缩 2 秒后：脸部特写，开始睁眼
+    public static final float INTRO_ROAR = 9.0f;         // 睁眼整整 5 秒后：张开双臂咆哮
+    public static final float INTRO_SHOULDER = 12.0f;    // 咆哮 3 秒后：镰刀飞向她
+    public static final float INTRO_CATCH = 13.0f;       // 接住镰刀，扛到肩上
+    public static final float INTRO_SETTLE = 14.5f;      // 扛着镰刀看向玩家；镜头开始运镜
+    public static final float INTRO_DOLLY_END = 19.0f;   // 镜头到达玩家身后，定格
+    public static final float INTRO_FREEZE_END = 21.0f;  // 定格 2 秒后镜头回到玩家
+    public static final float INTRO_LENGTH = 22.0f;
+    public static final int INTRO_TICKS = Math.round(INTRO_LENGTH * 20);
+    public static final int DAY_SPIN_DAYS = 4;           // 出场期间天空转过整整 4 天（客户端表现，结束时回到原来的时间）
     private static final double CAMERA_RANGE = 128.0;
 
     // ==================== 移动 ====================
@@ -135,68 +167,84 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
     private static final double DRIFT_SPEED = 0.16;
     private static final double CHASE_SPEED = 0.32;
 
-    // ==================== 招式 ====================
+    // ==================== 招式（动画时间换算成服务端 tick：at(秒) = BLEND + 秒 * 20） ====================
     private static final float SCALE = 1.25f;          // 渲染缩放（模型约 3.6 格高）
 
-    // 劈斩：wl_cleave 5.2 秒，1.8 秒砸地
-    private static final int CLEAVE_LENGTH = 104;
-    private static final int CLEAVE_AIM_LOCK = 28;
-    private static final int CLEAVE_HIT = 36;
+    // 劈斩：wl_cleave 5.0 秒，1.65 秒砸地
+    private static final int CLEAVE_LENGTH = at(5.0f);
+    private static final int CLEAVE_AIM_LOCK = at(1.2f);
+    private static final int CLEAVE_HIT = at(1.65f);
     private static final float CLEAVE_DAMAGE = 30.0f;
     private static final double CLEAVE_REACH = 6.5;     // 变大的镰刀砸在身前这么远
     private static final double QUAKE_RADIUS = 7.0;
     private static final double CLEAVE_RANGE = 8.0;     // 进入这个距离才起手
 
     // 凋灵头：掷镰刀 1.6 秒（1.15 秒出手）→ 抬手 1 秒 → 发射 5 秒 → 镰刀飞回 → 后摇 3.4 秒
-    private static final int THROW_LENGTH = 32;
-    private static final int THROW_RELEASE = 23;
-    private static final int RAISE_LENGTH = 20;
-    private static final int FIRE_TICKS = 100;
+    private static final int THROW_LENGTH = at(1.6f);
+    private static final int THROW_RELEASE = at(1.15f);
+    private static final int RAISE_LENGTH = at(1.0f);
+    private static final int FIRE_TICKS = 100 + BLEND;
     private static final int SKULL_SHOTS = 15;           // 每秒 3 发 × 5 秒
     private static final float SKULL_DAMAGE = 10.0f;
-    private static final int SKULL_END_LENGTH = 68;
+    private static final int SKULL_END_LENGTH = at(3.4f);
     private static final int SCYTHE_RETURN_TIMEOUT = 60;
 
-    // 吸附：起手 1.5 秒，蓄力 10 秒；抓住后 0.5 秒斩下（斩击动画第 5 tick 命中）
-    private static final int ABSORB_START_LENGTH = 30;
+    // 吸附：起手 1.5 秒，蓄力 10 秒；抓住后 0.5 秒斩下（斩击动画 0.25 秒命中）
+    private static final int ABSORB_START_LENGTH = at(1.5f);
     private static final int ABSORB_CHARGE_TICKS = 200;
     private static final double PULL_SPEED = 0.1;        // 每秒 2 格
     private static final double PULL_RANGE = 24.0;
     private static final double GRAB_RANGE = 3.0;
-    private static final int GRAB_HOLD = 10;
-    private static final int SLASH_HIT = 5;
-    private static final int SLASH_LENGTH = 80;
-    private static final int ABSORB_END_LENGTH = 64;
+    private static final int GRAB_HOLD = at(0.5f);
+    private static final int SLASH_HIT = at(0.25f);
+    private static final int SLASH_LENGTH = at(4.0f);
+    private static final int ABSORB_END_LENGTH = at(3.2f);
     private static final float SLASH_DAMAGE = 100.0f;
 
     // 快速攻击：起手 0.5 秒，5 秒内每秒 3 刀（每秒第 4 / 11 / 17 tick 命中），后摇 3.2 秒
-    private static final int RAPID_START_LENGTH = 10;
-    private static final int RAPID_TICKS = 100;
+    private static final int RAPID_START_LENGTH = at(0.5f);
+    private static final int RAPID_TICKS = 100 + BLEND;
     private static final int[] RAPID_HITS = {4, 11, 17};
     private static final float RAPID_DAMAGE = 5.0f;
     private static final double RAPID_RANGE = 4.5;
-    private static final int RAPID_END_LENGTH = 64;
+    private static final int RAPID_END_LENGTH = at(3.2f);
 
-    private static final int TOSS_LENGTH = 92;
+    // 大招死亡激光：起手 1.6 秒（高举凝聚魔法阵 → 放到胸前 → 张开双臂发射），发射 5 秒，后摇 3.2 秒
+    private static final int LASER_START_LENGTH = at(1.6f);
+    private static final int LASER_CIRCLE_FULL = at(0.7f);
+    private static final int LASER_TICKS = 100;
+    private static final int LASER_END_LENGTH = at(3.2f);
+    public static final double LASER_LENGTH = 30.0;
+    public static final double LASER_RADIUS = 1.0;
+    private static final float LASER_DAMAGE = 6.0f;      // 每 5 tick 一次（无视护甲）
+    private static final int LASER_DAMAGE_INTERVAL = 5;
+    private static final double LASER_TRACKING = 0.25;   // 每 tick 追上目标位置的比例：奔跑的玩家会被落下约一个身位
+    private static final double LASER_RANGE = 26.0;
+    private static final int LASER_COOLDOWN = 600;
+    private static final int LASER_BLOCKS_PER_TICK = 48;
+    private static final double CHEST_HEIGHT = 2.56;     // 魔法阵 / 激光发射点：胸前（anims.py 输出的 chest point × 1.25 / 16）
+    private static final double CHEST_FORWARD = 0.33;
+
+    private static final int TOSS_LENGTH = at(4.6f);
 
     private static final DustParticleOptions PURPLE = new DustParticleOptions(new Vector3f(0.62f, 0.2f, 0.95f), 1.6f);
-    private static final DustParticleOptions BLACK = new DustParticleOptions(new Vector3f(0.05f, 0.02f, 0.08f), 2.2f);
 
-    private enum Attack { CLEAVE, SKULL, ABSORB, RAPID }
+    private enum Attack { CLEAVE, SKULL, ABSORB, RAPID, LASER }
 
     private enum State {
         IDLE, APPROACH, CLEAVE, SKULL_THROW, SKULL_RAISE, SKULL_FIRE, SKULL_WAIT_RETURN, SKULL_END,
-        ABSORB_START, ABSORB_CHARGE, ABSORB_GRAB, ABSORB_SLASH, ABSORB_END, RAPID_START, RAPID, RAPID_END, TOSS
+        ABSORB_START, ABSORB_CHARGE, ABSORB_GRAB, ABSORB_SLASH, ABSORB_END, RAPID_START, RAPID, RAPID_END,
+        LASER_START, LASER_FIRE, LASER_END, TOSS
     }
 
     // ==================== 状态 ====================
     private boolean introDone = true;     // /summon 直接召唤时没有出场
-    private int introTick;
+    private long introStartNanos;
+    private float introTime;
     private Vec3 home = Vec3.ZERO;
     private boolean homeSet;
     @Nullable
     private UUID focusPlayer;
-    private long dayTimeStart = -1;
     @Nullable
     private BlockPos lightPos;
     @Nullable
@@ -207,6 +255,7 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
     private Attack pending = Attack.CLEAVE;
     private int cooldown = 40;
     private int tossCooldown = 300;
+    private int laserCooldown = 300;
     @Nullable
     private Vec3 wanderTarget;
     private int wanderWait;
@@ -219,6 +268,7 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
     private LivingEntity grabbed;
     private int trailTicks;
     private int tickCounter;
+    private Vec3 laserAim = Vec3.ZERO;
 
     // 客户端：残影
     public record Afterimage(double x, double y, double z, float yaw, float born) {
@@ -227,6 +277,15 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
     public static final int AFTERIMAGE_LIFE = 8;
     public final List<Afterimage> afterimages = new ArrayList<>();
     public boolean renderingAfterimages;
+    private int seenAnimSeq = -1;
+
+    // 客户端：渲染器记下的定位骨骼位置（世界坐标），用于在正确的位置放粒子；没渲染过时为 null
+    @Nullable
+    public Vec3 orbPos;
+    @Nullable
+    public Vec3 bladePos;
+    @Nullable
+    public Vec3 haloPos;
 
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private final ServerBossEvent bossEvent;
@@ -243,9 +302,14 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         this.bossEvent.setVisible(false);
     }
 
+    /** 动画里第 seconds 秒对应的服务端 tick（加上 main 控制器的过渡时间） */
+    private static int at(float seconds) {
+        return BLEND + Math.round(seconds * 20);
+    }
+
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
-                .add(Attributes.MAX_HEALTH, 8000.0)
+                .add(Attributes.MAX_HEALTH, 2000.0)
                 .add(Attributes.ARMOR, 20.0)
                 .add(Attributes.ATTACK_DAMAGE, CLEAVE_DAMAGE)
                 .add(Attributes.MOVEMENT_SPEED, 0.3)
@@ -263,6 +327,12 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         this.entityData.define(DATA_TRAIL, false);
         this.entityData.define(DATA_ORB, 0.0f);
         this.entityData.define(DATA_EYE_GLOW, 1.0f);
+        this.entityData.define(DATA_ANIM, 0);
+        this.entityData.define(DATA_ANIM_SEQ, 0);
+        this.entityData.define(DATA_SCYTHE_CHARGE, 0.0f);
+        this.entityData.define(DATA_CIRCLE, 0.0f);
+        this.entityData.define(DATA_LASER, false);
+        this.entityData.define(DATA_LASER_END, new Vector3f());
     }
 
     /**
@@ -321,12 +391,33 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         return this.entityData.get(DATA_TRAIL);
     }
 
+    /** 吸附时左手虚空黑球的大小 0~1 */
     public float orbSize() {
         return this.entityData.get(DATA_ORB);
     }
 
     public float eyeGlow() {
         return this.entityData.get(DATA_EYE_GLOW);
+    }
+
+    /** 吸附蓄力时镰刀的黑色蓄力特效强度 0~1 */
+    public float scytheCharge() {
+        return this.entityData.get(DATA_SCYTHE_CHARGE);
+    }
+
+    /** 大招魔法阵大小 0~1 */
+    public float circleSize() {
+        return this.entityData.get(DATA_CIRCLE);
+    }
+
+    public boolean laserActive() {
+        return this.entityData.get(DATA_LASER);
+    }
+
+    /** 激光终点（世界坐标） */
+    public Vec3 laserEnd() {
+        Vector3f v = this.entityData.get(DATA_LASER_END);
+        return new Vec3(v.x(), v.y(), v.z());
     }
 
     private void startTrail(int ticks) {
@@ -349,22 +440,24 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
      */
     public void beginIntro(ServerLevel level, WitherBoss wither, @Nullable Player focus) {
         this.introDone = false;
-        this.introTick = 0;
+        this.introStartNanos = System.nanoTime();
+        this.introTime = 0;
         this.home = this.position();
         this.homeSet = true;
         this.setHidden(true);
         this.entityData.set(DATA_EYE_GLOW, 0.0f);
         this.focusPlayer = focus == null ? null : focus.getUUID();
         faceFocus(level, 1.0f);
-        if (level.dimensionType().hasSkyLight() && !level.dimensionType().hasFixedTime()) {
-            dayTimeStart = level.getDayTime();
-        }
+        // 整段出场是一个连续的动画；前 2 秒她还隐藏着
+        play("intro");
 
         husk = ModEntities.WITHER_HUSK.get().create(level);
         if (husk != null) {
             husk.moveTo(wither.getX(), wither.getY(), wither.getZ(), wither.yBodyRot, 0);
             level.addFreshEntity(husk);
         }
+        level.playSound(null, wither.getX(), wither.getY() + 2, wither.getZ(), SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 4.0f, 0.5f);
+        level.playSound(null, wither.getX(), wither.getY() + 2, wither.getZ(), SoundEvents.WITHER_DEATH, SoundSource.HOSTILE, 4.0f, 0.6f);
         Vec3 at = wither.position();
         for (ServerPlayer player : level.players()) {
             if (player.distanceToSqr(at) < CAMERA_RANGE * CAMERA_RANGE) {
@@ -374,68 +467,52 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         }
     }
 
+    /** 出场按现实时间推进（服务端卡顿也不会拖慢或缩短），和客户端的镜头时间表一致 */
     private void tickIntro(ServerLevel level) {
-        introTick++;
+        float prev = introTime;
+        introTime = (System.nanoTime() - introStartNanos) / 1.0e9f;
+        float t = introTime;
         faceFocus(level, 0.2f);
-        spinSky(level);
         this.setDeltaMovement(Vec3.ZERO);
 
-        if (introTick < HUSK_TICKS) {
-            if (husk != null && introTick % 2 == 0) {
+        if (t < INTRO_EXPLODE) {
+            if (husk != null && tickCounter % 2 == 0) {
                 level.sendParticles(ParticleTypes.END_ROD, husk.getX(), husk.getY() + 2.0, husk.getZ(),
-                        2 + introTick / 8, 0.8, 1.2, 0.8, 0.02);
+                        2 + (int) (t * 6), 0.8, 1.2, 0.8, 0.02);
             }
             return;
         }
-        if (introTick == HUSK_TICKS) {
+        if (prev < INTRO_EXPLODE) {
             explodeHusk(level);
             this.setHidden(false);
-            this.triggerAnim(ACTION_CONTROLLER, "intro_curl");
         }
-        if (introTick < SHOULDER_CATCH) {
+        if (t < INTRO_CATCH) {
             floatingScytheParticles(level);
         }
-        if (introTick == CLOSEUP_START) {
-            this.triggerAnim(ACTION_CONTROLLER, "intro_wake");
-        }
-        if (introTick >= CLOSEUP_START && introTick <= ROAR_START) {
-            float u = (introTick - CLOSEUP_START) / (float) (ROAR_START - CLOSEUP_START);
-            float glow = u * u * (3 - 2 * u);
+        if (t >= INTRO_WAKE && prev <= INTRO_ROAR) {
+            // 与 wl_intro 的睁眼进度一致：5 秒内慢慢睁开，完全睁开时光照 14（同火把）
+            float u = Mth.clamp((t - INTRO_WAKE) / (INTRO_ROAR - INTRO_WAKE), 0.0f, 1.0f);
+            float glow = (float) Math.pow(u, 1.15);
             this.entityData.set(DATA_EYE_GLOW, glow);
             updateEyeLight(level, Math.round(14 * glow));
         }
-        if (introTick == ROAR_START) {
-            this.triggerAnim(ACTION_CONTROLLER, "intro_roar");
-            level.playSound(null, this.getX(), this.getY() + 2, this.getZ(), ModSounds.WEEPING_ROAR.get(), SoundSource.HOSTILE, 8.0f, 1.0f);
-            level.playSound(null, this.getX(), this.getY() + 2, this.getZ(), SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 8.0f, 0.8f);
+        if (prev < INTRO_ROAR && t >= INTRO_ROAR) {
+            // 咆哮的声音由客户端镜头播放（不随距离衰减，很大声）；这里只给没进镜头的远处玩家放一份
+            playFar(level, SoundEvents.WITHER_SPAWN, 0.8f);
             screenEffect(level, 4, 60, 3.0f, 64);
             level.sendParticles(ParticleTypes.SOUL, this.getX(), this.getY() + 2, this.getZ(), 80, 1.5, 1.5, 1.5, 0.25);
             level.sendParticles(ParticleTypes.LARGE_SMOKE, this.getX(), this.getY() + 2, this.getZ(), 60, 1.0, 1.0, 1.0, 0.2);
+            level.sendParticles(ParticleTypes.SONIC_BOOM, this.getX(), this.getY() + 2.4, this.getZ(), 1, 0, 0, 0, 0);
         }
-        if (introTick == SHOULDER_START) {
-            this.triggerAnim(ACTION_CONTROLLER, "intro_shoulder");
-            this.playSound(ModSounds.WEEPING_THROW.get(), 1.5f, 0.6f);
+        if (prev < INTRO_SHOULDER && t >= INTRO_SHOULDER) {
+            this.playSound(ModSounds.WEEPING_THROW.get(), 2.0f, 0.6f);
         }
-        if (introTick == SHOULDER_CATCH) {
-            this.playSound(SoundEvents.ARMOR_EQUIP_NETHERITE, 2.0f, 0.6f);
+        if (prev < INTRO_CATCH && t >= INTRO_CATCH) {
+            this.playSound(SoundEvents.ARMOR_EQUIP_NETHERITE, 2.5f, 0.6f);
+            this.playSound(SoundEvents.ANVIL_PLACE, 1.0f, 0.5f);
         }
-        if (introTick >= INTRO_TICKS) {
+        if (t >= INTRO_LENGTH) {
             finishIntro(level);
-        }
-    }
-
-    /** 出场：天空日夜交替越来越快，总共转过整整几天，结束时回到原来的时间 */
-    private void spinSky(ServerLevel level) {
-        if (dayTimeStart < 0) {
-            return;
-        }
-        double u = Math.min(1.0, introTick / (double) INTRO_TICKS);
-        long target = dayTimeStart + Math.round(u * u * DAY_SPIN_DAYS * 24000L);
-        level.setDayTime(target);
-        boolean cycle = level.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT);
-        ClientboundSetTimePacket packet = new ClientboundSetTimePacket(level.getGameTime(), level.getDayTime(), cycle);
-        for (ServerPlayer player : level.players()) {
-            player.connection.send(packet);
         }
     }
 
@@ -449,6 +526,8 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         level.sendParticles(ParticleTypes.END_ROD, at.x, at.y, at.z, 120, 0.4, 0.4, 0.4, 0.45);
         level.sendParticles(ParticleTypes.WHITE_ASH, at.x, at.y, at.z, 200, 3.0, 3.0, 3.0, 0.05);
         level.playSound(null, at.x, at.y, at.z, ModSounds.WEEPING_HUSK_BURST.get(), SoundSource.HOSTILE, 6.0f, 1.0f);
+        level.playSound(null, at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 6.0f, 0.5f);
+        level.playSound(null, at.x, at.y, at.z, SoundEvents.WITHER_BREAK_BLOCK, SoundSource.HOSTILE, 4.0f, 0.6f);
         screenEffect(level, 12, 25, 2.5f, 96);
     }
 
@@ -459,7 +538,7 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
             double h = 0.6 + this.random.nextDouble() * 3.6;
             level.sendParticles(PURPLE, base.x, base.y + h, base.z, 1, 0.12, 0.1, 0.12, 0);
         }
-        if (introTick % 3 == 0) {
+        if (tickCounter % 3 == 0) {
             level.sendParticles(ParticleTypes.WITCH, base.x, base.y + 3.2, base.z, 2, 0.4, 0.3, 0.4, 0);
             level.sendParticles(ParticleTypes.REVERSE_PORTAL, base.x, base.y + 2.0, base.z, 3, 0.2, 1.2, 0.2, 0.02);
         }
@@ -497,11 +576,8 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         this.setHidden(false);
         this.entityData.set(DATA_EYE_GLOW, 1.0f);
         removeEyeLight(level);
-        if (dayTimeStart >= 0) {
-            level.setDayTime(dayTimeStart + DAY_SPIN_DAYS * 24000L);
-            dayTimeStart = -1;
-        }
-        this.stopTriggeredAnimation(ACTION_CONTROLLER, null);
+        play("idle");
+        enterState(State.IDLE);
         cooldown = 40;
         WeepingDeathLordSpawnHandler.announceArrival(level, this);
     }
@@ -524,6 +600,20 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         }
     }
 
+    /** 只给出场镜头范围外的玩家播放（镜头里的玩家由客户端播放不衰减的版本） */
+    private void playFar(ServerLevel level, SoundEvent sound, float pitch) {
+        for (ServerPlayer player : level.players()) {
+            if (player.distanceToSqr(this) >= CAMERA_RANGE * CAMERA_RANGE) {
+                player.playNotifySound(sound, SoundSource.HOSTILE, 8.0f, pitch);
+            }
+        }
+    }
+
+    /** 在某处播放一层声音；重要的瞬间会同时叠几层，听起来更厚重 */
+    private void sound(Vec3 at, SoundEvent sound, float volume, float pitch) {
+        this.level().playSound(null, at.x, at.y, at.z, sound, SoundSource.HOSTILE, volume, pitch);
+    }
+
     // ==================== 主循环 ====================
 
     @Override
@@ -531,6 +621,7 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         super.tick();
         if (this.level().isClientSide) {
             tickAfterimages();
+            tickClientEffects();
             return;
         }
         ServerLevel level = (ServerLevel) this.level();
@@ -549,6 +640,7 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         this.bossEvent.setVisible(target instanceof Player);
         this.bossEvent.setProgress(this.getHealth() / this.getMaxHealth());
         if (tossCooldown > 0) tossCooldown--;
+        if (laserCooldown > 0) laserCooldown--;
 
         stateTick++;
         switch (state) {
@@ -556,12 +648,16 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
             case APPROACH -> tickApproach(level, target);
             case TOSS -> {
                 hoverInPlace(level);
-                if (stateTick >= TOSS_LENGTH) enterState(State.IDLE);
+                if (stateTick >= TOSS_LENGTH) {
+                    play("idle");
+                    enterState(State.IDLE);
+                }
             }
             case CLEAVE -> tickCleave(level, target);
             case SKULL_THROW, SKULL_RAISE, SKULL_FIRE, SKULL_WAIT_RETURN, SKULL_END -> tickSkull(level, target);
             case ABSORB_START, ABSORB_CHARGE, ABSORB_GRAB, ABSORB_SLASH, ABSORB_END -> tickAbsorb(level, target);
             case RAPID_START, RAPID, RAPID_END -> tickRapid(level, target);
+            case LASER_START, LASER_FIRE, LASER_END -> tickLaser(level, target);
         }
         this.entityData.set(DATA_DRIFTING, state == State.IDLE && this.getDeltaMovement().horizontalDistanceSqr() > 0.0016
                 || state == State.APPROACH);
@@ -589,8 +685,17 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         stateTick = 0;
     }
 
+    /** 切换 main 控制器的动画（客户端带过渡地接过去）；同一个动画再播一次也会从头开始 */
     private void play(String anim) {
-        this.triggerAnim(ACTION_CONTROLLER, anim);
+        int id = 0;
+        for (int i = 0; i < ANIMS.length; i++) {
+            if (ANIMS[i].equals(anim)) {
+                id = i;
+                break;
+            }
+        }
+        this.entityData.set(DATA_ANIM, id);
+        this.entityData.set(DATA_ANIM_SEQ, this.entityData.get(DATA_ANIM_SEQ) + 1);
     }
 
     /**
@@ -606,6 +711,66 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
                 double u = i / (double) count;
                 afterimages.add(new Afterimage(Mth.lerp(u, this.xo, this.getX()), Mth.lerp(u, this.yo, this.getY()),
                         Mth.lerp(u, this.zo, this.getZ()), this.yBodyRot, now - 1 + (float) u));
+            }
+        }
+    }
+
+    /**
+     * 客户端特效（位置来自渲染器记下的骨骼位置，跟着动画走）：
+     * 背后神环的死亡气息和偶尔冒出的骷髅头、吸附时被吸进虚空黑球的黑色粒子、镰刀蓄力的黑色粒子
+     */
+    private void tickClientEffects() {
+        if (hidden() || potionInvisible()) {
+            return;
+        }
+        Level level = this.level();
+        if (haloPos != null) {
+            if (this.random.nextInt(3) == 0) {
+                double a = this.random.nextDouble() * Math.PI * 2;
+                double r = 0.9 + this.random.nextDouble() * 0.3;
+                Vec3 side = rightVec();
+                Vec3 p = haloPos.add(side.scale(Math.cos(a) * r)).add(0, Math.sin(a) * r, 0);
+                level.addParticle(ParticleTypes.SMOKE, p.x, p.y, p.z, 0, 0.015, 0);
+            }
+            if (this.random.nextInt(40) == 0) {
+                double a = this.random.nextDouble() * Math.PI * 2;
+                Vec3 p = haloPos.add(rightVec().scale(Math.cos(a) * 1.0)).add(0, Math.sin(a) * 1.0, 0);
+                level.addParticle(ModParticles.DEATH_SKULL.get(), p.x, p.y, p.z, 0, 0.03, 0);
+            }
+        }
+        float orb = orbSize();
+        if (orb > 0.01f && orbPos != null) {
+            int n = 2 + (int) (orb * 6);
+            for (int i = 0; i < n; i++) {
+                Vec3 dir = new Vec3(this.random.nextGaussian(), this.random.nextGaussian(), this.random.nextGaussian()).normalize();
+                double r = 1.2 + orb * 2.0 + this.random.nextDouble();
+                Vec3 from = orbPos.add(dir.scale(r));
+                level.addParticle(ModParticles.DARK_MOTE.get(), from.x, from.y, from.z,
+                        orbPos.x - from.x, orbPos.y - from.y, orbPos.z - from.z);
+            }
+        }
+        float charge = scytheCharge();
+        if (charge > 0.01f && bladePos != null) {
+            // 黑色的火焰从刀刃上升腾，周围的黑气不断汇入刀刃
+            int n = 2 + (int) (charge * 5);
+            for (int i = 0; i < n; i++) {
+                Vec3 dir = new Vec3(this.random.nextGaussian(), this.random.nextGaussian() * 0.6, this.random.nextGaussian()).normalize();
+                Vec3 from = bladePos.add(dir.scale(1.4 + this.random.nextDouble() * 1.2));
+                level.addParticle(ModParticles.DARK_MOTE.get(), from.x, from.y, from.z,
+                        bladePos.x - from.x, bladePos.y - from.y, bladePos.z - from.z);
+            }
+            for (int i = 0; i < 2; i++) {
+                double ox = (this.random.nextDouble() - 0.5) * 1.2;
+                double oy = (this.random.nextDouble() - 0.5) * 1.2;
+                double oz = (this.random.nextDouble() - 0.5) * 1.2;
+                level.addParticle(ParticleTypes.LARGE_SMOKE, bladePos.x + ox, bladePos.y + oy, bladePos.z + oz, 0, 0.05 + charge * 0.05, 0);
+            }
+            if (this.random.nextInt(3) == 0) {
+                level.addParticle(ParticleTypes.SQUID_INK, bladePos.x, bladePos.y, bladePos.z,
+                        (this.random.nextDouble() - 0.5) * 0.1, 0.08, (this.random.nextDouble() - 0.5) * 0.1);
+            }
+            if (this.random.nextInt(5) == 0) {
+                level.addParticle(ParticleTypes.REVERSE_PORTAL, bladePos.x, bladePos.y, bladePos.z, 0, 0.05, 0);
             }
         }
     }
@@ -723,6 +888,9 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         if (!(target instanceof Player)) {
             return this.random.nextBoolean() ? Attack.CLEAVE : Attack.RAPID;
         }
+        if (laserCooldown <= 0 && d < LASER_RANGE && this.random.nextInt(3) == 0) {
+            return Attack.LASER;
+        }
         int roll = this.random.nextInt(10);
         if (d > 14) {
             return roll < 5 ? Attack.SKULL : roll < 8 ? Attack.ABSORB : Attack.CLEAVE;
@@ -736,11 +904,13 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
             case RAPID -> 4.0;
             case SKULL -> 26.0;
             case ABSORB -> PULL_RANGE - 4;
+            case LASER -> LASER_RANGE - 4;
         };
     }
 
     private void tickApproach(ServerLevel level, @Nullable LivingEntity target) {
         if (target == null) {
+            play("idle");
             enterState(State.IDLE);
             return;
         }
@@ -752,6 +922,7 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         }
         Vec3 dest = target.position().add(0, HOVER_HEIGHT, 0);
         if (dest.distanceTo(home()) > LEASH_RADIUS) {
+            play("idle");
             enterState(State.IDLE);
             cooldown = 40;
             return;
@@ -765,7 +936,8 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         switch (pending) {
             case CLEAVE -> {
                 play("cleave");
-                this.playSound(ModSounds.WEEPING_SWING.get(), 2.0f, 0.5f);
+                sound(this.position(), ModSounds.WEEPING_SWING.get(), 2.0f, 0.45f);
+                sound(this.position(), SoundEvents.WITHER_AMBIENT, 2.0f, 0.5f);
                 enterState(State.CLEAVE);
             }
             case SKULL -> {
@@ -774,19 +946,38 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
             }
             case ABSORB -> {
                 play("absorb_start");
-                this.playSound(ModSounds.WEEPING_CHARGE.get(), 2.0f, 0.6f);
+                sound(this.position(), ModSounds.WEEPING_CHARGE.get(), 2.0f, 0.6f);
+                sound(this.position(), SoundEvents.RESPAWN_ANCHOR_CHARGE, 2.0f, 0.5f);
                 enterState(State.ABSORB_START);
             }
             case RAPID -> {
                 play("rapid_start");
                 enterState(State.RAPID_START);
             }
+            case LASER -> {
+                play("laser_start");
+                laserCooldown = LASER_COOLDOWN;
+                laserAim = target.position().add(0, target.getBbHeight() * 0.5, 0);
+                sound(this.position(), ModSounds.WEEPING_LASER_CHARGE.get(), 3.0f, 1.0f);
+                sound(this.position(), SoundEvents.BEACON_ACTIVATE, 3.0f, 0.5f);
+                enterState(State.LASER_START);
+            }
         }
     }
 
+    /** 收招：所有招式特效归零，回到待机 */
     private void endAttack(int extraCooldown) {
+        clearEffects();
+        play("idle");
         enterState(State.IDLE);
         cooldown = 50 + this.random.nextInt(50) + extraCooldown;
+    }
+
+    private void clearEffects() {
+        this.entityData.set(DATA_ORB, 0.0f);
+        this.entityData.set(DATA_SCYTHE_CHARGE, 0.0f);
+        this.entityData.set(DATA_CIRCLE, 0.0f);
+        this.entityData.set(DATA_LASER, false);
     }
 
     // ==================== 劈斩 ====================
@@ -798,7 +989,8 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         }
         hoverInPlace(level);
         if (stateTick == CLEAVE_HIT - 6) {
-            this.playSound(ModSounds.WEEPING_SWING.get(), 2.5f, 0.4f);
+            sound(this.position(), ModSounds.WEEPING_SWING.get(), 2.5f, 0.4f);
+            sound(this.position(), ModSounds.WEEPING_WHOOSH.get(), 2.5f, 0.5f);
         }
         if (stateTick == CLEAVE_HIT) {
             cleaveImpact(level);
@@ -826,7 +1018,9 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, impact.x, impact.y + 0.5, impact.z, 1, 0, 0, 0, 0);
         level.sendParticles(ParticleTypes.SWEEP_ATTACK, impact.x, impact.y + 1.0, impact.z, 6, 2.0, 0.3, 2.0, 0);
         level.sendParticles(ParticleTypes.SOUL, impact.x, impact.y + 0.5, impact.z, 30, 2.0, 0.4, 2.0, 0.08);
-        level.playSound(null, impact.x, impact.y, impact.z, ModSounds.WEEPING_QUAKE.get(), SoundSource.HOSTILE, 4.0f, 1.0f);
+        sound(impact, ModSounds.WEEPING_QUAKE.get(), 4.0f, 1.0f);
+        sound(impact, SoundEvents.ANVIL_LAND, 4.0f, 0.5f);
+        sound(impact, ModSounds.WEEPING_IMPACT.get(), 4.0f, 0.5f);
         screenEffect(level, 0, 25, 3.0f, 32);
         List<LivingEntity> victims = level.getEntitiesOfClass(LivingEntity.class,
                 new AABB(impact, impact).inflate(QUAKE_RADIUS + 1, 4, QUAKE_RADIUS + 1),
@@ -865,12 +1059,16 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
                 if (stateTick <= THROW_RELEASE) {
                     faceTowards(target, 0.35f);
                 }
+                if (stateTick == THROW_RELEASE - 4) {
+                    sound(this.position(), ModSounds.WEEPING_SWING.get(), 2.0f, 0.6f);
+                }
                 if (stateTick == THROW_RELEASE) {
                     throwScythe(level, target);
                 }
                 if (stateTick >= THROW_LENGTH) {
                     play("skull_raise");
-                    this.playSound(SoundEvents.WITHER_AMBIENT, 2.0f, 0.6f);
+                    sound(this.position(), SoundEvents.WITHER_AMBIENT, 2.0f, 0.6f);
+                    sound(this.position(), SoundEvents.SOUL_ESCAPE, 2.0f, 0.6f);
                     enterState(State.SKULL_RAISE);
                 }
             }
@@ -884,14 +1082,16 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
             }
             case SKULL_FIRE -> {
                 faceTowards(target, 0.3f);
-                // 每秒 3 发：第 k 发在 k * 20 / 3 tick，右、左手交替（和 wl_skull_fire 的后坐力一致）
-                while (skullShots < SKULL_SHOTS && stateTick >= Math.round(skullShots * 20 / 3.0f)) {
+                // 每秒 3 发：第 k 发在 BLEND + k * 20 / 3 tick，右、左手交替（和 wl_skull_fire 的后坐力一致）
+                while (skullShots < SKULL_SHOTS && stateTick >= BLEND + Math.round(skullShots * 20 / 3.0f)) {
                     fireSkull(level, target, skullShots % 2 == 0);
                     skullShots++;
                 }
                 if (stateTick >= FIRE_TICKS) {
                     recallScythe();
-                    enterState(State.SKULL_WAIT_RETURN);
+                    if (state == State.SKULL_FIRE) {
+                        enterState(State.SKULL_WAIT_RETURN);
+                    }
                 }
             }
             case SKULL_WAIT_RETURN -> {
@@ -918,7 +1118,8 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         thrownScythe = new ThrownScythe(level, this, origin, velocity);
         level.addFreshEntity(thrownScythe);
         this.entityData.set(DATA_SCYTHE_OUT, true);
-        this.playSound(ModSounds.WEEPING_THROW.get(), 2.0f, 0.7f);
+        sound(origin, ModSounds.WEEPING_THROW.get(), 2.0f, 0.7f);
+        sound(origin, ModSounds.WEEPING_WHOOSH.get(), 2.0f, 0.6f);
     }
 
     private void recallScythe() {
@@ -942,7 +1143,8 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
             return;
         }
         this.entityData.set(DATA_SCYTHE_OUT, false);
-        this.playSound(SoundEvents.TRIDENT_RETURN, 2.0f, 0.6f);
+        sound(handPosition(), SoundEvents.TRIDENT_RETURN, 2.0f, 0.6f);
+        sound(handPosition(), SoundEvents.ARMOR_EQUIP_NETHERITE, 2.0f, 0.7f);
         if (state == State.SKULL_WAIT_RETURN || state == State.SKULL_FIRE || state == State.SKULL_RAISE || state == State.SKULL_THROW) {
             play("skull_end");
             enterState(State.SKULL_END);
@@ -973,8 +1175,9 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         switch (state) {
             case ABSORB_START -> {
                 faceTowards(target, 0.3f);
-                this.entityData.set(DATA_ORB, 0.15f * stateTick / ABSORB_START_LENGTH);
-                chargeParticles(level);
+                float u = stateTick / (float) ABSORB_START_LENGTH;
+                this.entityData.set(DATA_ORB, 0.2f * u);
+                this.entityData.set(DATA_SCYTHE_CHARGE, 0.4f * u);
                 if (stateTick >= ABSORB_START_LENGTH) {
                     play("absorb_hold");
                     enterState(State.ABSORB_CHARGE);
@@ -983,10 +1186,11 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
             case ABSORB_CHARGE -> {
                 faceTowards(target, 0.2f);
                 float progress = stateTick / (float) ABSORB_CHARGE_TICKS;
-                this.entityData.set(DATA_ORB, 0.15f + 0.85f * progress);
-                chargeParticles(level);
+                this.entityData.set(DATA_ORB, 0.2f + 0.8f * progress);
+                this.entityData.set(DATA_SCYTHE_CHARGE, 0.4f + 0.6f * progress);
                 if (stateTick % 40 == 1) {
-                    this.playSound(ModSounds.WEEPING_CHARGE.get(), 2.0f, 0.6f + progress * 0.5f);
+                    sound(this.position(), ModSounds.WEEPING_CHARGE.get(), 2.0f, 0.6f + progress * 0.5f);
+                    sound(this.position(), SoundEvents.PORTAL_AMBIENT, 2.0f, 0.5f + progress * 0.3f);
                 }
                 Player caught = pullVictims(level);
                 if (caught != null) {
@@ -994,8 +1198,13 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
                     return;
                 }
                 if (stateTick >= ABSORB_CHARGE_TICKS) {
-                    this.entityData.set(DATA_ORB, 0.0f);
-                    level.sendParticles(ParticleTypes.LARGE_SMOKE, orbPosition().x, orbPosition().y, orbPosition().z, 30, 0.3, 0.3, 0.3, 0.05);
+                    // 没有抓到人：黑球消散
+                    Vec3 orb = orbPosition();
+                    level.sendParticles(ParticleTypes.LARGE_SMOKE, orb.x, orb.y, orb.z, 30, 0.3, 0.3, 0.3, 0.05);
+                    level.sendParticles(ParticleTypes.SQUID_INK, orb.x, orb.y, orb.z, 20, 0.3, 0.3, 0.3, 0.1);
+                    sound(orb, SoundEvents.FIRE_EXTINGUISH, 2.0f, 0.5f);
+                    sound(orb, SoundEvents.SOUL_ESCAPE, 2.0f, 0.5f);
+                    clearEffects();
                     play("absorb_end");
                     enterState(State.ABSORB_END);
                 }
@@ -1004,7 +1213,8 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
                 holdGrabbed();
                 if (stateTick >= GRAB_HOLD) {
                     play("absorb_slash");
-                    this.playSound(ModSounds.WEEPING_SWING.get(), 2.5f, 0.45f);
+                    sound(this.position(), ModSounds.WEEPING_SWING.get(), 2.5f, 0.45f);
+                    sound(this.position(), ModSounds.WEEPING_WHOOSH.get(), 2.5f, 0.6f);
                     enterState(State.ABSORB_SLASH);
                 }
             }
@@ -1031,23 +1241,6 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
 
     private Vec3 orbPosition() {
         return this.position().add(rightVec().scale(-0.6)).add(forward().scale(1.0)).add(0, 1.8, 0);
-    }
-
-    private void chargeParticles(ServerLevel level) {
-        Vec3 blade = this.position().add(rightVec().scale(0.7)).add(0, 4.4, 0).subtract(forward().scale(0.8));
-        level.sendParticles(BLACK, blade.x, blade.y, blade.z, 6, 0.8, 0.9, 0.8, 0);
-        level.sendParticles(ParticleTypes.LARGE_SMOKE, blade.x, blade.y, blade.z, 2, 0.6, 0.7, 0.6, 0.01);
-        if (tickCounter % 2 == 0) {
-            level.sendParticles(ParticleTypes.SQUID_INK, blade.x, blade.y, blade.z, 2, 0.5, 0.6, 0.5, 0.02);
-        }
-        // 黑色烟尘从四周汇入左手的黑球（汇聚粒子：count = 0，偏移 = 终点 - 起点）
-        Vec3 orb = orbPosition();
-        for (int i = 0; i < 3; i++) {
-            Vec3 from = orb.add((this.random.nextDouble() - 0.5) * 3, (this.random.nextDouble() - 0.5) * 3,
-                    (this.random.nextDouble() - 0.5) * 3);
-            level.sendParticles(ModParticles.DARK_MOTE.get(), from.x, from.y, from.z, 0,
-                    orb.x - from.x, orb.y - from.y, orb.z - from.z, 1.0);
-        }
     }
 
     /**
@@ -1088,7 +1281,12 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
             ModNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> sp), new RootPacket(GRAB_HOLD + SLASH_HIT + 10));
         }
         holdGrabbed();
-        this.playSound(ModSounds.WEEPING_GRAB.get(), 2.0f, 0.8f);
+        sound(holdSpot(), ModSounds.WEEPING_GRAB.get(), 2.0f, 0.8f);
+        sound(holdSpot(), ModSounds.WEEPING_HEARTBEAT.get(), 2.0f, 0.6f);
+        // 抓住的瞬间黑球被捏碎，镰刀上的黑气收进刀刃
+        Vec3 orb = orbPosition();
+        level.sendParticles(ParticleTypes.SQUID_INK, orb.x, orb.y, orb.z, 25, 0.3, 0.3, 0.3, 0.12);
+        this.entityData.set(DATA_ORB, 0.0f);
         play("absorb_grab");
         enterState(State.ABSORB_GRAB);
     }
@@ -1117,12 +1315,15 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
             shatter.moveTo(at.x, at.y, at.z, this.getYRot(), 0);
             level.addFreshEntity(shatter);
         }
-        level.playSound(null, at.x, at.y, at.z, ModSounds.WEEPING_SHATTER.get(), SoundSource.HOSTILE, 3.0f, 1.0f);
+        sound(at, ModSounds.WEEPING_SHATTER.get(), 3.0f, 1.0f);
+        sound(at, ModSounds.WEEPING_SHATTER_RING.get(), 3.0f, 0.5f);
+        sound(at, SoundEvents.GENERIC_EXPLODE, 3.0f, 0.7f);
         screenEffect(level, 6, 20, 2.5f, 32);
         if (grabbed != null && grabbed.isAlive()) {
             grabbed.hurt(this.damageSources().mobAttack(this), SLASH_DAMAGE);
         }
         releaseGrabbed();
+        clearEffects();
     }
 
     private void releaseGrabbed() {
@@ -1162,13 +1363,15 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
                 } else {
                     hoverInPlace(level);
                 }
-                int inSecond = (stateTick - 1) % 20;
-                for (int hit : RAPID_HITS) {
-                    if (inSecond == hit) {
-                        rapidHit(level);
-                    }
-                    if (inSecond == hit - 3) {
-                        this.playSound(ModSounds.WEEPING_SWING.get(), 1.4f, 0.9f + this.random.nextFloat() * 0.3f);
+                if (stateTick > BLEND) {
+                    int inSecond = (stateTick - BLEND - 1) % 20;
+                    for (int hit : RAPID_HITS) {
+                        if (inSecond == hit) {
+                            rapidHit(level);
+                        }
+                        if (inSecond == hit - 3) {
+                            this.playSound(ModSounds.WEEPING_SWING.get(), 1.4f, 0.9f + this.random.nextFloat() * 0.3f);
+                        }
                     }
                 }
                 if (stateTick >= RAPID_TICKS) {
@@ -1204,6 +1407,162 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
                 }
             }
         }
+    }
+
+    // ==================== 大招：死亡激光 ====================
+
+    private void tickLaser(ServerLevel level, @Nullable LivingEntity target) {
+        hoverInPlace(level);
+        switch (state) {
+            case LASER_START -> {
+                if (target != null) {
+                    faceTowards(target, 0.3f);
+                    laserAim = target.position().add(0, target.getBbHeight() * 0.5, 0);
+                }
+                float u = Mth.clamp(stateTick / (float) LASER_CIRCLE_FULL, 0.0f, 1.0f);
+                this.entityData.set(DATA_CIRCLE, u * u * (3 - 2 * u));
+                Vec3 chest = chestPosition();
+                if (stateTick % 2 == 0) {
+                    // 黑色粒子从四周汇入魔法阵
+                    for (int i = 0; i < 4; i++) {
+                        Vec3 from = chest.add((this.random.nextDouble() - 0.5) * 6, (this.random.nextDouble() - 0.2) * 5,
+                                (this.random.nextDouble() - 0.5) * 6);
+                        level.sendParticles(ModParticles.DARK_MOTE.get(), from.x, from.y, from.z, 0,
+                                chest.x - from.x, chest.y + 1.5 - from.y, chest.z - from.z, 1.0);
+                    }
+                }
+                if (stateTick >= LASER_START_LENGTH) {
+                    play("laser_fire");
+                    this.entityData.set(DATA_LASER, true);
+                    updateLaserEnd(chest);
+                    sound(chest, ModSounds.WEEPING_LASER_BOOM.get(), 4.0f, 0.7f);
+                    sound(chest, ModSounds.WEEPING_LASER.get(), 4.0f, 1.0f);
+                    screenEffect(level, 5, 20, 2.0f, 48);
+                    enterState(State.LASER_FIRE);
+                }
+            }
+            case LASER_FIRE -> {
+                if (target != null) {
+                    // 追踪：每 tick 只追上一部分，奔跑的玩家会被落下大约一个身位
+                    Vec3 wanted = target.position().add(0, target.getBbHeight() * 0.5, 0);
+                    laserAim = laserAim.add(wanted.subtract(laserAim).scale(LASER_TRACKING));
+                }
+                faceDirection(laserAim.subtract(this.position()), 0.5f);
+                Vec3 chest = chestPosition();
+                Vec3 end = updateLaserEnd(chest);
+                if (stateTick % LASER_DAMAGE_INTERVAL == 0) {
+                    laserDamage(level, chest, end);
+                }
+                laserTerrain(level, chest, end);
+                if (stateTick % 2 == 0) {
+                    level.sendParticles(ParticleTypes.END_ROD, end.x, end.y, end.z, 4, 0.4, 0.4, 0.4, 0.15);
+                    level.sendParticles(ParticleTypes.LARGE_SMOKE, end.x, end.y, end.z, 2, 0.5, 0.5, 0.5, 0.02);
+                }
+                if (stateTick % 20 == 0) {
+                    sound(chest, ModSounds.WEEPING_LASER.get(), 3.0f, 0.9f + this.random.nextFloat() * 0.2f);
+                    sound(end, SoundEvents.FIRE_EXTINGUISH, 2.0f, 0.5f);
+                }
+                if (stateTick % 10 == 0) {
+                    screenEffect(level, 0, 10, 0.8f, 24);
+                }
+                if (stateTick >= LASER_TICKS) {
+                    this.entityData.set(DATA_LASER, false);
+                    sound(chest, SoundEvents.BEACON_DEACTIVATE, 2.5f, 0.5f);
+                    play("laser_end");
+                    enterState(State.LASER_END);
+                }
+            }
+            case LASER_END -> {
+                float u = Mth.clamp(1.0f - stateTick / 16.0f, 0.0f, 1.0f);
+                this.entityData.set(DATA_CIRCLE, u);
+                if (stateTick >= LASER_END_LENGTH) {
+                    endAttack(40);
+                }
+            }
+            default -> {
+            }
+        }
+    }
+
+    /** 胸前的魔法阵（激光发射点），与 wl_laser_fire 里 MagicCircle 骨骼的位置一致 */
+    private Vec3 chestPosition() {
+        return this.position().add(0, CHEST_HEIGHT, 0).add(forward().scale(CHEST_FORWARD));
+    }
+
+    private Vec3 updateLaserEnd(Vec3 chest) {
+        Vec3 dir = laserAim.subtract(chest);
+        dir = dir.lengthSqr() < 1.0E-4 ? forward() : dir.normalize();
+        Vec3 end = chest.add(dir.scale(LASER_LENGTH));
+        this.entityData.set(DATA_LASER_END, new Vector3f((float) end.x, (float) end.y, (float) end.z));
+        return end;
+    }
+
+    /** 以胸口为圆心、半径 1 格、长 30 格的圆柱体内的生物受到伤害（无视护甲） */
+    private void laserDamage(ServerLevel level, Vec3 from, Vec3 to) {
+        AABB box = new AABB(from, to).inflate(LASER_RADIUS + 1.0);
+        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box, this::canHit)) {
+            Vec3 c = e.getBoundingBox().getCenter();
+            if (distanceToSegment(c, from, to) <= LASER_RADIUS + e.getBbWidth() / 2) {
+                if (e.hurt(this.damageSources().indirectMagic(this, this), LASER_DAMAGE)) {
+                    e.invulnerableTime = 0;
+                    e.setSecondsOnFire(2);
+                }
+            }
+        }
+    }
+
+    /** 激光经过的地形被烧穿（遵守 mobGriefing；基岩、黑曜石等凋灵也破坏不了的方块不受影响） */
+    private void laserTerrain(ServerLevel level, Vec3 from, Vec3 to) {
+        if (!ForgeEventFactory.getMobGriefingEvent(level, this)) {
+            return;
+        }
+        Vec3 dir = to.subtract(from);
+        double length = dir.length();
+        dir = dir.normalize();
+        Set<BlockPos> seen = new HashSet<>();
+        int broken = 0;
+        for (double s = 1.0; s <= length && broken < LASER_BLOCKS_PER_TICK; s += 0.5) {
+            Vec3 p = from.add(dir.scale(s));
+            BlockPos center = BlockPos.containing(p);
+            for (BlockPos pos : BlockPos.betweenClosed(center.offset(-1, -1, -1), center.offset(1, 1, 1))) {
+                if (broken >= LASER_BLOCKS_PER_TICK || !seen.add(pos.immutable())) {
+                    continue;
+                }
+                if (distanceToSegment(Vec3.atCenterOf(pos), from, to) > LASER_RADIUS) {
+                    continue;
+                }
+                BlockState block = level.getBlockState(pos);
+                float hardness = block.getDestroySpeed(level, pos);
+                if (block.isAir() || block.is(BlockTags.WITHER_IMMUNE) || hardness < 0 || hardness >= 50
+                        || !block.canEntityDestroy(level, pos, this) || !ForgeEventFactory.onEntityDestroyBlock(this, pos, block)) {
+                    continue;
+                }
+                if (broken % 4 == 0) {
+                    level.destroyBlock(pos, false, this);
+                } else {
+                    level.removeBlock(pos, false);
+                }
+                broken++;
+            }
+        }
+    }
+
+    private static double distanceToSegment(Vec3 p, Vec3 a, Vec3 b) {
+        Vec3 ab = b.subtract(a);
+        double len2 = ab.lengthSqr();
+        double t = len2 < 1.0E-8 ? 0 : Mth.clamp(p.subtract(a).dot(ab) / len2, 0.0, 1.0);
+        return p.distanceTo(a.add(ab.scale(t)));
+    }
+
+    /** 激光有 30 格长：发射时把视锥剔除的范围扩大到激光终点，不然 Boss 在画面外时激光会消失 */
+    @Override
+    public AABB getBoundingBoxForCulling() {
+        AABB box = super.getBoundingBoxForCulling();
+        if (laserActive()) {
+            Vec3 end = laserEnd();
+            box = box.minmax(new AABB(end, end).inflate(2.0));
+        }
+        return box;
     }
 
     // ==================== 工具 ====================
@@ -1334,6 +1693,17 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         return 0.8f + this.random.nextFloat() * 0.1f;
     }
 
+    // ==================== 掉落 ====================
+
+    /** 3 个下界之星、5~10 个下界合金锭、15~32 个金胡萝卜（遵守 doMobLoot 游戏规则） */
+    @Override
+    protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        super.dropCustomDeathLoot(source, looting, recentlyHit);
+        this.spawnAtLocation(new ItemStack(Items.NETHER_STAR, 3));
+        this.spawnAtLocation(new ItemStack(Items.NETHERITE_INGOT, 5 + this.random.nextInt(6)));
+        this.spawnAtLocation(new ItemStack(Items.GOLDEN_CARROT, 15 + this.random.nextInt(18)));
+    }
+
     // ==================== 血条 / 生命周期 ====================
 
     @Override
@@ -1365,6 +1735,7 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         if (this.level() instanceof ServerLevel level) {
             releaseGrabbed();
             removeEyeLight(level);
+            clearEffects();
             if (thrownScythe != null) {
                 thrownScythe.releasePinned();
                 thrownScythe.discard();
@@ -1373,10 +1744,6 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
             if (husk != null) {
                 husk.discard();
                 husk = null;
-            }
-            if (dayTimeStart >= 0) {
-                level.setDayTime(dayTimeStart + DAY_SPIN_DAYS * 24000L);
-                dayTimeStart = -1;
             }
         }
     }
@@ -1414,9 +1781,6 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         tag.putDouble("HomeX", h.x);
         tag.putDouble("HomeY", h.y);
         tag.putDouble("HomeZ", h.z);
-        if (dayTimeStart >= 0) {
-            tag.putLong("DayTimeStart", dayTimeStart);
-        }
     }
 
     @Override
@@ -1426,41 +1790,39 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
             home = new Vec3(tag.getDouble("HomeX"), tag.getDouble("HomeY"), tag.getDouble("HomeZ"));
             homeSet = true;
         }
-        // 出场演出不存档：读档时直接进入正常状态，把天空时间还原
+        // 出场演出不存档：读档时直接进入正常状态
         introDone = true;
-        if (tag.contains("DayTimeStart") && this.level() instanceof ServerLevel level) {
-            level.setDayTime(tag.getLong("DayTimeStart") + DAY_SPIN_DAYS * 24000L);
-        }
         this.setHidden(false);
         this.entityData.set(DATA_EYE_GLOW, 1.0f);
         this.entityData.set(DATA_SCYTHE_OUT, false);
-        this.entityData.set(DATA_ORB, 0.0f);
+        clearEffects();
+        play("idle");
     }
 
     // ==================== GeckoLib ====================
 
     @Override
     public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
-        // physics：头发、胸部、裙甲、尾巴、凋灵头的循环摆动，战斗时更快更大
-        controllers.add(new AnimationController<>(this, PHYSICS_CONTROLLER, 10,
-                s -> s.setAndContinue(combat() ? PHYS_COMBAT : PHYS_CALM)));
-        // base：待机漂浮 / 水母式漂荡（拖着镰刀）
-        controllers.add(new AnimationController<>(this, BASE_CONTROLLER, 8,
-                s -> s.setAndContinue(drifting() ? DRIFT : HOVER)));
-        // blink：先左眼再右眼
+        // blink：先左眼再右眼（出场动画自己控制眼皮，main 排在后面会盖过它）
         controllers.add(new AnimationController<>(this, BLINK_CONTROLLER, 0, s -> s.setAndContinue(BLINK)));
-        // action：出场、出招、后摇、抛接镰刀
-        AnimationController<WeepingDeathLord> action = new AnimationController<>(this, ACTION_CONTROLLER, 4, s -> PlayState.STOP);
-        for (String name : PLAY_ONCE) {
-            action.triggerableAnim(name, RawAnimation.begin().thenPlay("wl_" + name));
+        // main：待机、出场、出招、后摇全部在这里，换动画时 BLEND tick 平滑过渡
+        controllers.add(new AnimationController<>(this, MAIN_CONTROLLER, BLEND, this::mainAnimation));
+    }
+
+    private PlayState mainAnimation(AnimationState<WeepingDeathLord> state) {
+        int seq = this.entityData.get(DATA_ANIM_SEQ);
+        if (seq != seenAnimSeq) {
+            seenAnimSeq = seq;
+            state.getController().forceAnimationReset();
         }
-        for (String name : PLAY_AND_HOLD) {
-            action.triggerableAnim(name, RawAnimation.begin().thenPlayAndHold("wl_" + name));
+        int id = this.entityData.get(DATA_ANIM);
+        RawAnimation anim;
+        if (id <= 0 || id >= ANIM_RAW.length) {
+            anim = drifting() ? (combat() ? DRIFT_COMBAT : DRIFT) : (combat() ? HOVER_COMBAT : HOVER);
+        } else {
+            anim = ANIM_RAW[id];
         }
-        for (String name : LOOPS) {
-            action.triggerableAnim(name, RawAnimation.begin().thenLoop("wl_" + name));
-        }
-        controllers.add(action);
+        return state.setAndContinue(anim);
     }
 
     @Override

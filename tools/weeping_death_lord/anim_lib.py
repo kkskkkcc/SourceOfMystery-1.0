@@ -129,31 +129,194 @@ def _euler_from(R):
     return (-math.degrees(a), -math.degrees(b), math.degrees(c))
 
 
-def solve_scythe(pose):
-    """把 pose['@scythe'] 换算成 Scythe 骨骼的 rot / pos / scale"""
-    spec = pose.get('@scythe')
-    if not spec:
-        return pose
+def _scythe_frame(pose, spec):
+    """镰刀在 spin = 0 时的朝向 A（R = A @ Rz(spin)）和握点（世界坐标）"""
     hand = spec.get('hand', 'R')
-    grip = spec.get('grip', (0, 0, 0))
-    slide = spec.get('slide', 0.0)
-    scale = spec.get('scale', 1.0)
     bones, world = bone_world(GEO, {k: v for k, v in pose.items() if not k.startswith('@')})
     H = world('RightHand' if hand == 'R' else 'LeftHand')
     Rh = H[:3, :3]
-    # 去掉手臂链上的缩放（一般没有）
-    Rh = Rh / np.cbrt(np.linalg.det(Rh))
-    # spin：先绕握柄（镰刀局部 z 轴）转，决定刀刃朝向
-    Rg = rot_matrix(*grip) @ rot_matrix(0, 0, spec.get('spin', 0.0))
-    R = Rh @ Rg
+    Rh = Rh / np.cbrt(np.linalg.det(Rh))  # 去掉手臂链上的缩放（一般没有）
+    A = Rh @ rot_matrix(*spec.get('grip', (0, 0, 0)))
     g = H @ np.append(mirror(hand_grip(hand)), 1)
+    return A, g[:3]
+
+
+def solve_scythe(pose, spin=None):
+    """把 pose['@scythe'] 换算成 Scythe 骨骼的 rot / pos / scale。
+    spin：绕握柄（镰刀局部 z 轴）转的角度，决定刀刃朝向；spec 里写 'auto' 时由 Anim 按挥动方向算好传进来"""
+    spec = pose.get('@scythe')
+    if not spec:
+        return pose
+    if spin is None:
+        spin = spec.get('spin', 0.0)
+        if spin == 'auto':
+            spin = spec.get('spin0', -90.0)
+    A, g = _scythe_frame(pose, spec)
+    R = A @ rot_matrix(0, 0, spin)
+    scale = spec.get('scale', 1.0)
     # 握点沿握柄向刀头方向滑动 slide 像素（刀头在镰刀局部 -z 端）
-    pivot_world = g[:3] + R @ np.array([0.0, 0.0, slide])
+    pivot_world = g + R @ np.array([0.0, 0.0, spec.get('slide', 0.0)])
     off = pivot_world - mirror(SCYTHE_PIVOT)
     p = dict(pose)
     p['Scythe'] = {'rot': _euler_from(R), 'pos': (-off[0], off[1], off[2]),
                    'scale': (scale, scale, scale)}
     return p
+
+
+# 镰刀局部坐标（GeckoLib 镜像后，相对枢轴）：刀头末端在 -z，刀刃从握柄向 -y 伸出
+SCYTHE_HEAD = np.array([0.0, 0.0, -51.6])
+BLADE_DIR = math.atan2(-1.0, 0.0)  # 刀刃方向在局部 xy 平面里的角度
+
+
+def _head_world(pose, spec):
+    """刀头末端（握柄上，和 spin 无关）的世界坐标"""
+    A, g = _scythe_frame(pose, spec)
+    s = spec.get('scale', 1.0)
+    pivot_world = g + A @ np.array([0.0, 0.0, spec.get('slide', 0.0)])
+    return pivot_world + A @ (SCYTHE_HEAD * s), A
+
+
+SPIN_AHEAD = 0.3       # 秒：提前这么久就把刀刃转到即将挥动的方向（出刀前先摆好刃口）
+SPIN_BEHIND = 0.5      # 秒：挥完之后刀刃朝向保持的时间（不会一砍完就拧回去）
+SPIN_REST_WEIGHT = 140.0  # 像素/秒：刀头比这个慢时刀刃回到 spin0
+
+
+def auto_spins(fn, times, length, loop, settle=False):
+    """'spin': 'auto' 的帧：刀刃（刀尖）朝着刀头挥动的方向，看起来是用刀刃在劈砍而不是拿棍子抡"""
+    h = 1 / 120
+
+    def raw(t):
+        if loop:
+            t %= length
+        else:
+            t = min(max(t, 0.0), length)
+        return fn(t)
+
+    fine = np.arange(-0.3, length + 0.3 + 1e-9, 1 / 60)
+    samples = []
+    for tf in fine:
+        p = raw(tf)
+        spec = p.get('@scythe')
+        if not spec or spec.get('spin') != 'auto':
+            samples.append(None)
+            continue
+        pa, pb = raw(tf - h), raw(tf + h)
+        sa, sb = pa.get('@scythe'), pb.get('@scythe')
+        if not sa or not sb or sa.get('hand') != sb.get('hand'):
+            samples.append(None)
+            continue
+        ha, _ = _head_world(pa, sa)
+        hb, _ = _head_world(pb, sb)
+        _, A = _head_world(p, spec)
+        v = (hb - ha) / (2 * h)
+        axis = A[:, 2]
+        v_perp = v - axis * (v @ axis)
+        d = A.T @ v_perp
+        speed = float(np.linalg.norm(v_perp))
+        samples.append((tf, math.atan2(d[1], d[0]) - BLADE_DIR, speed))
+    out = []
+    for t in times:
+        spec = raw(t).get('@scythe')
+        if not spec or spec.get('spin') != 'auto':
+            out.append(None)
+            continue
+        s0 = math.radians(spec.get('spin0', -90.0))
+        rest = SPIN_REST_WEIGHT
+        if settle:
+            # 收招回到待机的动画：最后一秒把刀刃转回默认朝向，和下一个动画的开头对上
+            rest += 1e6 * smooth(seg(t, length - 1.2, length - 0.2)) ** 3
+        cx, cy = rest * math.cos(s0), rest * math.sin(s0)
+        for smp in samples:
+            if smp is None:
+                continue
+            tf, s, w = smp
+            sigma = SPIN_AHEAD if tf >= t else SPIN_BEHIND
+            k = math.exp(-((tf - t) / sigma) ** 2 / 2)
+            if k < 1e-3:
+                continue
+            cx += w * k * math.cos(s)
+            cy += w * k * math.sin(s)
+        out.append(math.degrees(math.atan2(cy, cx)))
+    return out
+
+
+# ---------------------------------------------------------------- 裙甲防穿模
+
+LEGS = ('LeftLeg', 'RightLeg', 'LeftLowerLeg', 'RightLowerLeg')
+TORSO = ('Breast',)  # 腰部和上身的铰接处本来就贴在一起，只防止掀进胸口
+# 每块裙甲：(骨骼, 障碍物, 候选转角) —— 前挡往前掀（x 负，可以带一点左右偏），左右两片往外张（z）
+SKIRT_STEP = 3.0
+SKIRT_MAX = 120.0
+SKIRT_CLEARANCE = 0.25  # 像素
+
+
+def _front_candidates():
+    out = []
+    for dz in (0, 8, -8, 16, -16, 24, -24, 32, -32):
+        d = 0.0
+        while d <= SKIRT_MAX:
+            out.append((-d, 0.0, float(dz)))
+            d += SKIRT_STEP
+    return sorted(out, key=lambda c: abs(c[0]) + 0.8 * abs(c[2]))
+
+
+def _side_candidates(sign):
+    out = []
+    for dx in (0, -10, 10, -20, 20):
+        d = 0.0
+        while d <= SKIRT_MAX:
+            out.append((float(dx), 0.0, sign * d))
+            d += SKIRT_STEP
+    return sorted(out, key=lambda c: abs(c[2]) + 0.8 * abs(c[0]))
+
+
+SKIRT_PLATES = (('SkirtFront', LEGS + TORSO, _front_candidates()),
+                ('SkirtLeft', LEGS, _side_candidates(-1)),
+                ('SkirtRight', LEGS, _side_candidates(1)))
+
+
+def _skirt_needed(pose, bone, obstacles, candidates):
+    """穿模时：按转角从小到大找第一个不穿的；都不行就取穿得最浅的"""
+    from collide import cube_boxes, surface_points, depth_inside
+    obs = cube_boxes(GEO, pose, obstacles)
+    base = pose.get(bone, {}).get('rot', (0, 0, 0))
+    best = (1e9, (0.0, 0.0, 0.0))
+    for c in candidates:
+        p = dict(pose)
+        e = dict(p.get(bone, {}))
+        e['rot'] = tuple(b + d for b, d in zip(base, c))
+        p[bone] = e
+        pts = surface_points(cube_boxes(GEO, p, [bone]), 4)
+        depth = float(np.max(depth_inside(pts, obs, -SKIRT_CLEARANCE)))
+        if depth <= 0:
+            return c
+        if depth < best[0] - 0.05:
+            best = (depth, c)
+    return best[1]
+
+
+def _smooth_needs(vals, loop, r=2):
+    """vals: 每帧的修正量（同号）。先取邻域里幅度最大的（提前掀开），再做滑动平均"""
+    n = len(vals)
+
+    def at(arr, i):
+        return arr[i % n] if loop else arr[min(max(i, 0), n - 1)]
+    mx = [max((at(vals, i + k) for k in range(-r, r + 1)), key=abs) for i in range(n)]
+    return [sum(at(mx, i + k) for k in range(-r, r + 1)) / (2 * r + 1) for i in range(n)]
+
+
+def fix_skirts(frames, loop):
+    """逐帧算出每块裙甲需要额外转开多少才不穿过腿（前挡也不能掀进身体），平滑后叠加上去"""
+    for bone, obstacles, candidates in SKIRT_PLATES:
+        need = [_skirt_needed(f, bone, obstacles, candidates) for f in frames]
+        if all(c == (0.0, 0.0, 0.0) for c in need):
+            continue
+        axes = [_smooth_needs([c[i] for c in need], loop) for i in range(3)]
+        for k, f in enumerate(frames):
+            d = (axes[0][k], axes[1][k], axes[2][k])
+            if any(abs(x) > 1e-6 for x in d):
+                add(f, bone, rot=d)
+    return frames
 
 
 # ---------------------------------------------------------------- 采样与输出
@@ -198,19 +361,28 @@ def _unwrap(vals):
 
 
 class Anim:
-    def __init__(self, name, length, fn, loop=False, fps=20, hold=False, always=()):
+    def __init__(self, name, length, fn, loop=False, fps=20, hold=False, always=(), settle=False):
         """loop: 循环；hold: 播完停在最后一帧（GeckoLib 的 hold_on_last_frame）；
         always: 即使全程等于静止姿势也要输出的骨骼（让这个动画完全接管它们）"""
         self.name, self.length, self.fn = name, length, fn
         self.loop, self.fps, self.hold, self.always = loop, fps, hold, set(always)
+        self.settle = settle  # 结尾回到待机：刀刃朝向最后转回默认
+
+    def frames(self, times, skirts=True):
+        spins = auto_spins(self.fn, times, self.length, self.loop, self.settle)
+        frames = [solve_scythe(self.fn(t), s) for t, s in zip(times, spins)]
+        if skirts:
+            fix_skirts(frames, self.loop and len(times) > 1 and abs(times[-1] - self.length) < 1e-6)
+        return frames
 
     def sample(self, t):
-        return solve_scythe(self.fn(t))
+        return self.frames([t], skirts=False)[0]
 
     def to_json(self):
         n = max(1, int(round(self.length * self.fps)))
         times = [round(i * self.length / n, 4) for i in range(n + 1)]
-        frames = [self.sample(t) for t in times]
+        frames = self.frames(times)
+        self.sampled = (times, frames)
         bones = []
         for f in frames:
             for b in f:
@@ -259,15 +431,15 @@ def write(anims, path):
 _TEX = None
 
 
-def preview(anim, times, path, yaws=(0, -50), size=260, extra=None):
+def preview(anim, times, path, yaws=(0, -50), size=260, extra=None, span=120, cy=14):
     global _TEX
     if _TEX is None:
         _TEX = Image.open(os.path.join(ASSETS, 'textures/entity/weeping_death_lord.png'))
     hide = ('DarkOrb',)
     cols = []
-    center, span = np.array([0, 14, 0]), 120
-    for t in times:
-        p = anim.sample(t) if isinstance(anim, Anim) else solve_scythe(anim(t))
+    center = np.array([0, cy, 0])
+    sampled = anim.frames(list(times)) if isinstance(anim, Anim) else [solve_scythe(anim(t)) for t in times]
+    for t, p in zip(times, sampled):
         p = {k: v for k, v in p.items() if not k.startswith('@')}
         if extra:
             p = merge(extra(t), p)

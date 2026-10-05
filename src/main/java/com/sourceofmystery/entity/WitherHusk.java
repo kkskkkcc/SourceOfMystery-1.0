@@ -11,8 +11,8 @@ import net.minecraft.world.level.Level;
  */
 public class WitherHusk extends Entity {
 
-    /** 变白、加速旋转的总时长（与 WeepingDeathLord.HUSK_TICKS 一致） */
-    public static final int DURATION = WeepingDeathLord.HUSK_TICKS;
+    /** 变白、加速旋转的总时长（与 WeepingDeathLord.INTRO_EXPLODE 一致：2 秒） */
+    public static final int DURATION = Math.round(WeepingDeathLord.INTRO_EXPLODE * 20);
 
     public WitherHusk(EntityType<? extends WitherHusk> type, Level level) {
         super(type, level);

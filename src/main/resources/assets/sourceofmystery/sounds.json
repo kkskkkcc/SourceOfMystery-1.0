@@ -667,8 +667,9 @@
     "subtitle": "subtitles.sourceofmystery.weeping_death_lord.roar",
     "sounds": [
       {
-        "name": "minecraft:mob/wither/spawn",
-        "pitch": 0.85,
+        "name": "minecraft:entity.wither.spawn",
+        "type": "event",
+        "pitch": 0.75,
         "volume": 1.0
       }
     ]
@@ -678,32 +679,32 @@
     "sounds": [
       {
         "name": "minecraft:entity/player/attack/sweep1",
-        "pitch": 0.55,
+        "pitch": 0.45,
         "volume": 1.0
       },
       {
         "name": "minecraft:entity/player/attack/sweep2",
-        "pitch": 0.55,
+        "pitch": 0.45,
         "volume": 1.0
       },
       {
         "name": "minecraft:entity/player/attack/sweep3",
-        "pitch": 0.55,
+        "pitch": 0.45,
         "volume": 1.0
       },
       {
         "name": "minecraft:entity/player/attack/sweep4",
-        "pitch": 0.55,
+        "pitch": 0.45,
         "volume": 1.0
       },
       {
         "name": "minecraft:entity/player/attack/sweep5",
-        "pitch": 0.55,
+        "pitch": 0.45,
         "volume": 1.0
       },
       {
         "name": "minecraft:entity/player/attack/sweep6",
-        "pitch": 0.55,
+        "pitch": 0.45,
         "volume": 1.0
       }
     ]
@@ -804,6 +805,112 @@
       {
         "name": "minecraft:random/glass3",
         "pitch": 0.5,
+        "volume": 1.0
+      }
+    ]
+  },
+  "weeping_death_lord.roar_beast": {
+    "subtitle": "subtitles.sourceofmystery.weeping_death_lord.roar_beast",
+    "sounds": [
+      {
+        "name": "minecraft:entity.warden.roar",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 1.0
+      }
+    ]
+  },
+  "weeping_death_lord.shatter_ring": {
+    "subtitle": "subtitles.sourceofmystery.weeping_death_lord.shatter_ring",
+    "sounds": [
+      {
+        "name": "minecraft:block.amethyst_block.break",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 1.0
+      }
+    ]
+  },
+  "weeping_death_lord.whoosh": {
+    "subtitle": "subtitles.sourceofmystery.weeping_death_lord.whoosh",
+    "sounds": [
+      {
+        "name": "minecraft:item.trident.riptide_1",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item.trident.riptide_2",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:item.trident.riptide_3",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.0
+      }
+    ]
+  },
+  "weeping_death_lord.impact": {
+    "subtitle": "subtitles.sourceofmystery.weeping_death_lord.impact",
+    "sounds": [
+      {
+        "name": "minecraft:entity.warden.attack_impact",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 1.0
+      }
+    ]
+  },
+  "weeping_death_lord.heartbeat": {
+    "subtitle": "subtitles.sourceofmystery.weeping_death_lord.heartbeat",
+    "sounds": [
+      {
+        "name": "minecraft:entity.warden.heartbeat",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.0
+      }
+    ]
+  },
+  "weeping_death_lord.laser_charge": {
+    "subtitle": "subtitles.sourceofmystery.weeping_death_lord.laser_charge",
+    "sounds": [
+      {
+        "name": "minecraft:entity.warden.sonic_charge",
+        "type": "event",
+        "pitch": 0.7,
+        "volume": 1.0
+      }
+    ]
+  },
+  "weeping_death_lord.laser_boom": {
+    "subtitle": "subtitles.sourceofmystery.weeping_death_lord.laser_boom",
+    "sounds": [
+      {
+        "name": "minecraft:entity.warden.sonic_boom",
+        "type": "event",
+        "pitch": 0.6,
+        "volume": 1.0
+      }
+    ]
+  },
+  "weeping_death_lord.laser": {
+    "subtitle": "subtitles.sourceofmystery.weeping_death_lord.laser",
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.power_select",
+        "type": "event",
+        "pitch": 0.5,
+        "volume": 1.0
+      },
+      {
+        "name": "minecraft:block.beacon.ambient",
+        "type": "event",
+        "pitch": 0.6,
         "volume": 1.0
       }
     ]
