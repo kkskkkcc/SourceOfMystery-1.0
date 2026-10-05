@@ -22,7 +22,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "$(li)$(l)Death Laser$() (ultimate): she lets go of the scythe, raises both hands to gather a black magic circle, presses it to her chest and throws her arms open - a white laser $(l)1 block in radius and 30 blocks long$() bursts from her chest for 5 seconds. It keeps tracking you but $(l)lags one body length behind$(): keep running and it misses, stand still and it burns through you. The laser $(l)destroys terrain$() (respects mobGriefing; bedrock, obsidian and other wither-proof blocks survive) and ignores armor."
+      "text": "$(li)$(l)Death Laser$() (ultimate): she lets go of the scythe, raises both hands to gather a black magic circle, presses it to her chest and throws her arms open - a white laser $(l)1 block in radius and 30 blocks long$() bursts from her chest for 5 seconds. It keeps tracking you but $(l)lags one body length behind$(): keep running and it misses, stand still and it burns through you. The laser $(l)destroys terrain$() (respects mobGriefing; bedrock, obsidian and other wither-proof blocks survive) drops nothing. It deals 20 damage per second (armor applies) and has a 50-second cooldown."
     },
     {
       "type": "patchouli:text",

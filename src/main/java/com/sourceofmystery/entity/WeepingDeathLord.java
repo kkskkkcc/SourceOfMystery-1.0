@@ -216,11 +216,11 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
     private static final int LASER_END_LENGTH = at(3.2f);
     public static final double LASER_LENGTH = 30.0;
     public static final double LASER_RADIUS = 1.0;
-    private static final float LASER_DAMAGE = 6.0f;      // 每 5 tick 一次（无视护甲）
+    private static final float LASER_DAMAGE = 5.0f;      // 每 5 tick 一次 = 每秒 20 点（护甲照常减伤）
     private static final int LASER_DAMAGE_INTERVAL = 5;
     private static final double LASER_TRACKING = 0.25;   // 每 tick 追上目标位置的比例：奔跑的玩家会被落下约一个身位
     private static final double LASER_RANGE = 26.0;
-    private static final int LASER_COOLDOWN = 600;
+    private static final int LASER_COOLDOWN = 1000;      // 大招冷却 50 秒
     private static final int LASER_BLOCKS_PER_TICK = 48;
     private static final double CHEST_HEIGHT = 2.56;     // 魔法阵 / 激光发射点：胸前（anims.py 输出的 chest point × 1.25 / 16）
     private static final double CHEST_FORWARD = 0.33;
@@ -1497,21 +1497,20 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         return end;
     }
 
-    /** 以胸口为圆心、半径 1 格、长 30 格的圆柱体内的生物受到伤害（无视护甲） */
+    /** 以胸口为圆心、半径 1 格、长 30 格的圆柱体内的生物受到伤害（每秒 20 点，护甲照常减伤） */
     private void laserDamage(ServerLevel level, Vec3 from, Vec3 to) {
         AABB box = new AABB(from, to).inflate(LASER_RADIUS + 1.0);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box, this::canHit)) {
             Vec3 c = e.getBoundingBox().getCenter();
             if (distanceToSegment(c, from, to) <= LASER_RADIUS + e.getBbWidth() / 2) {
-                if (e.hurt(this.damageSources().indirectMagic(this, this), LASER_DAMAGE)) {
+                if (e.hurt(this.damageSources().mobAttack(this), LASER_DAMAGE)) {
                     e.invulnerableTime = 0;
-                    e.setSecondsOnFire(2);
                 }
             }
         }
     }
 
-    /** 激光经过的地形被烧穿（遵守 mobGriefing；基岩、黑曜石等凋灵也破坏不了的方块不受影响） */
+    /** 激光经过的地形被烧穿，没有掉落物（遵守 mobGriefing；基岩、黑曜石等凋灵也破坏不了的方块不受影响） */
     private void laserTerrain(ServerLevel level, Vec3 from, Vec3 to) {
         if (!ForgeEventFactory.getMobGriefingEvent(level, this)) {
             return;
