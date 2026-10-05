@@ -252,15 +252,20 @@ public class WeepingDeathLordRenderer extends GeoEntityRenderer<WeepingDeathLord
         @Override
         public void renderForBone(PoseStack poseStack, WeepingDeathLord entity, GeoBone bone, RenderType renderType,
                                   MultiBufferSource bufferSource, VertexConsumer buffer, float partialTick, int packedLight, int packedOverlay) {
+            String name = bone.getName();
+            if (!name.equals("Halo") && !name.equals("MagicCircle") && !name.equals("DarkOrb")) {
+                return;
+            }
             float time = entity.tickCount + partialTick;
-            switch (bone.getName()) {
+            // GeckoLib 调用图层时矩阵已经移回模型原点（脚底），要自己挪到骨骼的枢轴点上
+            poseStack.pushPose();
+            poseStack.translate(bone.getPivotX() / 16f, bone.getPivotY() / 16f, bone.getPivotZ() / 16f);
+            switch (name) {
                 case "Halo" -> renderHalo(poseStack, entity, bufferSource, time);
                 case "MagicCircle" -> renderCircle(poseStack, entity, bufferSource, time);
-                case "DarkOrb" -> renderOrb(poseStack, entity, bufferSource, time);
-                default -> {
-                    return;
-                }
+                default -> renderOrb(poseStack, entity, bufferSource, time);
             }
+            poseStack.popPose();
             bufferSource.getBuffer(renderType);
         }
 

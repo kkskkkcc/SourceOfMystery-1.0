@@ -63,7 +63,9 @@ public class DeathSkull extends WitherSkull {
         }
         Entity owner = this.getOwner();
         Entity victim = result.getEntity();
-        if (victim.hurt(this.damageSources().witherSkull(this, owner), damage) && victim instanceof LivingEntity living) {
+        // 用普通的弹射物伤害而不是凋灵之首伤害：暗源之甲免疫凋灵之首，那样这一招对它完全无效
+        LivingEntity shooter = owner instanceof LivingEntity l ? l : null;
+        if (victim.hurt(this.damageSources().mobProjectile(this, shooter), damage) && victim instanceof LivingEntity living) {
             living.addEffect(new MobEffectInstance(MobEffects.WITHER, 100, 1), owner);
         }
     }
