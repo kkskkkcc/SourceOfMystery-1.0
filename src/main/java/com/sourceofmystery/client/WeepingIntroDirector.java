@@ -59,7 +59,6 @@ public final class WeepingIntroDirector {
     private static final float WIDE_TO_FACE_END = 4.5f;
     private static final float PULL_BACK = 0.7f;
     private static final float TO_DOLLY_END = WeepingDeathLord.INTRO_SETTLE + 1.0f;
-    private static final float RETURN_END = WeepingDeathLord.INTRO_FREEZE_END + 0.8f;
 
     private static Marker camera;
     private static CameraType savedCameraType;
@@ -154,13 +153,17 @@ public final class WeepingIntroDirector {
         fov = shot.fov;
     }
 
-    /** 天空日夜交替越来越快：总共转过整整几天（整数天，结束时时刻不变） */
+    /**
+     * 日夜交替：她一出现（凋灵爆炸）天空就飞快地转起来，越转越慢，咆哮时正好停下。
+     * 总共转过整数天，所以停下后时刻和原来一样。
+     */
     private static void spinSky(ClientLevel level, float t) {
         if (dayStart < 0) {
             return;
         }
-        double u = Math.min(1.0, t / WeepingDeathLord.INTRO_LENGTH);
-        long spin = Math.round(u * u * WeepingDeathLord.DAY_SPIN_DAYS * 24000L);
+        double u = Mth.clamp((t - WeepingDeathLord.INTRO_EXPLODE) / (WeepingDeathLord.INTRO_ROAR - WeepingDeathLord.INTRO_EXPLODE), 0.0, 1.0);
+        double eased = 1.0 - (1.0 - u) * (1.0 - u);
+        long spin = Math.round(eased * WeepingDeathLord.DAY_SPIN_DAYS * 24000L);
         level.setDayTime(dayStart + (long) (t * 20) + spin);
     }
 
@@ -310,12 +313,9 @@ public final class WeepingIntroDirector {
             double u = (t - WeepingDeathLord.INTRO_SETTLE) / (TO_DOLLY_END - WeepingDeathLord.INTRO_SETTLE);
             return roarShot(s, t).blend(dollyShot(s, 0), u, 0.8);
         }
-        if (t < WeepingDeathLord.INTRO_FREEZE_END) {
-            double u = (t - TO_DOLLY_END) / (WeepingDeathLord.INTRO_DOLLY_END - TO_DOLLY_END);
-            return dollyShot(s, Math.min(1.0, u));
-        }
-        double u = Math.min(1.0, (t - WeepingDeathLord.INTRO_FREEZE_END) / (RETURN_END - WeepingDeathLord.INTRO_FREEZE_END));
-        return dollyShot(s, 1.0).blend(eyeShot(s), u, 0);
+        // 推到玩家身后定格，定格结束出场就结束，镜头直接还给玩家
+        double u = (t - TO_DOLLY_END) / (WeepingDeathLord.INTRO_DOLLY_END - TO_DOLLY_END);
+        return dollyShot(s, Math.min(1.0, u));
     }
 
     /** 玩家自己的视角，看着她 */

@@ -23,6 +23,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from anim_lib import *  # noqa: E402,F403
+from anim_lib import _euler_from  # noqa: E402
 
 OUT = os.path.join(ASSETS, 'animations/entity/weeping_death_lord.animation.json')
 
@@ -284,7 +285,7 @@ def toss_pose(t):
 # 9 ~ 12     猛地张开双臂咆哮 3 秒
 # 12 ~ 14.5  镰刀飘到手上（13 秒接住），扛到肩上，看着玩家
 # 14.5 ~ 21  扛着镰刀对峙（镜头运镜 + 定格 2 秒）
-# 21 ~ 22    放下镰刀回到待机姿势，出场结束
+# 21 ~ 22    出场已结束（镜头还给玩家），她放下镰刀回到待机姿势
 I_EXPLODE, I_WAKE, I_ROAR, I_SHOULDER, I_CATCH, I_SETTLE, I_LOWER, INTRO_LEN = 2.0, 4.0, 9.0, 12.0, 13.0, 14.5, 21.0, 22.0
 
 FLOAT_SCYTHE_POS = (-16.1, -12.0, -14.0)  # 竖着漂浮在她右侧，刀头朝上
@@ -368,10 +369,47 @@ SHOULDER_STANCE = P(
     LeftLowerLeg=(22, 0, 0), RightLowerLeg=(14, 0, 0),
     LeftFoot=(28, 0, 0), RightFoot=(28, 0, 0),
     LeftArm=(8, 0, -24), LeftForeArm=(-45, 0, 0),
-    RightArm=(-150, 0, 22), RightForeArm=(-85, 0, 0),
+    # 镰刀杆搭在右肩外侧、向外后上方斜出，刀头高举在右后方；右手在胸前握住杆尾。
+    # （原来手臂举过头顶、前臂和镰刀杆都从头部穿过去）
+    RightArm=(-45, -62.5, 49.5), RightForeArm=(-110, 0, 0),
 )
-REACH = P(RightArm=(-70, 0, 45), RightForeArm=(-15, 0, 0))
-SHOULDER_GRIP = dict(gx=175, gz=-20, spin=-90, slide=26)
+# 接住镰刀扛上肩、出场结束放下镰刀时，手臂和握法半路额外加的偏移（按 sin 曲线先加后减），
+# 让镰刀从身体外侧绕过去，不扫过躯干和头。数值用穿模检查搜出来的
+LIFT_ARM_BUMP = (15.3, -33.6, 105.3)
+LIFT_GRIP_BUMP = (-1.5, -51.5, 8.6)
+LOWER_ARM_BUMP = (-14.2, 15.3, -54.5)
+LOWER_GRIP_BUMP = (-57.3, -5.1, -22.1)
+REACH = P(RightArm=(-220, 0, 67), RightForeArm=(-100, 0, 0))   # 右手举高去接镰刀（绝对角度）
+SHOULDER_GRIP = dict(gx=-27, gy=-33, gz=-50.5, spin=-90, slide=12)
+
+
+def _quat(R):
+    w = math.sqrt(max(0.0, 1 + R[0][0] + R[1][1] + R[2][2])) / 2
+    x = math.copysign(math.sqrt(max(0.0, 1 + R[0][0] - R[1][1] - R[2][2])) / 2, R[2][1] - R[1][2])
+    y = math.copysign(math.sqrt(max(0.0, 1 - R[0][0] + R[1][1] - R[2][2])) / 2, R[0][2] - R[2][0])
+    z = math.copysign(math.sqrt(max(0.0, 1 - R[0][0] - R[1][1] + R[2][2])) / 2, R[1][0] - R[0][1])
+    return np.array([w, x, y, z])
+
+
+def _quat_matrix(q):
+    w, x, y, z = q
+    return np.array([[1 - 2 * (y * y + z * z), 2 * (x * y - z * w), 2 * (x * z + y * w)],
+                     [2 * (x * y + z * w), 1 - 2 * (x * x + z * z), 2 * (y * z - x * w)],
+                     [2 * (x * z - y * w), 2 * (y * z + x * w), 1 - 2 * (x * x + y * y)]])
+
+
+def slerp_euler(a, b, u):
+    """两组 Blockbench 角度之间按最短旋转插值（逐个分量插值时，角度差大的话中途会绕远路）"""
+    qa, qb = _quat(rot_matrix(*a)), _quat(rot_matrix(*b))
+    if np.dot(qa, qb) < 0:
+        qb = -qb
+    d = min(1.0, float(np.dot(qa, qb)))
+    th = math.acos(d)
+    if th < 1e-6:
+        q = qa
+    else:
+        q = (math.sin((1 - u) * th) * qa + math.sin(u * th) * qb) / math.sin(th)
+    return _euler_from(_quat_matrix(q / np.linalg.norm(q)))
 
 
 def shoulder_body(t):
@@ -382,11 +420,13 @@ def shoulder_body(t):
     reach = smooth(seg(s, 0.0, catch))
     lift = ease_in_out(seg(s, catch + 0.1, catch + 1.1))
     base = blend(spread_pose(t, 1 - settle), SHOULDER_STANCE, settle)
-    reach_pose = merge(base, REACH)
+    reach_pose = {**base, **REACH}
     if s <= catch:
         pose = blend(base, reach_pose, reach)
     else:
         pose = blend(reach_pose, base, lift)
+        # 半路把手臂往外摆一下，镰刀从身体外侧绕到肩上，不从躯干和头发里扫过去
+        pose = merge(pose, P(RightArm=tuple(v * math.sin(math.pi * lift) for v in LIFT_ARM_BUMP)))
     # 对峙时的呼吸
     br = wave(t, 3.0)
     return merge(pose, P(Root=dict(pos=(0, 0.8 * br * settle, 0)), UpBody=(0.8 * br * settle, 0, 0)), eyes(1))
@@ -396,7 +436,9 @@ def shoulder_grip(t):
     s = t - I_SHOULDER
     catch = I_CATCH - I_SHOULDER
     lift = ease_in_out(seg(s, catch + 0.1, catch + 1.1))
-    return hold('R', gx=lerp(40, SHOULDER_GRIP['gx'], lift), gz=lerp(0, SHOULDER_GRIP['gz'], lift), spin=-90,
+    g = slerp_euler((40, 0, 0), (SHOULDER_GRIP['gx'], SHOULDER_GRIP['gy'], SHOULDER_GRIP['gz']), lift)
+    bump = [v * math.sin(math.pi * lift) for v in LIFT_GRIP_BUMP]
+    return hold('R', gx=g[0] + bump[0], gy=g[1] + bump[1], gz=g[2] + bump[2], spin=-90,
                 slide=lerp(20, SHOULDER_GRIP['slide'], lift))
 
 
@@ -420,7 +462,10 @@ def intro(t):
     else:
         # 放下镰刀，回到待机姿势（握法从扛肩平滑过渡到下垂）
         u = ease_in_out(seg(t, I_LOWER, INTRO_LEN))
-        pose = merge(blend(shoulder_pose(t), hover_pose(t), u), eyes(1))
+        sp, hp = shoulder_pose(t), hover_pose(t)
+        pose = merge(blend(sp, hp, u), eyes(1), P(RightArm=tuple(v * math.sin(math.pi * u) for v in LOWER_ARM_BUMP)))
+        g = slerp_euler(sp['@scythe']['grip'], hp['@scythe']['grip'], u)
+        pose['@scythe'] = dict(pose['@scythe'], grip=tuple(a + b * math.sin(math.pi * u) for a, b in zip(g, LOWER_GRIP_BUMP)))
     return merge(pose, phys_pose(t, 4.0, 1.0))
 
 

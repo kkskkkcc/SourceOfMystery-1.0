@@ -154,10 +154,11 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
     public static final float INTRO_CATCH = 13.0f;       // 接住镰刀，扛到肩上
     public static final float INTRO_SETTLE = 14.5f;      // 扛着镰刀看向玩家；镜头开始运镜
     public static final float INTRO_DOLLY_END = 19.0f;   // 镜头到达玩家身后，定格
-    public static final float INTRO_FREEZE_END = 21.0f;  // 定格 2 秒后镜头回到玩家
-    public static final float INTRO_LENGTH = 22.0f;
+    public static final float INTRO_FREEZE_END = 21.0f;  // 定格 2 秒后出场结束，镜头直接回到玩家
+    public static final float INTRO_LENGTH = INTRO_FREEZE_END;
+    private static final int INTRO_TAIL = 20;            // 出场结束后 wl_intro 还有 1 秒放下镰刀，放完才切回待机动画
     public static final int INTRO_TICKS = Math.round(INTRO_LENGTH * 20);
-    public static final int DAY_SPIN_DAYS = 4;           // 出场期间天空转过整整 4 天（客户端表现，结束时回到原来的时间）
+    public static final int DAY_SPIN_DAYS = 4;           // 她一出现天空就飞快地转过整整 4 天，咆哮时停下（客户端表现，结束时回到原来的时间）
     private static final double CAMERA_RANGE = 128.0;
 
     // ==================== 移动 ====================
@@ -167,6 +168,12 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
     private static final double DRIFT_SPEED = 0.16;
     private static final double CHASE_SPEED = 0.32;
 
+    // ==================== 数值：对标暗源之甲（与龙魂同档） ====================
+    // 生命 5000、护甲 30、韧性 10。玩家这一档 = 暗源之剑（48 + 力量 III）+ 暗源之甲 + 其余三件下界合金：
+    // 剑每下打掉她约 43 点，满打满算约 2 分钟。她对这身装备（72 护甲 / 12 韧性，合计约减免 86%）造成：
+    // 劈斩 45 → 约 6.3、骷髅头 20 → 约 2.8 × 15 发、快攻 14 → 约 2 × 15 下、
+    // 吸附被抓后的斩击 60 → 约 8.5、激光每秒 20 → 约 2.8。只穿暗源之甲（其余空着）时，劈斩和斩击约是这的 3 倍。
+
     // ==================== 招式（动画时间换算成服务端 tick：at(秒) = BLEND + 秒 * 20） ====================
     private static final float SCALE = 1.25f;          // 渲染缩放（模型约 3.6 格高）
 
@@ -174,7 +181,7 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
     private static final int CLEAVE_LENGTH = at(5.0f);
     private static final int CLEAVE_AIM_LOCK = at(1.2f);
     private static final int CLEAVE_HIT = at(1.65f);
-    private static final float CLEAVE_DAMAGE = 30.0f;
+    private static final float CLEAVE_DAMAGE = 45.0f;
     private static final double CLEAVE_REACH = 6.5;     // 变大的镰刀砸在身前这么远
     private static final double QUAKE_RADIUS = 7.0;
     private static final double CLEAVE_RANGE = 8.0;     // 进入这个距离才起手
@@ -185,27 +192,29 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
     private static final int RAISE_LENGTH = at(1.0f);
     private static final int FIRE_TICKS = 100 + BLEND;
     private static final int SKULL_SHOTS = 15;           // 每秒 3 发 × 5 秒
-    private static final float SKULL_DAMAGE = 10.0f;
+    private static final float SKULL_DAMAGE = 20.0f;
     private static final int SKULL_END_LENGTH = at(3.4f);
     private static final int SCYTHE_RETURN_TIMEOUT = 60;
 
     // 吸附：起手 1.5 秒，蓄力 10 秒；抓住后 0.5 秒斩下（斩击动画 0.25 秒命中）
     private static final int ABSORB_START_LENGTH = at(1.5f);
     private static final int ABSORB_CHARGE_TICKS = 200;
-    private static final double PULL_SPEED = 0.1;        // 每秒 2 格
+    // 每 tick 往她身边拉 0.32 格（每秒 6.4 格）。玩家在地上疾跑反抗每 tick 只能抵消约 0.13 格，
+    // 加上速度 II 也只到约 0.18：拼命往外跑只能拖慢，最后还是会被吸过去；跳起来在空中更是几乎没法反抗
+    private static final double PULL_SPEED = 0.32;
     private static final double PULL_RANGE = 24.0;
     private static final double GRAB_RANGE = 3.0;
     private static final int GRAB_HOLD = at(0.5f);
     private static final int SLASH_HIT = at(0.25f);
     private static final int SLASH_LENGTH = at(4.0f);
     private static final int ABSORB_END_LENGTH = at(3.2f);
-    private static final float SLASH_DAMAGE = 100.0f;
+    private static final float SLASH_DAMAGE = 60.0f;
 
     // 快速攻击：起手 0.5 秒，5 秒内每秒 3 刀（每秒第 4 / 11 / 17 tick 命中），后摇 3.2 秒
     private static final int RAPID_START_LENGTH = at(0.5f);
     private static final int RAPID_TICKS = 100 + BLEND;
     private static final int[] RAPID_HITS = {4, 11, 17};
-    private static final float RAPID_DAMAGE = 5.0f;
+    private static final float RAPID_DAMAGE = 14.0f;
     private static final double RAPID_RANGE = 4.5;
     private static final int RAPID_END_LENGTH = at(3.2f);
 
@@ -239,6 +248,7 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
 
     // ==================== 状态 ====================
     private boolean introDone = true;     // /summon 直接召唤时没有出场
+    private int introTail;
     private long introStartNanos;
     private float introTime;
     private Vec3 home = Vec3.ZERO;
@@ -309,8 +319,9 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
 
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
-                .add(Attributes.MAX_HEALTH, 2000.0)
-                .add(Attributes.ARMOR, 20.0)
+                .add(Attributes.MAX_HEALTH, 5000.0)
+                .add(Attributes.ARMOR, 30.0)
+                .add(Attributes.ARMOR_TOUGHNESS, 10.0)
                 .add(Attributes.ATTACK_DAMAGE, CLEAVE_DAMAGE)
                 .add(Attributes.MOVEMENT_SPEED, 0.3)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0)
@@ -576,7 +587,7 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         this.setHidden(false);
         this.entityData.set(DATA_EYE_GLOW, 1.0f);
         removeEyeLight(level);
-        play("idle");
+        introTail = INTRO_TAIL;
         enterState(State.IDLE);
         cooldown = 40;
         WeepingDeathLordSpawnHandler.announceArrival(level, this);
@@ -632,6 +643,14 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
         }
         if (!introDone) {
             tickIntro(level);
+            return;
+        }
+        if (introTail > 0) {
+            // 镜头已经还给玩家，她把肩上的镰刀放下来（wl_intro 的最后 1 秒）
+            hoverInPlace(level);
+            if (--introTail == 0) {
+                play("idle");
+            }
             return;
         }
         LivingEntity target = validTarget();
@@ -1244,7 +1263,7 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
     }
 
     /**
-     * 把 PULL_RANGE 内的生物每秒往她身边拉 2 格（拼命跑还是跑得掉）；有玩家进入 3 格就返回该玩家
+     * 把 PULL_RANGE 内的生物往她身边拉（拼命跑只能拖慢，跑不掉）；有玩家进入 3 格就返回该玩家
      */
     @Nullable
     private Player pullVictims(ServerLevel level) {
@@ -1260,7 +1279,15 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
                 continue;
             }
             Vec3 pull = to.normalize().scale(PULL_SPEED);
-            e.setDeltaMovement(pull.x, e.getDeltaMovement().y + pull.y * 0.5, pull.z);
+            double y;
+            if (e instanceof Player) {
+                // 服务端的玩家速度不会被重力衰减，不能累加：在地上就贴着地面拉（地面摩擦让玩家还能反抗着拖慢），
+                // 在空中才往她的高度带
+                y = e.onGround() ? -0.08 : Mth.clamp(pull.y * 0.5, -0.2, 0.2);
+            } else {
+                y = e.getDeltaMovement().y + pull.y * 0.5;
+            }
+            e.setDeltaMovement(pull.x, y, pull.z);
             e.hurtMarked = true;
             if (tickCounter % 4 == 0) {
                 level.sendParticles(ParticleTypes.SMOKE, e.getX(), e.getY() + 1, e.getZ(), 2, 0.2, 0.4, 0.2, 0.01);
