@@ -60,7 +60,13 @@ public final class BossIntroCamera {
                 return;
             }
         }
-        if (--ClientCinematicCache.remainingTicks <= 0) {
+        if (ClientCinematicCache.scripted) {
+            // 脚本运镜按现实时间结束
+            ClientCinematicCache.remainingTicks = ClientCinematicCache.totalTicks - (int) ClientCinematicCache.scriptedElapsedTicks();
+            if (ClientCinematicCache.remainingTicks <= 0) {
+                stop();
+            }
+        } else if (--ClientCinematicCache.remainingTicks <= 0) {
             stop();
         }
     }

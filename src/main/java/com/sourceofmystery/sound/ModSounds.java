@@ -118,6 +118,30 @@ public final class ModSounds {
     /** 泣死之主：斩碎空间 */
     public static final RegistryObject<SoundEvent> WEEPING_SHATTER = register("weeping_death_lord.shatter");
 
+    /** 泣死之主：斩碎空间时的晶体碎裂余音 */
+    public static final RegistryObject<SoundEvent> WEEPING_SHATTER_RING = register("weeping_death_lord.shatter_ring");
+
+    /** 泣死之主：出场咆哮的低吼层（和 WEEPING_ROAR 叠在一起播放） */
+    public static final RegistryObject<SoundEvent> WEEPING_ROAR_BEAST = register("weeping_death_lord.roar_beast");
+
+    /** 泣死之主：笨重镰刀破风的呼啸 */
+    public static final RegistryObject<SoundEvent> WEEPING_WHOOSH = register("weeping_death_lord.whoosh");
+
+    /** 泣死之主：沉重的撞击 */
+    public static final RegistryObject<SoundEvent> WEEPING_IMPACT = register("weeping_death_lord.impact");
+
+    /** 泣死之主：抓住猎物时的心跳 */
+    public static final RegistryObject<SoundEvent> WEEPING_HEARTBEAT = register("weeping_death_lord.heartbeat");
+
+    /** 泣死之主大招：凝聚魔法阵 */
+    public static final RegistryObject<SoundEvent> WEEPING_LASER_CHARGE = register("weeping_death_lord.laser_charge");
+
+    /** 泣死之主大招：激光发射的冲击 */
+    public static final RegistryObject<SoundEvent> WEEPING_LASER_BOOM = register("weeping_death_lord.laser_boom");
+
+    /** 泣死之主大招：激光持续的嗡鸣 */
+    public static final RegistryObject<SoundEvent> WEEPING_LASER = register("weeping_death_lord.laser");
+
     /**
      * 龙魂语音（日语女声，HTS Voice "Mei"，CC BY 3.0，见 assets/sourceofmystery/sounds/voice/CREDITS.txt）。
      * 每条语音都有同名的口型 + 表情动画 boss_voice_&lt;id&gt;，由 DragonSoulBoss.speak 一起触发。

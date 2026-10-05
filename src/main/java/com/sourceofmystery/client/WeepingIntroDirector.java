@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.sourceofmystery.SourceOfMystery;
 import com.sourceofmystery.entity.WeepingDeathLord;
 import com.sourceofmystery.sound.ModSounds;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -28,14 +29,20 @@ import net.minecraftforge.fml.common.Mod;
 
 /**
  * 泣死之主出场的脚本运镜。镜头挂在一个只存在于客户端的 Marker 实体上（Minecraft#setCameraEntity），
- * 每帧按时间表计算位置和朝向：
+ * 每帧按现实时间（不是 tick）计算位置和朝向，和服务端的出场时间表、wl_intro 动画一一对应：
  * <pre>
- *   0 ~ 80    远景：从侧面看玩家与凋灵对峙（凋灵变白旋转、爆炸、她蜷缩漂浮）
- *  80 ~ 180   脸部特写：缓缓睁眼
- * 180 ~ 280   拉远到中景：张开双臂咆哮、镰刀飞回、扛起镰刀
- * 280 ~ 350   中景运镜：从玩家身前绕到玩家身后
- * 350 ~ 390   定格：玩家与她对峙
+ *   0 ~ 0.8     从玩家视角平滑拉到远景
+ *   0.8 ~ 3.3   远景：从侧面看玩家与凋灵对峙（凋灵变白旋转、2 秒爆炸、她蜷缩漂浮），缓慢推近
+ *   3.3 ~ 4.5   镜头飞向她的脸
+ *   4.5 ~ 9     脸部特写：整整 5 秒缓缓睁眼（镜头随她抬头慢慢上移、推近）
+ *   9 ~ 9.7     咆哮：从脸部猛地拉远到中景，之后缓缓环绕（镰刀飞回、扛起镰刀）
+ *   14.5 ~ 15.5 镜头滑到玩家身前
+ *   15.5 ~ 19   中景运镜：从玩家身前绕到玩家身后
+ *   19 ~ 21     定格：玩家与她对峙
+ *   21 ~ 21.8   镜头回到玩家眼睛，交还控制
  * </pre>
+ * 相邻两段之间都是平滑的过渡（位置、看向的点、视野一起插值），没有硬切。
+ * 出场期间天空日夜交替越来越快（只改客户端显示的时间，结束时还原）。
  * 镜头不在玩家身上时原版不画本地玩家，所以这里在实体渲染完后手动补画。
  * 字幕栏、黑边、隐藏 HUD、锁定移动沿用 BossIntroCamera（ClientCinematicCache.scripted）。
  */
@@ -47,10 +54,18 @@ public final class WeepingIntroDirector {
     private static final double FACE_FORWARD = 0.95;
     private static final double CHEST_HEIGHT = 2.0;
 
+    private static final float EYE_TO_WIDE_END = 0.8f;
+    private static final float WIDE_TO_FACE_START = 3.3f;
+    private static final float WIDE_TO_FACE_END = 4.5f;
+    private static final float PULL_BACK = 0.7f;
+    private static final float TO_DOLLY_END = WeepingDeathLord.INTRO_SETTLE + 1.0f;
+    private static final float RETURN_END = WeepingDeathLord.INTRO_FREEZE_END + 0.8f;
+
     private static Marker camera;
     private static CameraType savedCameraType;
     private static boolean running;
     private static boolean roarPlayed;
+    private static long dayStart = -1;
     private static float yaw;
     private static float pitch;
     private static double fov = 70;
@@ -73,6 +88,7 @@ public final class WeepingIntroDirector {
         mc.setCameraEntity(camera);
         running = true;
         roarPlayed = false;
+        dayStart = mc.level.dimensionType().hasFixedTime() ? -1 : mc.level.getDayTime();
     }
 
     /** 结束运镜，镜头还给玩家（BossIntroCamera 收尾、退出世界时调用） */
@@ -87,12 +103,18 @@ public final class WeepingIntroDirector {
         if (savedCameraType != null) {
             mc.options.setCameraType(savedCameraType);
         }
+        if (dayStart >= 0 && mc.level != null) {
+            // 还原成服务端的时间（下一次服务端同步时间时也会自动校正）
+            mc.level.setDayTime(dayStart + (long) ClientCinematicCache.scriptedElapsedTicks());
+        }
+        dayStart = -1;
         running = false;
         camera = null;
     }
 
-    private static float elapsed(float partialTick) {
-        return ClientCinematicCache.totalTicks - ClientCinematicCache.remainingTicks + partialTick;
+    /** 出场开始后经过的秒数（现实时间） */
+    private static float seconds() {
+        return ClientCinematicCache.scriptedElapsedTicks() / 20.0f;
     }
 
     @SubscribeEvent
@@ -112,7 +134,9 @@ public final class WeepingIntroDirector {
         if (mc.getCameraEntity() != camera) {
             mc.setCameraEntity(camera);
         }
-        Shot shot = compute(mc, elapsed(event.renderTickTime));
+        float t = seconds();
+        spinSky(mc.level, t);
+        Shot shot = compute(mc, t);
         camera.setPos(shot.pos.x, shot.pos.y, shot.pos.z);
         camera.xo = shot.pos.x;
         camera.yo = shot.pos.y;
@@ -130,6 +154,16 @@ public final class WeepingIntroDirector {
         fov = shot.fov;
     }
 
+    /** 天空日夜交替越来越快：总共转过整整几天（整数天，结束时时刻不变） */
+    private static void spinSky(ClientLevel level, float t) {
+        if (dayStart < 0) {
+            return;
+        }
+        double u = Math.min(1.0, t / WeepingDeathLord.INTRO_LENGTH);
+        long spin = Math.round(u * u * WeepingDeathLord.DAY_SPIN_DAYS * 24000L);
+        level.setDayTime(dayStart + (long) (t * 20) + spin);
+    }
+
     @SubscribeEvent
     public static void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END || !running) {
@@ -141,26 +175,33 @@ public final class WeepingIntroDirector {
         if (player == null) {
             return;
         }
-        // 玩家始终面向她，最后的对峙画面里是玩家的背影对着她
-        Vec3 target = boss != null ? boss.position() : anchor();
-        Vec3 d = target.subtract(player.position());
+        // 玩家始终面向她，最后的对峙画面里是玩家的背影对着她；镜头回到玩家时视角正好看着她
+        Vec3 target = boss != null ? boss.position().add(0, CHEST_HEIGHT, 0) : anchor().add(0, CHEST_HEIGHT, 0);
+        Vec3 d = target.subtract(player.getEyePosition());
         if (d.horizontalDistanceSqr() > 1.0E-4) {
             float face = (float) (Mth.atan2(d.z, d.x) * Mth.RAD_TO_DEG) - 90.0f;
+            float look = (float) -(Mth.atan2(d.y, d.horizontalDistance()) * Mth.RAD_TO_DEG);
             player.setYRot(face);
             player.yRotO = face;
             player.yBodyRot = face;
             player.yHeadRot = face;
-            player.setXRot(0);
+            player.setXRot(look);
+            player.xRotO = look;
         }
-        if (!roarPlayed && elapsed(0) >= WeepingDeathLord.ROAR_START) {
+        if (!roarPlayed && seconds() >= WeepingDeathLord.INTRO_ROAR) {
             roarPlayed = true;
-            // 凋灵咆哮：不随距离衰减，镜头在哪都很大声
+            // 凋灵咆哮：几层叠在一起，不随距离衰减，镜头在哪都很大声
             RandomSource random = RandomSource.create();
-            mc.getSoundManager().play(new SimpleSoundInstance(ModSounds.WEEPING_ROAR.get().getLocation(), SoundSource.HOSTILE,
-                    1.0f, 1.0f, random, false, 0, SoundInstance.Attenuation.NONE, 0, 0, 0, true));
-            mc.getSoundManager().play(new SimpleSoundInstance(SoundEvents.WITHER_SPAWN.getLocation(), SoundSource.HOSTILE,
-                    1.0f, 0.75f, random, false, 0, SoundInstance.Attenuation.NONE, 0, 0, 0, true));
+            playLoud(mc, ModSounds.WEEPING_ROAR.get().getLocation(), 1.0f, random);
+            playLoud(mc, ModSounds.WEEPING_ROAR.get().getLocation(), 0.9f, random);
+            playLoud(mc, ModSounds.WEEPING_ROAR_BEAST.get().getLocation(), 1.0f, random);
+            playLoud(mc, SoundEvents.ENDER_DRAGON_GROWL.getLocation(), 0.6f, random);
         }
+    }
+
+    private static void playLoud(Minecraft mc, net.minecraft.resources.ResourceLocation sound, float pitch, RandomSource random) {
+        mc.getSoundManager().play(new SimpleSoundInstance(sound, SoundSource.HOSTILE, 1.0f, pitch, random, false, 0,
+                SoundInstance.Attenuation.NONE, 0, 0, 0, true));
     }
 
     public static void applyAngles(ViewportEvent.ComputeCameraAngles event) {
@@ -195,6 +236,10 @@ public final class WeepingIntroDirector {
         if (player == null || player.isSpectator()) {
             return;
         }
+        // 镜头几乎贴在玩家眼睛上时（开头和结尾的过渡）不画，免得挡住画面
+        if (event.getCamera().getPosition().distanceToSqr(player.getEyePosition(event.getPartialTick())) < 0.6 * 0.6) {
+            return;
+        }
         float pt = event.getPartialTick();
         Vec3 cam = event.getCamera().getPosition();
         double x = Mth.lerp(pt, player.xOld, player.getX()) - cam.x;
@@ -211,6 +256,16 @@ public final class WeepingIntroDirector {
     // ==================== 镜头时间表 ====================
 
     private record Shot(Vec3 pos, Vec3 look, double fov) {
+
+        Shot blend(Shot o, double u, double arc) {
+            double e = smooth(u);
+            Vec3 p = pos.lerp(o.pos, e).add(0, Math.sin(Math.PI * e) * arc, 0);
+            return new Shot(p, look.lerp(o.look, e), Mth.lerp(e, fov, o.fov));
+        }
+    }
+
+    /** 每帧都会用到的几何量 */
+    private record Scene(Vec3 boss, Vec3 eye, Vec3 toBoss, Vec3 side, Vec3 bossFwd, double dist) {
     }
 
     private static Vec3 anchor() {
@@ -232,46 +287,87 @@ public final class WeepingIntroDirector {
         double dist = g.length();
         g = dist < 1.0E-3 ? new Vec3(0, 0, 1) : g.scale(1 / dist);
         Vec3 side = new Vec3(-g.z, 0, g.x);
-        float bossYaw = boss != null ? Mth.rotLerp(pt, boss.yRotO, boss.getYRot()) : 0;
-        Vec3 fwd = new Vec3(-Mth.sin(bossYaw * Mth.DEG_TO_RAD), 0, Mth.cos(bossYaw * Mth.DEG_TO_RAD));
+        // 她一直面向玩家：用「她指向玩家的方向」当作她的正前方，比用她的朝向更稳
+        Scene s = new Scene(b, eye, g, side, g.scale(-1), dist);
 
-        if (t < WeepingDeathLord.CLOSEUP_START) {
-            // 远景：侧面看玩家与凋灵对峙，缓慢推近
-            double u = t / WeepingDeathLord.CLOSEUP_START;
-            Vec3 mid = eye.add(b.add(0, 1.8, 0)).scale(0.5);
-            double back = Math.max(10.0, dist * 0.9 + 6.0) * (1.0 - 0.12 * smooth(u));
-            Vec3 pos = mid.add(side.scale(back)).add(0, 2.5 + dist * 0.08, 0);
-            return new Shot(pos, mid, 70);
+        if (t < EYE_TO_WIDE_END) {
+            return eyeShot(s).blend(wideShot(s, t), t / EYE_TO_WIDE_END, 0.6);
         }
-        if (t < WeepingDeathLord.ROAR_START) {
-            // 脸部特写：随她抬头缓缓上移、推近
-            double u = (t - WeepingDeathLord.CLOSEUP_START) / (WeepingDeathLord.ROAR_START - WeepingDeathLord.CLOSEUP_START);
-            double lift = smooth(Math.min(1.0, Math.max(0.0, (u - 0.08) / 0.84)));
-            Vec3 face = b.add(0, Mth.lerp(lift, CURL_FACE_HEIGHT, AWAKE_FACE_HEIGHT), 0).add(fwd.scale(FACE_FORWARD));
-            double d = Mth.lerp(smooth(u), 2.6, 1.9);
-            Vec3 pos = face.add(fwd.scale(d)).add(0, 0.12, 0);
-            return new Shot(pos, face, 45);
+        if (t < WIDE_TO_FACE_START) {
+            return wideShot(s, t);
         }
-        if (t < WeepingDeathLord.DOLLY_START) {
-            // 咆哮：从脸部迅速拉远到中景，之后缓缓环绕
-            double u = Math.min(1.0, (t - WeepingDeathLord.ROAR_START) / 30.0);
-            double e = 1 - Math.pow(1 - u, 3);
-            Vec3 face = b.add(0, AWAKE_FACE_HEIGHT, 0).add(fwd.scale(FACE_FORWARD));
-            Vec3 chest = b.add(0, CHEST_HEIGHT, 0);
-            Vec3 look = face.lerp(chest, e);
-            double orbit = Math.max(0, t - WeepingDeathLord.ROAR_START - 30) / 70.0 * 12.0;
-            Vec3 dir = rotateY(fwd, orbit);
-            Vec3 pos = look.add(dir.scale(Mth.lerp(e, 1.9, 8.5))).add(0, Mth.lerp(e, 0.12, 0.8), 0);
-            return new Shot(pos, look, Mth.lerp(e, 45, 62));
+        if (t < WIDE_TO_FACE_END) {
+            double u = (t - WIDE_TO_FACE_START) / (WIDE_TO_FACE_END - WIDE_TO_FACE_START);
+            return wideShot(s, t).blend(faceShot(s, t), u, 1.5);
         }
-        // 运镜：镜头从玩家身前（面对玩家）绕到玩家身后，最后越过玩家肩膀看向她，然后定格
-        double u = Math.min(1.0, (t - WeepingDeathLord.DOLLY_START) / (WeepingDeathLord.FREEZE_START - WeepingDeathLord.DOLLY_START));
+        if (t < WeepingDeathLord.INTRO_ROAR) {
+            return faceShot(s, t);
+        }
+        if (t < WeepingDeathLord.INTRO_SETTLE) {
+            return roarShot(s, t);
+        }
+        if (t < TO_DOLLY_END) {
+            double u = (t - WeepingDeathLord.INTRO_SETTLE) / (TO_DOLLY_END - WeepingDeathLord.INTRO_SETTLE);
+            return roarShot(s, t).blend(dollyShot(s, 0), u, 0.8);
+        }
+        if (t < WeepingDeathLord.INTRO_FREEZE_END) {
+            double u = (t - TO_DOLLY_END) / (WeepingDeathLord.INTRO_DOLLY_END - TO_DOLLY_END);
+            return dollyShot(s, Math.min(1.0, u));
+        }
+        double u = Math.min(1.0, (t - WeepingDeathLord.INTRO_FREEZE_END) / (RETURN_END - WeepingDeathLord.INTRO_FREEZE_END));
+        return dollyShot(s, 1.0).blend(eyeShot(s), u, 0);
+    }
+
+    /** 玩家自己的视角，看着她 */
+    private static Shot eyeShot(Scene s) {
+        return new Shot(s.eye, s.boss.add(0, CHEST_HEIGHT, 0), 70);
+    }
+
+    /** 远景：侧面看玩家与凋灵对峙，缓慢推近 */
+    private static Shot wideShot(Scene s, float t) {
+        double u = Mth.clamp(t / WIDE_TO_FACE_END, 0.0, 1.0);
+        Vec3 mid = s.eye.add(s.boss.add(0, 1.8, 0)).scale(0.5);
+        double back = Math.max(10.0, s.dist * 0.9 + 6.0) * (1.0 - 0.15 * smooth(u));
+        Vec3 pos = mid.add(s.side.scale(back)).add(0, 2.5 + s.dist * 0.08, 0);
+        return new Shot(pos, mid, 70);
+    }
+
+    /** 她的脸（随抬头从蜷缩时的高度移到睁眼后的高度） */
+    private static Vec3 face(Scene s, float t) {
+        double lift = smooth((t - WeepingDeathLord.INTRO_WAKE - 0.3) / (WeepingDeathLord.INTRO_ROAR - WeepingDeathLord.INTRO_WAKE - 0.4));
+        return s.boss.add(0, Mth.lerp(lift, CURL_FACE_HEIGHT, AWAKE_FACE_HEIGHT), 0).add(s.bossFwd.scale(FACE_FORWARD));
+    }
+
+    /** 脸部特写：慢慢推近 */
+    private static Shot faceShot(Scene s, float t) {
+        double u = Mth.clamp((t - WeepingDeathLord.INTRO_WAKE) / (WeepingDeathLord.INTRO_ROAR - WeepingDeathLord.INTRO_WAKE), 0.0, 1.0);
+        Vec3 f = face(s, t);
+        double d = Mth.lerp(smooth(u), 2.6, 1.9);
+        return new Shot(f.add(s.bossFwd.scale(d)).add(0, 0.12, 0), f, 45);
+    }
+
+    /** 咆哮：从脸部猛地拉远到中景，之后缓缓环绕（9 秒时和脸部特写完全重合） */
+    private static Shot roarShot(Scene s, float t) {
+        float since = t - WeepingDeathLord.INTRO_ROAR;
+        double u = Math.min(1.0, since / PULL_BACK);
+        double e = 1 - Math.pow(1 - u, 3);
+        Vec3 f = face(s, WeepingDeathLord.INTRO_ROAR);
+        Vec3 chest = s.boss.add(0, CHEST_HEIGHT, 0);
+        Vec3 look = f.lerp(chest, e);
+        double orbit = Math.max(0, since - PULL_BACK) * 4.0;  // 度
+        Vec3 dir = rotateY(s.bossFwd, orbit);
+        Vec3 pos = look.add(dir.scale(Mth.lerp(e, 1.9, 8.5))).add(0, Mth.lerp(e, 0.12, 0.8), 0);
+        return new Shot(pos, look, Mth.lerp(e, 45, 62));
+    }
+
+    /** 运镜：u = 0 时镜头在玩家身前看着玩家，u = 1 时越过玩家肩膀看向她 */
+    private static Shot dollyShot(Scene s, double u) {
         double e = smooth(u);
         double angle = Math.PI * e;
         double radius = Mth.lerp(e, 2.4, 4.4);
-        Vec3 around = g.scale(Math.cos(angle)).add(side.scale(Math.sin(angle)));
-        Vec3 pos = eye.add(around.scale(radius)).add(side.scale(1.2 * e)).add(0, Mth.lerp(e, 0.05, 0.9), 0);
-        Vec3 look = eye.lerp(b.add(0, CHEST_HEIGHT, 0), smooth(Math.min(1.0, u * 1.3)));
+        Vec3 around = s.toBoss.scale(Math.cos(angle)).add(s.side.scale(Math.sin(angle)));
+        Vec3 pos = s.eye.add(around.scale(radius)).add(s.side.scale(1.2 * e)).add(0, Mth.lerp(e, 0.05, 0.9), 0);
+        Vec3 look = s.eye.lerp(s.boss.add(0, CHEST_HEIGHT, 0), smooth(Math.min(1.0, u * 1.3)));
         return new Shot(pos, look, Mth.lerp(e, 60, 70));
     }
 

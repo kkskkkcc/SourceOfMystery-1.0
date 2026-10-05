@@ -39,6 +39,7 @@ public class ClientModEvents {
     public static void registerParticles(RegisterParticleProvidersEvent event) {
         event.registerSpriteSet(ModParticles.GOLD_MOTE.get(), sprites -> new ConvergeParticle.Provider(sprites, true));
         event.registerSpriteSet(ModParticles.DARK_MOTE.get(), sprites -> new ConvergeParticle.Provider(sprites, false));
+        event.registerSpriteSet(ModParticles.DEATH_SKULL.get(), DeathSkullParticle.Provider::new);
     }
 
     @SubscribeEvent

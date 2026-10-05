@@ -8,7 +8,9 @@
 - 尾巴：bone13 的 7 个方块按位置拆成 Tail1~Tail4 四节，逐节嵌套，方便做摆动
 - 两个凋零头外面各包一层 WitherHeadR / WitherHeadL，枢轴放在头的中心
 - 镰刀（liandao + bone14）合并成根骨骼 Scythe，枢轴在握柄处，由动画放到手上 / 空中
-- 新增 DarkOrb（左手黑球，渲染器按蓄力进度缩放）
+- 新增定位骨骼（没有方块，渲染器在它们的位置画特效）：
+  DarkOrb（左手掌心，吸附的虚空黑球）、MagicCircle（根骨骼，大招的魔法阵 / 激光发射点，默认在胸前）、
+  Halo（上半身背后，黑色神环）、ScytheBlade（镰刀刀刃中心，蓄力的黑色粒子）
 用法：python3 convert_model.py <仓库根目录>
 """
 import copy
@@ -27,6 +29,9 @@ DY = -13.0
 # 镰刀握柄位置（原模型坐标，下移前）：握在离刀头远的一端
 SCYTHE_GRIP = [-7.9, 32.0, 14.0]
 ORB_UV = [0, 232]
+CIRCLE_PIVOT = [0.0, 27.0, -6.0]   # 胸前（下移后的坐标）
+HALO_PIVOT = [0.0, 30.5, 6.0]      # 上背后方
+BLADE_CENTER = [-7.9, 7.83, -26.75]  # 镰刀刀刃中心（蓄力特效）
 ORB_SIZE = 6
 
 
@@ -104,12 +109,13 @@ def main():
     add('Scythe', None, shift(SCYTHE_GRIP),
         [shift_cube(c) for c in bones['liandao']['cubes'] + bones['bone14']['cubes']])
 
-    # 左手黑球（渲染器按蓄力进度缩放 / 隐藏）
+    # 定位骨骼：渲染器在这些位置画特效
     hand = [b for b in out if b['name'] == 'LeftHand'][0]
-    palm = [hand['pivot'][0] + 0.4, hand['pivot'][1] - 3.0, hand['pivot'][2]]
-    s = ORB_SIZE
-    add('DarkOrb', 'LeftHand', palm,
-        [{'origin': [palm[0] - s / 2, palm[1] - s / 2, palm[2] - s / 2], 'size': [s, s, s], 'uv': ORB_UV}])
+    palm = [hand['pivot'][0] + 0.4, hand['pivot'][1] - 3.6, hand['pivot'][2] - 0.5]
+    add('DarkOrb', 'LeftHand', palm)
+    add('MagicCircle', None, CIRCLE_PIVOT)
+    add('Halo', 'UpperBody', HALO_PIVOT)
+    add('ScytheBlade', 'Scythe', BLADE_CENTER)
 
     # 父骨骼必须排在子骨骼前面
     names = {b['name'] for b in out}
