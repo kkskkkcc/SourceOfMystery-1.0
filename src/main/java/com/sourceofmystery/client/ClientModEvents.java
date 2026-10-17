@@ -1,7 +1,9 @@
 package com.sourceofmystery.client;
 
 import com.sourceofmystery.SourceOfMystery;
+import com.sourceofmystery.block.ModBlockEntities;
 import com.sourceofmystery.entity.ModEntities;
+import com.sourceofmystery.guardian.GuardianAltarRenderer;
 import com.sourceofmystery.hud.MysteryEnergyOverlay;
 import com.sourceofmystery.particle.ModParticles;
 import net.minecraft.client.renderer.entity.WitherSkullRenderer;
@@ -9,6 +11,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -33,6 +36,16 @@ public class ClientModEvents {
         event.registerEntityRenderer(ModEntities.THROWN_SCYTHE.get(), ThrownScytheRenderer::new);
         event.registerEntityRenderer(ModEntities.DEATH_SKULL.get(), WitherSkullRenderer::new);
         event.registerEntityRenderer(ModEntities.SPACE_SHATTER.get(), SpaceShatterRenderer::new);
+        event.registerEntityRenderer(ModEntities.GUARDIAN_SPIRIT.get(), GuardianSpiritRenderer::new);
+        event.registerEntityRenderer(ModEntities.GUARDIAN_SPIRIT_PROJECTILE.get(), GuardianSpiritProjectileRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.GUARDIAN_ALTAR.get(), GuardianAltarRenderer::new);
+
+        // 手动注册神威天佑光环的监听器。
+        // 之前用 @Mod.EventBusSubscriber 注解时，因为泛型擦除问题 listener 没注册上
+        // （[Halo] CLASS LOADED 出现但 onRenderPlayer 一次都没调），
+        // 现在直接 register 类的所有 @SubscribeEvent 方法，绝对可靠。
+        MinecraftForge.EVENT_BUS.register(DivineBlessingHaloRenderer.class);
+        SourceOfMystery.LOGGER.info("[Halo] ClientModEvents registered renderer via MinecraftForge.EVENT_BUS");
     }
 
     @SubscribeEvent

@@ -1,0 +1,21 @@
+{
+  "name": "守护祭坛",
+  "icon": "sourceofmystery:guardian_altar",
+  "category": "sourceofmystery:basics",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "sourceofmystery:guardian_altar",
+      "text": "用秘源锭、青金石、钻石、附魔台和黑曜石在工作台合成。放下时是一座破碎的祭坛，中间浮着淡蓝色的法阵。"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(l)手持下界之星右键$()激活。祭坛会原地修复自己：下界之星升起、被白色光球包裹，五圈白色魔法阵一圈圈展开，最后射出一道光柱，展开$(l)守护结界$()。$(br2)结界罩住祭坛所在区块周围的 $(l)3×3 区块$()，从基岩层一直到 y=255。"
+    },
+    {
+      "type": "patchouli:text",
+      "text": "结界里：$(li)敌对生物直接消散，也不会自然生成$(li)玩家持续获得生命恢复和饱和$(li)Boss 不会消散，但会被弹出结界，它们的攻击、法术和爆炸都会被挡住$(br2)两座祭坛的结界不能重叠（所在区块至少相距 3 个区块）。$(br)祭坛被破坏时结界消失，下界之星也会随之$(l)凋零$()，不会返还。"
+    }
+  ]
+}

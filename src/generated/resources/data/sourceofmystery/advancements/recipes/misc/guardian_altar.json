@@ -1,0 +1,35 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_mystery_ingot": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sourceofmystery:mystery_ingot"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "sourceofmystery:guardian_altar"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_mystery_ingot",
+      "has_the_recipe"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sourceofmystery:guardian_altar"
+    ]
+  },
+  "sends_telemetry_event": false
+}

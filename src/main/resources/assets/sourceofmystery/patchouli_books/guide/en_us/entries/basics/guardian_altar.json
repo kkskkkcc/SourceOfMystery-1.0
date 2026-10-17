@@ -1,0 +1,21 @@
+{
+  "name": "Guardian Altar",
+  "icon": "sourceofmystery:guardian_altar",
+  "category": "sourceofmystery:basics",
+  "sortnum": 3,
+  "pages": [
+    {
+      "type": "patchouli:crafting",
+      "recipe": "sourceofmystery:guardian_altar",
+      "text": "Crafted at a crafting table from Mystery Ingots, Lapis Lazuli, Diamonds, an Enchanting Table and Obsidian. When placed it is a broken altar with a pale blue circle floating in its middle."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "$(l)Right-click it with a Nether Star$() to activate it. The altar mends itself where it stands: the star rises into a white orb, five white circles unfold one after another, and a beam of light shoots into the sky as the $(l)guardian barrier$() deploys.$(br2)The barrier covers the $(l)3×3 chunks$() around the altar's chunk, from bedrock up to y=255."
+    },
+    {
+      "type": "patchouli:text",
+      "text": "Inside the barrier:$(li)hostile mobs perish and do not spawn naturally$(li)players keep Regeneration and Saturation$(li)bosses do not perish, but are thrown out of the barrier, and their attacks, spells and explosions are blocked$(br2)Barriers cannot overlap (altars must be at least 3 chunks apart).$(br)Breaking the altar removes the barrier, and the Nether Star $(l)withers$() with it."
+    }
+  ]
+}

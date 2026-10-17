@@ -20,6 +20,7 @@ import sys
 
 import numpy as np
 from PIL import Image
+from scythe_design import scythe_cubes, paint_scythe_swatches
 
 ROOT = sys.argv[1] if len(sys.argv) > 1 else '.'
 SRC = os.path.join(ROOT, '2ba/凋零守卫')
@@ -31,7 +32,7 @@ SCYTHE_GRIP = [-7.9, 32.0, 14.0]
 ORB_UV = [0, 232]
 CIRCLE_PIVOT = [0.0, 27.0, -6.0]   # 胸前（下移后的坐标）
 HALO_PIVOT = [0.0, 30.5, 10.0]     # 上背后方，头发后面
-BLADE_CENTER = [-7.9, 7.83, -26.75]  # 镰刀刀刃中心（蓄力特效）
+BLADE_CENTER = [-7.9, 17.0, -24.5]  # 新月刀刃的特效中心
 ORB_SIZE = 6
 
 
@@ -107,7 +108,7 @@ def main():
 
     # 镰刀
     add('Scythe', None, shift(SCYTHE_GRIP),
-        [shift_cube(c) for c in bones['liandao']['cubes'] + bones['bone14']['cubes']])
+        [shift_cube(c) for c in scythe_cubes()])
 
     # 定位骨骼：渲染器在这些位置画特效
     hand = [b for b in out if b['name'] == 'LeftHand'][0]
@@ -145,15 +146,15 @@ def main():
         json.dump(geo_out, f, indent='\t', ensure_ascii=False)
 
     make_textures(out)
-    make_thrown_scythe(bones)
+    make_thrown_scythe()
 
 
-def make_thrown_scythe(bones):
+def make_thrown_scythe():
     """掷出的镰刀（ThrownScythe）单独的模型：枢轴在镰刀重心，旋转起来不晃"""
     center = [-7.9, 26.0, -12.0]
     lift = 8.0
     cubes = []
-    for c in bones['liandao']['cubes'] + bones['bone14']['cubes']:
+    for c in scythe_cubes():
         c = copy.deepcopy(c)
         c['origin'] = [round(c['origin'][0] - center[0], 5), round(c['origin'][1] - center[1] + lift, 5),
                        round(c['origin'][2] - center[2], 5)]
@@ -194,6 +195,7 @@ def make_textures(out_bones):
     block[..., 2] = (30 + noise * 45).astype(np.uint8)
     block[..., 3] = 255
     a[v:v + h, u:u + w] = block
+    paint_scythe_swatches(a)
     Image.fromarray(a).save(os.path.join(ASSETS, 'textures/entity/weeping_death_lord.png'))
 
     # 眼睛发光贴图：只有眼珠（*EyesBase）用到的像素，提亮成白光

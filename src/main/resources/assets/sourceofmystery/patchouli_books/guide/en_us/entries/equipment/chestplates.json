@@ -12,17 +12,17 @@
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:spirit_source_chestplate",
-      "text": "Tier C+. 4 Mystery Ingots + 4 netherite ingots + Mystery Chestplate. Water breathing, immune to fire."
+      "text": "Tier C+. 4 Mystery Ingots + 4 netherite scraps + Mystery Chestplate. Water breathing, immune to fire."
     },
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:dark_source_chestplate",
-      "text": "Tier B+. 2 wither skeleton skulls + 4 netherite ingots + 2 nether stars + Spirit Source Chestplate. Jump Boost, Night Vision, Haste, Strength III; immune to fire and wither. Unbreakable.$(br2)Its purple satellite automatically attacks hostile mobs and anything that hurt you within 20 blocks: it flies through walls to the target, orbits it for 5 seconds dealing 10 damage per second, then returns and cools down for 10 seconds."
+      "text": "Tier B+. 4 netherite ingots + 1 nether star + Spirit Source Chestplate. +50 max health while equipped, removed when unequipped; Jump Boost, Night Vision, Haste, Strength III; immune to fire and wither. Unbreakable.$(br2)Its purple satellite automatically attacks hostile mobs and anything that hurt you within 20 blocks: it flies through walls to the target, orbits it for 5 seconds dealing 10 damage per second, then returns and cools down for 10 seconds."
     },
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:origin_dragon_chestplate",
-      "text": "Tier A+. Dragon Soul + 4 end crystals + nether star + dragon head + elytra + Dark Source Chestplate. +100 max health, flight, cleanses harmful effects; also immune to dragon breath and projectiles.$(br2)Its two orange satellites attack automatically: 5 seconds of orbiting at 15 damage per second, 8-second cooldown."
+      "text": "Tier A+. Dragon Soul + 2 dragon's breath + nether star + dragon head + elytra + Dark Source Chestplate. +100 max health, flight, cleanses harmful effects; also immune to dragon breath and projectiles.$(br2)Its two orange satellites attack automatically: 5 seconds of orbiting at 15 damage per second, 8-second cooldown."
     },
     {
       "type": "patchouli:spotlight",

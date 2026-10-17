@@ -17,5 +17,8 @@ public class ModBlockStateProvider extends BlockStateProvider {
         simpleBlock(ModBlocks.MYSTERY_SOURCE_ORE.get(), cubeAll(ModBlocks.MYSTERY_SOURCE_ORE.get()));
         // 祭坛是手写的多层模型（src/main/resources/assets/sourceofmystery/models/block/mystery_altar.json）
         simpleBlock(ModBlocks.MYSTERY_ALTAR.get(), models().getExistingFile(modLoc("block/mystery_altar")));
+        // 守护祭坛由 GeckoLib 方块实体渲染，方块模型只提供破坏粒子
+        simpleBlock(ModBlocks.GUARDIAN_ALTAR.get(), models().getBuilder("guardian_altar")
+                .texture("particle", modLoc("block/guardian_altar_particle")));
     }
 }

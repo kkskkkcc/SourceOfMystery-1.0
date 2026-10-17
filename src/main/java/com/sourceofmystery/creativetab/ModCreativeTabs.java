@@ -31,6 +31,7 @@ public class ModCreativeTabs {
                         // 方块物品
                         output.accept(ModItems.MYSTERY_SOURCE_ORE.get());
                         output.accept(ModItems.MYSTERY_ALTAR.get());
+                        output.accept(ModItems.GUARDIAN_ALTAR.get());
 
                         // 武器
                         output.accept(ModItems.MYSTERY_SWORD.get());

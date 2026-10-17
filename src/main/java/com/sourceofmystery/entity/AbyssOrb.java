@@ -18,6 +18,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
@@ -34,18 +35,20 @@ import java.util.UUID;
  * 蓄力阶段由神威天道每 tick 设置位置和大小；掷出后飞向玩家，碰到方块 / 实体或到达目标点时引发毁天灭地的爆炸，
  * 爆炸后再停留一会儿，向外扩散冲击波和蘑菇云。神威天道本身不受这次爆炸伤害。
  */
-public class AbyssOrb extends Entity {
+public class AbyssOrb extends Entity implements TraceableEntity {
 
     private static final EntityDataAccessor<Float> DATA_RADIUS =
             SynchedEntityData.defineId(AbyssOrb.class, EntityDataSerializers.FLOAT);
 
-    private static final double SPEED = 1.6;
+    private static final double SPEED = 5.0;
     private static final int MAX_FLIGHT = 120;
     private static final int AFTERMATH_TICKS = 80;
-    private static final float TERRAIN_POWER = 20.0f;     // 原版 TNT 为 4；再大会让服务器卡死
-    private static final double BLAST_RADIUS = 180.0;     // 伤害范围
-    private static final float BLAST_DAMAGE = 160.0f;      // 中心伤害，向外线性衰减
-    private static final double EFFECT_RANGE = 400.0;      // 闪光、震屏、轰鸣、粒子能传多远
+    private static final float TERRAIN_POWER = 100.0f;    // 爆炸强度
+    private static final double BLAST_RADIUS = 180.0;     // 伤害判断半径
+    private static final float BLAST_DAMAGE_MAX = 700.0f; // 爆炸中心伤害
+    private static final float BLAST_DAMAGE_MIN = 200.0f; // 伤害边缘最低值
+    private static final double EXPLOSION_RADIUS = 500.0;  // 爆炸效果半径
+    private static final double EFFECT_RANGE = EXPLOSION_RADIUS; // 闪光、震屏、轰鸣、粒子传播范围
     private static final double VISUAL_SCALE = 5.0;        // 冲击波、烟柱、蘑菇云的尺寸倍率
 
     private enum Phase { CHARGING, FLYING, AFTERMATH }
@@ -80,6 +83,13 @@ public class AbyssOrb extends Entity {
 
     public float radius() {
         return this.entityData.get(DATA_RADIUS);
+    }
+
+    /** 守护结界靠它认出这是 Boss 的法术 */
+    @Nullable
+    @Override
+    public Entity getOwner() {
+        return owner();
     }
 
     @Nullable
@@ -174,7 +184,8 @@ public class AbyssOrb extends Entity {
             }
             double falloff = 1.0 - d / BLAST_RADIUS;
             victim.invulnerableTime = 0;
-            victim.hurt(source, (float) (BLAST_DAMAGE * falloff + 10.0));
+            float damage = BLAST_DAMAGE_MIN + (BLAST_DAMAGE_MAX - BLAST_DAMAGE_MIN) * (float) falloff;
+            victim.hurt(source, damage);
             Vec3 push = victim.position().subtract(c);
             push = push.lengthSqr() < 1.0E-4 ? new Vec3(0, 1, 0) : push.normalize();
             victim.setDeltaMovement(victim.getDeltaMovement().add(push.scale(3.0 * falloff)).add(0, 1.2 * falloff, 0));

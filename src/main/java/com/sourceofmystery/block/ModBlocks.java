@@ -1,6 +1,7 @@
 package com.sourceofmystery.block;
 
 import com.sourceofmystery.SourceOfMystery;
+import com.sourceofmystery.guardian.GuardianAltarBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraftforge.registries.DeferredRegister;
@@ -17,4 +18,8 @@ public class ModBlocks {
 
     public static final RegistryObject<Block> MYSTERY_ALTAR = BLOCKS.register("mystery_altar",
             () -> new MysteryAltarBlock());
+
+    // 守护祭坛：手持下界之星右键激活，展开 3x3 区块的守护结界
+    public static final RegistryObject<Block> GUARDIAN_ALTAR = BLOCKS.register("guardian_altar",
+            GuardianAltarBlock::new);
 }

@@ -21,6 +21,7 @@
   "message.sourceofmystery.altar.energy": "Mystery Energy: %s / %s",
   "message.sourceofmystery.altar.materials": "Materials found: %s",
   "message.sourceofmystery.altar.no_recipe": "[No matching recipe] Drop the materials within %s blocks of the altar",
+  "message.sourceofmystery.altar.busy": "The altar is already transforming materials. Please wait for it to finish.",
   "message.sourceofmystery.altar.success": "[Transmutation complete!] Tier %s recipe, obtained: %sx %s",
   "message.sourceofmystery.boss.prefix": "[Divine Heavenly Dao]",
   "message.sourceofmystery.boss.awakening": "A Dragon Soul and the five element sources have been offered at the Mystery Altar. The power of the Heavenly Dao begins to stir...",
@@ -131,6 +132,8 @@
   "entity.sourceofmystery.thrown_scythe": "Weeping Death Lord's Scythe",
   "entity.sourceofmystery.death_skull": "Weeping Wither Skull",
   "entity.sourceofmystery.space_shatter": "Shattered Space",
+  "entity.sourceofmystery.guardian_spirit": "Guardian Spirit",
+  "entity.sourceofmystery.guardian_spirit_projectile": "Guardian Spirit's Sacred Bolt",
   "message.sourceofmystery.weeping_death_lord.prefix": "[Weeping Death Lord]",
   "message.sourceofmystery.weeping_death_lord.omen": "The Wither's remains turn pale... something is coming out.",
   "message.sourceofmystery.weeping_death_lord.arrived": "The Weeping Death Lord opens her eyes. She will not turn on you - unless you strike first.",
@@ -150,5 +153,15 @@
   "subtitles.sourceofmystery.weeping_death_lord.heartbeat": "Heartbeat",
   "subtitles.sourceofmystery.weeping_death_lord.laser_charge": "Magic circle gathers",
   "subtitles.sourceofmystery.weeping_death_lord.laser_boom": "Death laser fires",
-  "subtitles.sourceofmystery.weeping_death_lord.laser": "Death laser hums"
+  "subtitles.sourceofmystery.weeping_death_lord.laser": "Death laser hums",
+  "block.sourceofmystery.guardian_altar": "Guardian Altar",
+  "tooltip.sourceofmystery.guardian_altar.line1": "Right-click with a Nether Star to activate",
+  "tooltip.sourceofmystery.guardian_altar.line2": "Guards its 3×3 chunks (bedrock to y=%s): hostile mobs perish, players gain Regeneration and Saturation, bosses are kept out",
+  "message.sourceofmystery.guardian_altar.need_star": "The altar's circle awaits a Nether Star...",
+  "message.sourceofmystery.guardian_altar.activated": "The Nether Star sinks into the circle. The Guardian Altar begins to mend itself...",
+  "message.sourceofmystery.guardian_altar.deployed": "Guardian barrier deployed",
+  "message.sourceofmystery.guardian_altar.running": "Guardian Altar active: the barrier covers %s to %s, up to y=%s",
+  "message.sourceofmystery.guardian_altar.conflict": "Cannot activate: the barrier would overlap the Guardian Altar at %s (altars must be at least 3 chunks apart)",
+  "message.sourceofmystery.guardian_altar.too_high": "The barrier only reaches y=%s; this altar is placed too high",
+  "message.sourceofmystery.guardian_altar.withered": "The Nether Star withers with the altar and the guardian barrier fades"
 }

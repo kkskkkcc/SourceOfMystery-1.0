@@ -1,5 +1,6 @@
 package com.sourceofmystery;
 
+import com.sourceofmystery.block.ModBlockEntities;
 import com.sourceofmystery.block.ModBlocks;
 import com.sourceofmystery.combat.ArmorLimits;
 import com.sourceofmystery.config.MysteryConfig;
@@ -28,6 +29,7 @@ public class SourceOfMystery {
         var modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModItems.ITEMS.register(modEventBus);
         ModBlocks.BLOCKS.register(modEventBus);
+        ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         ModCreativeTabs.CREATIVE_TABS.register(modEventBus);
         ModEntities.ENTITIES.register(modEventBus);
         ModRecipes.TYPES.register(modEventBus);

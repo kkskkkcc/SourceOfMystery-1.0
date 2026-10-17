@@ -20,6 +20,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -31,16 +32,30 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.server.ServerStoppedEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
+@Mod.EventBusSubscriber(modid = SourceOfMystery.MOD_ID)
 public class MysteryAltarBlock extends Block {
 
     public static final int SCAN_RADIUS = 5;
     private static final int MAX_LISTED_MATERIALS = 5;
+    private static final int RISE_TICKS = 30;
+    private static final int HOLD_TICKS = 12;
+    private static final int ORBIT_TICKS = 44;
+    private static final int MATERIAL_DELAY = 3;
+    private static final int MERGE_TICKS = 30;
+    private static final int OUTPUT_TICK = 128;
+    private static final int ANIMATION_TICKS = 140;
+    private static final Map<ServerLevel, Map<BlockPos, CraftAnimation>> ACTIVE_ANIMATIONS = new HashMap<>();
 
     public MysteryAltarBlock() {
         super(Properties.copy(Blocks.STONE)
@@ -61,6 +76,13 @@ public class MysteryAltarBlock extends Block {
         ItemStack held = player.getItemInHand(hand);
         if (held.is(ModItems.DRAGON_SOUL.get())) {
             summonBoss(serverLevel, pos, player, held);
+            return InteractionResult.SUCCESS;
+        }
+
+        BlockPos altarPos = pos.immutable();
+        if (isAnimating(serverLevel, altarPos)) {
+            player.sendSystemMessage(Component.translatable("message.sourceofmystery.altar.busy")
+                    .withStyle(ChatFormatting.YELLOW));
             return InteractionResult.SUCCESS;
         }
 
@@ -104,23 +126,26 @@ public class MysteryAltarBlock extends Block {
             return InteractionResult.SUCCESS;
         }
 
+        List<ItemStack> visualMaterials = consumedStacks(nearbyItems, allocation);
+        List<Vec3> visualPositions = consumedPositions(nearbyItems, allocation);
         consumeItems(nearbyItems, allocation);
-
         ItemStack output = recipe.assemble(new SimpleContainer(), level.registryAccess());
-        level.addFreshEntity(new ItemEntity(level, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, output.copy()));
-
-        spawnCraftingParticles(serverLevel, pos);
-        playCraftingSound(serverLevel, pos);
-
-        player.sendSystemMessage(Component.translatable("message.sourceofmystery.altar.success",
-                value(recipe.getTier().getDisplayName(), ChatFormatting.YELLOW),
-                output.getCount(),
-                output.getHoverName().copy().withStyle(ChatFormatting.WHITE))
-                .withStyle(ChatFormatting.GREEN));
-
-        SourceOfMystery.LOGGER.debug("Player {} crafted {} using altar at {}",
-                player.getName().getString(), output.getHoverName().getString(), pos);
+        startCraftingAnimation(serverLevel, altarPos, visualMaterials, visualPositions, output,
+                recipe.getTier().getDisplayName(), player.getUUID());
         return InteractionResult.SUCCESS;
+    }
+
+    private static boolean isAnimating(ServerLevel level, BlockPos pos) {
+        return ACTIVE_ANIMATIONS.getOrDefault(level, Map.of()).containsKey(pos);
+    }
+
+    private static void startCraftingAnimation(ServerLevel level, BlockPos pos, List<ItemStack> materials,
+                                               List<Vec3> positions, ItemStack output, String tier, UUID playerId) {
+        CraftAnimation animation = new CraftAnimation(level, pos, materials, positions, output, tier, playerId);
+        ACTIVE_ANIMATIONS.computeIfAbsent(level, ignored -> new HashMap<>()).put(pos, animation);
+        level.playSound(null, pos, SoundEvents.ENCHANTMENT_TABLE_USE, SoundSource.BLOCKS, 1.0F, 0.75F);
+        level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.1, pos.getZ() + 0.5,
+                24, 1.4, 0.2, 1.4, 0.05);
     }
 
     /**
@@ -249,6 +274,259 @@ public class MysteryAltarBlock extends Block {
                 // 必须通过 setItem 更新，直接改 stack 数量不会同步到客户端
                 itemEntity.setItem(stack.copyWithCount(stack.getCount() - take));
             }
+        }
+    }
+
+    /** 保存实际被扣除的物品和位置，用于生成不会被玩家拾取的动画实体。 */
+    private static List<ItemStack> consumedStacks(List<ItemEntity> itemEntities, int[] allocation) {
+        List<ItemStack> stacks = new java.util.ArrayList<>();
+        for (int i = 0; i < itemEntities.size(); i++) {
+            if (allocation[i] > 0) {
+                stacks.add(itemEntities.get(i).getItem().copyWithCount(allocation[i]));
+            }
+        }
+        return stacks;
+    }
+
+    private static List<Vec3> consumedPositions(List<ItemEntity> itemEntities, int[] allocation) {
+        List<Vec3> positions = new java.util.ArrayList<>();
+        for (int i = 0; i < itemEntities.size(); i++) {
+            if (allocation[i] > 0) {
+                positions.add(itemEntities.get(i).position());
+            }
+        }
+        return positions;
+    }
+
+    @SubscribeEvent
+    public static void onLevelTick(TickEvent.LevelTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || !(event.level instanceof ServerLevel level)) {
+            return;
+        }
+        Map<BlockPos, CraftAnimation> animations = ACTIVE_ANIMATIONS.get(level);
+        if (animations == null || animations.isEmpty()) {
+            return;
+        }
+        for (var iterator = animations.entrySet().iterator(); iterator.hasNext();) {
+            var entry = iterator.next();
+            CraftAnimation animation = entry.getValue();
+            if (!level.hasChunkAt(entry.getKey())
+                    || !level.getBlockState(entry.getKey()).is(ModBlocks.MYSTERY_ALTAR.get())) {
+                animation.cancel(level);
+                iterator.remove();
+                continue;
+            }
+            if (animation.tick(level)) {
+                iterator.remove();
+            }
+        }
+        if (animations.isEmpty()) {
+            ACTIVE_ANIMATIONS.remove(level);
+        }
+    }
+
+    @SubscribeEvent
+    public static void onServerStopped(ServerStoppedEvent event) {
+        for (Map<BlockPos, CraftAnimation> animations : ACTIVE_ANIMATIONS.values()) {
+            for (CraftAnimation animation : animations.values()) {
+                animation.discardVisuals();
+            }
+        }
+        ACTIVE_ANIMATIONS.clear();
+    }
+
+    /** 一次祭坛转化的服务端动画状态。 */
+    private static final class CraftAnimation {
+        private final BlockPos altarPos;
+        private final List<VisualMaterial> materials = new java.util.ArrayList<>();
+        private final ItemStack output;
+        private final String tier;
+        private final UUID playerId;
+        private final int mergeStart;
+        private int tick;
+        private boolean outputSpawned;
+
+        private CraftAnimation(ServerLevel level, BlockPos altarPos, List<ItemStack> stacks, List<Vec3> positions,
+                               ItemStack output, String tier, UUID playerId) {
+            this.altarPos = altarPos;
+            this.output = output.copy();
+            this.tier = tier;
+            this.playerId = playerId;
+            for (int i = 0; i < stacks.size(); i++) {
+                ItemEntity entity = new ItemEntity(level, positions.get(i).x, positions.get(i).y,
+                        positions.get(i).z, stacks.get(i).copy());
+                materials.add(new VisualMaterial(entity, positions.get(i), i));
+            }
+            // 固定总时长为 140 tick（约 7 秒），材料数量不影响掉落时刻。
+            this.mergeStart = OUTPUT_TICK - MERGE_TICKS;
+        }
+
+        private boolean tick(ServerLevel level) {
+            if (tick < mergeStart) {
+                for (VisualMaterial material : materials) {
+                    animateMaterial(level, material);
+                }
+            } else {
+                for (VisualMaterial material : materials) {
+                    if (tick < mergeStart + MERGE_TICKS) {
+                        animateMergeMaterial(level, material);
+                    } else if (material.entity.isAlive()) {
+                        material.entity.discard();
+                    }
+                }
+                animateSphere(level);
+                if (!outputSpawned && tick >= mergeStart + MERGE_TICKS) {
+                    spawnOutput(level);
+                    outputSpawned = true;
+                }
+                if (outputSpawned && tick >= ANIMATION_TICKS) {
+                    return true;
+                }
+            }
+            tick++;
+            return false;
+        }
+
+        private void animateMaterial(ServerLevel level, VisualMaterial material) {
+            int age = tick - material.index * MATERIAL_DELAY;
+            if (age < 0) {
+                return;
+            }
+            if (!material.attached) {
+                level.addFreshEntity(material.entity);
+                material.entity.setNoGravity(true);
+                material.entity.setPickUpDelay(32767);
+                material.entity.setInvulnerable(true);
+                material.entity.noPhysics = true;
+                material.attached = true;
+            }
+            Vec3 center = altarPos.getCenter().add(0, 1.55, 0);
+            double initialAngle = material.index * Math.PI * 2.0 / Math.max(1, materials.size());
+            Vec3 orbitStart = center.add(Math.cos(initialAngle) * 2.15, 0.12, Math.sin(initialAngle) * 2.15);
+            Vec3 current;
+            if (age < RISE_TICKS) {
+                double u = smoothstep(age / (double) RISE_TICKS);
+                current = material.source.lerp(orbitStart, u);
+            } else if (age < RISE_TICKS + HOLD_TICKS) {
+                // 先稳定在祭坛上方，再开始天体环绕。
+                current = orbitStart;
+            } else {
+                double orbitAge = age - RISE_TICKS - HOLD_TICKS;
+                double u = smoothstep(orbitAge / (double) ORBIT_TICKS);
+                double radius = 2.15 * (1.0 - u) + 0.12;
+                double angle = initialAngle + Math.min(ORBIT_TICKS, Math.max(0, orbitAge)) * 0.24;
+                current = center.add(Math.cos(angle) * radius, 0.12 + Math.sin(angle * 0.6) * 0.08,
+                        Math.sin(angle) * radius);
+            }
+            moveVisual(material, current);
+            if (tick % 2 == 0) {
+                level.sendParticles(ParticleTypes.END_ROD, current.x, current.y, current.z,
+                        1, 0, 0, 0, 0);
+            }
+        }
+
+        private void animateMergeMaterial(ServerLevel level, VisualMaterial material) {
+            if (!material.attached) {
+                // 超出常规配方数量时，仍保证未出现的材料从原位置平滑进入融合阶段。
+                level.addFreshEntity(material.entity);
+                material.entity.setNoGravity(true);
+                material.entity.setPickUpDelay(32767);
+                material.entity.setInvulnerable(true);
+                material.entity.noPhysics = true;
+                material.entity.setPos(material.source.x, material.source.y, material.source.z);
+                material.attached = true;
+            }
+            Vec3 center = altarPos.getCenter().add(0, 1.55, 0);
+            double initialAngle = material.index * Math.PI * 2.0 / Math.max(1, materials.size());
+            double finalAngle = initialAngle + ORBIT_TICKS * 0.24;
+            Vec3 orbitEnd = center.add(Math.cos(finalAngle) * 0.12,
+                    0.12 + Math.sin(finalAngle * 0.6) * 0.08,
+                    Math.sin(finalAngle) * 0.12);
+            double u = smoothstep((tick - mergeStart) / (double) MERGE_TICKS);
+            moveVisual(material, orbitEnd.lerp(center, u));
+        }
+
+        private static void moveVisual(VisualMaterial material, Vec3 target) {
+            Vec3 delta = target.subtract(material.entity.position());
+            if (delta.lengthSqr() > 1.0E-8) {
+                material.entity.move(MoverType.SELF, delta);
+            }
+            material.entity.setDeltaMovement(Vec3.ZERO);
+        }
+
+        private void animateSphere(ServerLevel level) {
+            Vec3 center = altarPos.getCenter().add(0, 1.55, 0);
+            double u = Math.min(1.0, (tick - mergeStart) / (double) MERGE_TICKS);
+            double radius = 0.8 * (1.0 - u) + 0.08;
+            for (int i = 0; i < 10; i++) {
+                double angle = tick * 0.25 + i * Math.PI * 2.0 / 10.0;
+                level.sendParticles(ParticleTypes.DRAGON_BREATH,
+                        center.x + Math.cos(angle) * radius,
+                        center.y + Math.sin(angle * 1.7) * radius,
+                        center.z + Math.sin(angle) * radius,
+                        1, 0, 0, 0, 0);
+            }
+            if (tick % 4 == 0) {
+                level.sendParticles(ParticleTypes.END_ROD, center.x, center.y, center.z,
+                        8, radius, radius, radius, 0.02);
+            }
+        }
+
+        private void spawnOutput(ServerLevel level) {
+            Vec3 center = altarPos.getCenter().add(0, 1.45, 0);
+            ItemEntity result = new ItemEntity(level, center.x, center.y, center.z, output.copy());
+            result.setPickUpDelay(20);
+            level.addFreshEntity(result);
+            level.playSound(null, altarPos, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 0.8F, 1.15F);
+            level.sendParticles(ParticleTypes.EXPLOSION, center.x, center.y, center.z,
+                    1, 0, 0, 0, 0);
+            Player player = level.getPlayerByUUID(playerId);
+            if (player != null) {
+                player.sendSystemMessage(Component.translatable("message.sourceofmystery.altar.success",
+                        value(tier, ChatFormatting.YELLOW), output.getCount(),
+                        output.getHoverName().copy().withStyle(ChatFormatting.WHITE))
+                        .withStyle(ChatFormatting.GREEN));
+                SourceOfMystery.LOGGER.debug("Player {} crafted {} using altar at {}",
+                        player.getName().getString(), output.getHoverName().getString(), altarPos);
+            }
+        }
+
+        private void cancel(ServerLevel level) {
+            for (VisualMaterial material : materials) {
+                if (material.entity.isAlive()) {
+                    material.entity.discard();
+                }
+                ItemEntity refund = new ItemEntity(level, altarPos.getX() + 0.5, altarPos.getY() + 1.0,
+                        altarPos.getZ() + 0.5, material.entity.getItem().copy());
+                refund.setPickUpDelay(10);
+                level.addFreshEntity(refund);
+            }
+        }
+
+        private void discardVisuals() {
+            for (VisualMaterial material : materials) {
+                if (material.entity.isAlive()) {
+                    material.entity.discard();
+                }
+            }
+        }
+
+        private static double smoothstep(double value) {
+            double u = Math.max(0, Math.min(1, value));
+            return u * u * (3 - 2 * u);
+        }
+    }
+
+    private static final class VisualMaterial {
+        private final ItemEntity entity;
+        private final Vec3 source;
+        private final int index;
+        private boolean attached;
+
+        private VisualMaterial(ItemEntity entity, Vec3 source, int index) {
+            this.entity = entity;
+            this.source = source;
+            this.index = index;
         }
     }
 

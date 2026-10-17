@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "E": {
+      "item": "minecraft:enchanting_table"
+    },
+    "L": {
+      "item": "minecraft:lapis_lazuli"
+    },
+    "M": {
+      "item": "sourceofmystery:mystery_ingot"
+    },
+    "O": {
+      "item": "minecraft:obsidian"
+    }
+  },
+  "pattern": [
+    "MLM",
+    "DED",
+    "MOM"
+  ],
+  "result": {
+    "item": "sourceofmystery:guardian_altar"
+  },
+  "show_notification": true
+}

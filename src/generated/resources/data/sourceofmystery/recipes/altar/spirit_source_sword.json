@@ -1,27 +1,27 @@
 {
   "type": "sourceofmystery:altar",
-  "tier": "C",
   "ingredients": [
     {
+      "count": 4,
       "ingredient": {
         "item": "sourceofmystery:mystery_ingot"
-      },
-      "count": 4
+      }
     },
     {
+      "count": 4,
       "ingredient": {
-        "item": "minecraft:netherite_ingot"
-      },
-      "count": 4
+        "item": "minecraft:netherite_scrap"
+      }
     },
     {
+      "count": 1,
       "ingredient": {
         "item": "sourceofmystery:mystery_sword"
-      },
-      "count": 1
+      }
     }
   ],
   "result": {
     "item": "sourceofmystery:spirit_source_sword"
-  }
+  },
+  "tier": "C"
 }

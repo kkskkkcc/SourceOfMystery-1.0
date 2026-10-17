@@ -1,5 +1,6 @@
 package com.sourceofmystery.entity;
 
+import com.sourceofmystery.guardian.GuardianShields;
 import com.sourceofmystery.network.ModNetwork;
 import com.sourceofmystery.network.RootPacket;
 import com.sourceofmystery.network.ScreenEffectPacket;
@@ -83,8 +84,8 @@ import java.util.UUID;
  * 中立：玩家不攻击她，她就不攻击玩家；但会主动攻击出生点 120 格内的动物和怪物。平时在出生点 120 格内像水母一样漂荡。
  * <p>
  * 招式（扛着笨重的镰刀甩打，前摇都在 2 秒内，后摇都在 3 秒以上）：
- * 劈斩（镰刀变大砸地，地震 30）、凋灵头（掷出镰刀定身，双手两个凋灵头每秒 3 发、持续 5 秒，每发 10）、
- * 吸附（10 秒内每秒把人拉近 2 格，进入 3 格就抓住斩碎空间，100）、快速攻击（5 秒带残影，每秒 3 刀，每刀 5）、
+ * 劈斩（镰刀变大砸地，伤害 60）、凋灵头（掷出镰刀定身，双手两个凋灵头每秒 3 发、持续 5 秒，每发 20）、
+ * 吸附（最多 10 秒持续拉近目标，进入 3 格就抓住斩碎空间，伤害 60）、快速攻击（5 秒带残影，每秒 3 刀，每刀 14）、
  * 大招死亡激光（凝聚黑色魔法阵，胸口发射半径 1 格、长 30 格的白色激光 5 秒，慢一个身位追踪玩家，会破坏地形）。
  * <p>
  * 动画：所有姿势都由同一个 main 控制器播放，服务端只同步「当前动画编号 + 序号」。控制器每次换动画都有
@@ -168,11 +169,11 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
     private static final double DRIFT_SPEED = 0.16;
     private static final double CHASE_SPEED = 0.32;
 
-    // ==================== 数值：对标暗源之甲（与龙魂同档） ====================
-    // 生命 5000、护甲 30、韧性 10。玩家这一档 = 暗源之剑（48 + 力量 III）+ 暗源之甲 + 其余三件下界合金：
-    // 剑每下打掉她约 43 点，满打满算约 2 分钟。她对这身装备（72 护甲 / 12 韧性，合计约减免 86%）造成：
-    // 劈斩 45 → 约 6.3、骷髅头 20 → 约 2.8 × 15 发、快攻 14 → 约 2 × 15 下、
-    // 吸附被抓后的斩击 60 → 约 8.5、激光每秒 20 → 约 2.8。只穿暗源之甲（其余空着）时，劈斩和斩击约是这的 3 倍。
+    // ==================== 数值 ====================
+    // 生命 5000、护甲 50、韧性 20；来自非玩家生物的单次原始伤害最多 50。
+    private static final double BASE_ARMOR = 50.0;
+    private static final double BASE_ARMOR_TOUGHNESS = 20.0;
+    private static final float NON_PLAYER_MOB_DAMAGE_CAP = 50.0f;
 
     // ==================== 招式（动画时间换算成服务端 tick：at(秒) = BLEND + 秒 * 20） ====================
     private static final float SCALE = 1.25f;          // 渲染缩放（模型约 3.6 格高）
@@ -181,7 +182,7 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
     private static final int CLEAVE_LENGTH = at(5.0f);
     private static final int CLEAVE_AIM_LOCK = at(1.2f);
     private static final int CLEAVE_HIT = at(1.65f);
-    private static final float CLEAVE_DAMAGE = 45.0f;
+    private static final float CLEAVE_DAMAGE = 60.0f;
     private static final double CLEAVE_REACH = 6.5;     // 变大的镰刀砸在身前这么远
     private static final double QUAKE_RADIUS = 7.0;
     private static final double CLEAVE_RANGE = 8.0;     // 进入这个距离才起手
@@ -276,6 +277,8 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
     private ThrownScythe thrownScythe;
     @Nullable
     private LivingEntity grabbed;
+    /** 防止死亡流程或重复移除事件导致自定义掉落被生成两次。 */
+    private boolean customLootDropped;
     private int trailTicks;
     private int tickCounter;
     private Vec3 laserAim = Vec3.ZERO;
@@ -320,8 +323,8 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 5000.0)
-                .add(Attributes.ARMOR, 30.0)
-                .add(Attributes.ARMOR_TOUGHNESS, 10.0)
+                .add(Attributes.ARMOR, BASE_ARMOR)
+                .add(Attributes.ARMOR_TOUGHNESS, BASE_ARMOR_TOUGHNESS)
                 .add(Attributes.ATTACK_DAMAGE, CLEAVE_DAMAGE)
                 .add(Attributes.MOVEMENT_SPEED, 0.3)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0)
@@ -1595,7 +1598,8 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
 
     private boolean canHit(LivingEntity e) {
         return e != this && e.isAlive() && !e.isSpectator() && !(e instanceof Player p && p.isCreative())
-                && !(e instanceof WeepingDeathLord);
+                && !(e instanceof WeepingDeathLord)
+                && !GuardianShields.shieldedFromBoss(e); // 守护结界里的目标碰不到
     }
 
     private Vec3 forward() {
@@ -1653,6 +1657,13 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
     public boolean hurt(DamageSource source, float amount) {
         if (!introDone && !source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
             return false;
+        }
+        Entity attacker = source.getEntity();
+        if (attacker == null) {
+            attacker = source.getDirectEntity();
+        }
+        if (attacker instanceof LivingEntity && !(attacker instanceof Player)) {
+            amount = Math.min(amount, NON_PLAYER_MOB_DAMAGE_CAP);
         }
         return super.hurt(source, amount);
     }
@@ -1724,6 +1735,10 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
     /** 3 个下界之星、5~10 个下界合金锭、15~32 个金胡萝卜（遵守 doMobLoot 游戏规则） */
     @Override
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
+        if (customLootDropped) {
+            return;
+        }
+        customLootDropped = true;
         super.dropCustomDeathLoot(source, looting, recentlyHit);
         this.spawnAtLocation(new ItemStack(Items.NETHER_STAR, 3));
         this.spawnAtLocation(new ItemStack(Items.NETHERITE_INGOT, 5 + this.random.nextInt(6)));
@@ -1812,6 +1827,13 @@ public class WeepingDeathLord extends PathfinderMob implements GeoEntity {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        // 已存档的实体会从 NBT 恢复旧属性值；加载时同步升级到当前数值。
+        var armor = this.getAttribute(Attributes.ARMOR);
+        var toughness = this.getAttribute(Attributes.ARMOR_TOUGHNESS);
+        var attack = this.getAttribute(Attributes.ATTACK_DAMAGE);
+        if (armor != null) armor.setBaseValue(BASE_ARMOR);
+        if (toughness != null) toughness.setBaseValue(BASE_ARMOR_TOUGHNESS);
+        if (attack != null) attack.setBaseValue(CLEAVE_DAMAGE);
         if (tag.contains("HomeX")) {
             home = new Vec3(tag.getDouble("HomeX"), tag.getDouble("HomeY"), tag.getDouble("HomeZ"));
             homeSet = true;

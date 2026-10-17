@@ -10,7 +10,7 @@
     },
     {
       "type": "patchouli:text",
-      "text": "Most moves have a $(l)wind-up$(), so a well-timed sidestep avoids them:$(li)$(l)Blink$(): she usually folds her wings and charges, and a purple swirl at your feet marks where she will land, but she can also $(l)blink in without warning$() and strike immediately.$(li)$(l)Cleave / Thrust / Slash$(): 20 / 15 / 10 damage, all $(l)area attacks$(): the cleave hits a ring around its impact, the thrust pierces a line, the slash sweeps a wide arc.$(li)$(l)Kick$(): a front kick that launches you about 10 blocks."
+      "text": "Most moves have a $(l)wind-up$(), so a well-timed sidestep avoids them:$(li)$(l)Blink$(): she usually folds her wings and charges, and a purple swirl at your feet marks where she will land, but she can also $(l)blink in without warning$() and strike immediately.$(li)$(l)Cleave / Thrust / Slash$(): 50 / 40 / 45 damage, all $(l)area attacks$(): the cleave hits a ring around its impact, the thrust pierces a line, the slash sweeps a wide arc.$(li)$(l)Kick$(): 20 damage and launches you about 10 blocks.$(li)$(l)Grab$(): 10 damage.$(li)$(l)Spear Throw$(): 60 damage."
     },
     {
       "type": "patchouli:text",
@@ -23,7 +23,7 @@
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:dragon_soul",
-      "text": "Drops a $(item)Dragon Soul$(), used for the Origin Dragon Sword and Chestplate and to summon the Divine Heavenly Dao."
+      "text": "Drops $(item)Dragon Soul$() ×1, 10 Golden Apples and 1 Dragon Egg, used for the Origin Dragon gear and to summon the Divine Heavenly Dao."
     }
   ]
 }

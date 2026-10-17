@@ -1,5 +1,6 @@
 package com.sourceofmystery.entity;
 
+import com.sourceofmystery.guardian.GuardianShields;
 import com.sourceofmystery.item.ModItems;
 import com.sourceofmystery.network.BossIntroPacket;
 import com.sourceofmystery.network.ModNetwork;
@@ -41,6 +42,7 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.DragonFireball;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -69,7 +71,7 @@ import java.util.UUID;
  * 龙魂 Boss：末影龙死亡动画完全播完后，在它消失的位置撕开空间裂缝出场，之后是一位敏捷的持枪女将军。
  * <p>
  * 出场：威压音效 → 空间裂缝（VoidRift，虚空模型）裂开、撕开 → 龙魂化作残影高速冲出 → 雷鸣中盘旋两圈
- * → 缓缓降到低空 → 单手持枪俯指玩家、龙吟、喊出台词、定格 2 秒。期间附近玩家的镜头会自动对准她（BossIntroPacket），她本人无敌。
+ * → 加速俯冲砸地 → 地震冲击 → 缓缓起身持枪、龙吟、喊出台词、定姿。期间附近玩家的镜头会自动对准她（BossIntroPacket），她本人无敌。
  * <p>
  * 战斗（魂类）：每一招都有前摇和后摇。近战（劈 20 / 刺 15 / 砍 10，均为范围判定）、踢（击飞 10 格）、
  * 抓（带上 20 格高空后抛下）离得远时先瞬移：通常有蓄力前摇，但也会突然无前摇瞬移、直接出快招。
@@ -102,7 +104,7 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     // 一次性动作：触发名与动画名一致（动画名去掉 boss_ 前缀）
     private static final String[] ACTIONS = {
             "teleport_charge", "teleport_arrive", "cleave", "thrust", "slash", "kick", "grab", "grab_throw",
-            "magic", "spear_throw", "spear_catch", "flourish", "taunt", "pant", "intro_emerge", "intro_point",
+            "magic", "spear_throw", "spear_catch", "flourish", "taunt", "pant", "intro_emerge", "intro_point", "intro_dive",
             "cleave_fast", "thrust_fast", "slash_fast", "grab_fast"
     };
     private static final String ULTIMATE_ANIM = "ultimate";
@@ -133,15 +135,15 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     private static final int RIFT_CLOSE = DASH_END + 20;
     private static final int CIRCLE_TICKS = 80;                                        // 4 秒盘旋两圈
     private static final int CIRCLE_END = DASH_END + CIRCLE_TICKS;
-    private static final int DESCEND_TICKS = 36;                                       // 俯冲到低空
+    private static final int DESCEND_TICKS = 24;                                       // 加速俯冲到地面
     private static final int DESCEND_END = CIRCLE_END + DESCEND_TICKS;
     private static final int POINT_START = DESCEND_END;
     private static final int ROAR_TICK = POINT_START + 8;
     private static final int LINE_TICK = POINT_START + 22;
-    public static final int INTRO_TICKS = POINT_START + 76;                            // 举枪 + 台词 + 定格约 2 秒
+    public static final int INTRO_TICKS = POINT_START + 104;                            // 砸地、缓慢起身、持刃定姿
     private static final double CIRCLE_RADIUS = 20.0;
     private static final double LANDING_DISTANCE = 9.0;   // 降落点距玩家的水平距离
-    private static final double LANDING_HEIGHT = 5.0;     // 降落后离地高度（居高临下）
+    private static final double LANDING_HEIGHT = 0.04;     // 避免脚底与地表闪烁的微小偏移
     private static final double CAMERA_RANGE = 160.0;
 
     // ==================== 战斗参数 ====================
@@ -159,11 +161,11 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     private static final double QUICK_BLINK_CHANCE_LOW_HP = 0.45;
     private static final int FAST_HIT_TICK = 5;             // 快招 0.25 秒就命中
 
-    private static final float CLEAVE_DAMAGE = 20.0f;
-    private static final float THRUST_DAMAGE = 15.0f;
-    private static final float SLASH_DAMAGE = 10.0f;
-    private static final float KICK_DAMAGE = 6.0f;
-    private static final float GRAB_DAMAGE = 6.0f;
+    private static final float CLEAVE_DAMAGE = 50.0f;
+    private static final float THRUST_DAMAGE = 40.0f;
+    private static final float SLASH_DAMAGE = 45.0f;
+    private static final float KICK_DAMAGE = 20.0f;
+    private static final float GRAB_DAMAGE = 10.0f;
     private static final double CLEAVE_RADIUS = 3.8;         // 劈：枪尖砸地，落点周围一圈
     private static final double SLASH_RANGE = 5.0;           // 砍：身前约 230 度的大横扫
     private static final double THRUST_RANGE = 6.0;          // 刺：一条直线上的都会被贯穿
@@ -456,13 +458,16 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
             if (introTick == CIRCLE_END) {
                 descendFrom = this.position();
                 descendTo = landingPoint(level);
+                this.setHidden(false);
+                this.triggerAnim(ACTION_CONTROLLER, "intro_dive");
             }
-            double u = smoothstep((introTick - CIRCLE_END) / (double) DESCEND_TICKS);
+            double progress = (introTick - CIRCLE_END) / (double) DESCEND_TICKS;
+            double u = progress * progress * progress;
             Vec3 pos = descendFrom.lerp(descendTo, u);
             // 轻微的弧线，看起来像滑翔而不是直线平移
             Vec3 side = horizontal(descendTo.subtract(descendFrom)).cross(new Vec3(0, 1, 0));
             if (side.lengthSqr() > 1.0E-4) {
-                pos = pos.add(side.normalize().scale(Math.sin(u * Math.PI) * 4.0));
+                pos = pos.add(side.normalize().scale(Math.sin(u * Math.PI) * 1.2));
             }
             Vec3 previous = this.position();
             moveSmoothlyTo(pos);
@@ -477,12 +482,14 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
             }
         } else {
             if (introTick == POINT_START) {
-                // 现出真身：残影停止，本体出现在玩家上方
+                // 服务端真正落地，再播放压身、起身和持刃定姿。
+                this.setPos(descendTo);
+                impactGround(level);
                 this.setHidden(false);
                 this.entityData.set(DATA_TRAIL, false);
                 trailTicks = 0;
                 level.sendParticles(ParticleTypes.REVERSE_PORTAL, this.getX(), this.getY() + 2, this.getZ(), 80, 1.2, 1.6, 1.2, 0.15);
-                this.setMode(MODE_HOVER);
+                this.setMode(MODE_FIGHT);
                 this.triggerAnim(ACTION_CONTROLLER, "intro_point");
             }
             this.setDeltaMovement(Vec3.ZERO);
@@ -499,8 +506,39 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
             }
         }
 
+        if (introTick >= POINT_START && introTick < POINT_START + 18 && introTick % 2 == 0) {
+            groundShockwave(level, introTick - POINT_START);
+        }
         if (introTick >= INTRO_TICKS) {
             finishIntro();
+        }
+    }
+
+    /** Expanding ground shockwave; cosmetic only, never destroys village terrain. */
+    private void impactGround(ServerLevel level) {
+        this.playSound(SoundEvents.GENERIC_EXPLODE, 4.0f, 0.65f);
+        this.playSound(SoundEvents.IRON_GOLEM_REPAIR, 2.0f, 0.5f);
+        for (ServerPlayer player : level.players()) {
+            double distance = player.distanceTo(this);
+            if (distance < 48) {
+                float strength = (float) (2.8 * (1.0 - distance / 48.0));
+                ModNetwork.CHANNEL.send(PacketDistributor.PLAYER.with(() -> player),
+                        new com.sourceofmystery.network.ScreenEffectPacket(0, 22, strength));
+            }
+        }
+    }
+
+    private void groundShockwave(ServerLevel level, int age) {
+        double radius = 0.7 + age * 0.65;
+        for (int i = 0; i < 48; i++) {
+            double angle = i * Math.PI * 2.0 / 48;
+            double x = getX() + Math.cos(angle) * radius;
+            double z = getZ() + Math.sin(angle) * radius;
+            double y = groundY(level, x, z, getY());
+            net.minecraft.core.BlockPos ground = net.minecraft.core.BlockPos.containing(x, y - 0.1, z);
+            level.sendParticles(new net.minecraft.core.particles.BlockParticleOption(
+                    ParticleTypes.BLOCK, level.getBlockState(ground)), x, y + 0.08, z,
+                    3, 0.12, 0.18, 0.12, 0.12);
         }
     }
 
@@ -532,7 +570,7 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     }
 
     /**
-     * 降落点：最近玩家与当前位置连线上、距玩家 9 格、离地 5 格的位置，这样定格时正好居高临下地俯视玩家
+     * 降落点：最近玩家与当前位置连线上、距玩家 9 格的地面位置，落地和起身使用同一个世界坐标
      */
     private Vec3 landingPoint(ServerLevel level) {
         Player player = nearestPlayer(level);
@@ -543,7 +581,7 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
         dir = dir.lengthSqr() < 1.0E-4 ? new Vec3(1, 0, 0) : dir.normalize();
         Vec3 spot = player.position().add(dir.scale(LANDING_DISTANCE));
         double ground = groundY(level, spot.x, spot.z, player.getY());
-        return new Vec3(spot.x, Math.max(ground, player.getY()) + LANDING_HEIGHT, spot.z);
+        return new Vec3(spot.x, ground + LANDING_HEIGHT, spot.z);
     }
 
     private void finishIntro() {
@@ -1069,7 +1107,8 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
      */
     private boolean canHit(LivingEntity e) {
         return e != this && e.isAlive() && !e.isSpectator() && !this.hasPassenger(e)
-                && !(e instanceof Player p && p.isCreative());
+                && !(e instanceof Player p && p.isCreative())
+                && !GuardianShields.shieldedFromBoss(e); // 守护结界里的目标碰不到
     }
 
     /**
@@ -1618,6 +1657,8 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
     protected void dropCustomDeathLoot(DamageSource source, int looting, boolean recentlyHit) {
         super.dropCustomDeathLoot(source, looting, recentlyHit);
         this.spawnAtLocation(new ItemStack(ModItems.DRAGON_SOUL.get()));
+        this.spawnAtLocation(new ItemStack(Items.GOLDEN_APPLE, 10));
+        this.spawnAtLocation(new ItemStack(Items.DRAGON_EGG));
     }
 
     @Override
@@ -1669,13 +1710,11 @@ public class DragonSoulBoss extends Monster implements GeoEntity {
             this.setMode(MODE_FIGHT);
         } else {
             this.bossEvent.setVisible(false);
-            this.setHidden(introTick < POINT_START);
-            if (introTick < DASH_START) {
-                // 裂缝实体不存档：从头重新撕开一次
-                introTick = Math.min(introTick, RIFT_START - 1);
-                this.setHidden(true);
-                this.setMode(MODE_HIDDEN);
-            }
+            // Rebuild the unsaved rift/path instead of resuming with a zero landing vector.
+            introTick = 0;
+            this.setPos(riftPos);
+            this.setHidden(true);
+            this.setMode(MODE_HIDDEN);
         }
         this.entityData.set(DATA_SPEAR_OUT, false);
     }

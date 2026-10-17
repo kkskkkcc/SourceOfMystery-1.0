@@ -2,6 +2,7 @@
   "replace": false,
   "values": [
     "sourceofmystery:mystery_source_ore",
-    "sourceofmystery:mystery_altar"
+    "sourceofmystery:mystery_altar",
+    "sourceofmystery:guardian_altar"
   ]
 }

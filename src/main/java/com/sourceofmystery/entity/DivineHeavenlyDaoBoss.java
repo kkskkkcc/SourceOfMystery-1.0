@@ -1,5 +1,6 @@
 package com.sourceofmystery.entity;
 
+import com.sourceofmystery.guardian.GuardianShields;
 import com.sourceofmystery.SourceOfMystery;
 import com.sourceofmystery.config.MysteryConfig;
 import com.sourceofmystery.item.ModItems;
@@ -28,6 +29,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.DifficultyInstance;
@@ -40,6 +42,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -59,6 +62,8 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.PacketDistributor;
+import net.minecraftforge.event.ForgeEventFactory;
+import net.minecraft.world.level.block.state.BlockState;
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.core.animation.AnimatableManager;
@@ -120,18 +125,21 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
     // ==================== 技能（均有前摇，可以躲避） ====================
     private static final int SKILL_COOLDOWN = 60;
     private static final int SKILL_COOLDOWN_PHASE_TWO = 40;
+    private static final double BASE_ARMOR = 100.0;
+    private static final double BASE_ARMOR_TOUGHNESS = 30.0;
+    private static final double BASE_ATTACK_DAMAGE = 100.0;
     // 天威一击：直接攻击目标
     private static final double STRIKE_REACH = 10.0;     // 身体边缘之外的攻击距离
     private static final int STRIKE_WINDUP = 16;
     private static final int STRIKE_HIT_DELAY = 4;       // attack 动画第 0.2 秒挥到最低点
-    private static final float STRIKE_DAMAGE = 50.0f;
+    private static final float STRIKE_DAMAGE = 150.0f;
     // 撼地锤：双手高举锤击地面，站在地上的实体受到伤害并被抛上 20 格高空（跳起来可以躲开）
     private static final int SLAM_WINDUP = 30;           // 对应 slam 动画 1.5 秒处砸到地面
     private static final int SLAM_RECOVER = 20;
     private static final double SLAM_REACH = 10.0;       // 身体边缘之外的波及范围
-    private static final float SLAM_DAMAGE = 50.0f;
+    private static final float SLAM_DAMAGE = 100.0f;
     private static final double SLAM_LAUNCH_SPEED = 2.0; // 竖直初速度 2.0 约等于升到 20 格高
-    // 天雷：5 秒内落下 18 道闪电，其中一道必定劈中当前目标，其余随机劈向周围的生物，周围没有生物就随机落下
+    // 天雷：10 秒内落下 36 道闪电，其中一道必定劈中当前目标，其余随机劈向周围的生物，周围没有生物就随机落下
     private static final int STORM_WINDUP = 20;
     private static final int STORM_DURATION = 200;          // 10 秒
     private static final int STORM_BOLTS = 36;
@@ -139,7 +147,7 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
     private static final double STORM_MIN_RADIUS = 6.0;    // 没有生物时随机落点（从身体边缘算起）
     private static final double STORM_MAX_RADIUS = 30.0;
     private static final double BOLT_HIT_RADIUS = 2.5;
-    private static final float BOLT_DAMAGE = 100.0f;
+    private static final float BOLT_DAMAGE = 150.0f;
     // 大招「天渊」：双手高举凝聚黑色球体 10 秒，然后掷向玩家引发巨大爆炸（见 AbyssOrb）
     private static final int ABYSS_CHARGE = 200;
     private static final int ABYSS_RELEASE = ABYSS_CHARGE + 8;   // orb_throw 动画 0.4 秒出手
@@ -194,7 +202,7 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
         this.setCustomNameVisible(true);
 
         this.setNoGravity(true);
-        this.noPhysics = true;
+        this.noPhysics = false;
         this.noCulling = true;
 
         this.bossEvent = new ServerBossEvent(name, BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.PROGRESS);
@@ -203,9 +211,9 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
 
     public static AttributeSupplier.Builder createAttributes() {
         return Monster.createMonsterAttributes()
-                .add(Attributes.ATTACK_DAMAGE, STRIKE_DAMAGE)
-                .add(Attributes.ARMOR, 50.0)
-                .add(Attributes.ARMOR_TOUGHNESS, 20.0)
+                .add(Attributes.ATTACK_DAMAGE, BASE_ATTACK_DAMAGE)
+                .add(Attributes.ARMOR, BASE_ARMOR)
+                .add(Attributes.ARMOR_TOUGHNESS, BASE_ARMOR_TOUGHNESS)
                 .add(Attributes.MAX_HEALTH, 30000.0)
                 .add(Attributes.MOVEMENT_SPEED, 0.3)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0)
@@ -259,7 +267,8 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
 
     @Override
     public void tick() {
-        this.noPhysics = true;
+        // 天道实体使用真实碰撞箱；移动时会撞到方块，并在下方按 mobGriefing 规则破坏可破坏方块。
+        this.noPhysics = false;
         super.tick();
         if (this.level().isClientSide) {
             return;
@@ -283,6 +292,7 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
 
         tickHover();
         tickSkills((ServerLevel) this.level());
+        destroyCollidingBlocks((ServerLevel) this.level());
 
         if (!secondPhaseTriggered && this.getHealth() < MysteryConfig.BOSS_SECOND_PHASE_HEALTH.get()) {
             enterSecondPhase();
@@ -327,7 +337,32 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
             velocity = velocity.normalize().scale(MAX_SPEED);
         }
         this.setDeltaMovement(velocity);
-        this.setPos(this.getX() + velocity.x, this.getY() + velocity.y, this.getZ() + velocity.z);
+        this.move(MoverType.SELF, velocity);
+    }
+
+    /** 天道身体经过的可破坏方块会被撞碎；基岩、凋灵免疫方块和硬度过高的方块保留。 */
+    private void destroyCollidingBlocks(ServerLevel level) {
+        if (!ForgeEventFactory.getMobGriefingEvent(level, this)) {
+            return;
+        }
+        AABB box = this.getBoundingBox().inflate(0.05);
+        int broken = 0;
+        for (BlockPos pos : BlockPos.betweenClosed(
+                BlockPos.containing(box.minX, box.minY, box.minZ),
+                BlockPos.containing(box.maxX, box.maxY, box.maxZ))) {
+            if (broken >= 128) {
+                return;
+            }
+            BlockState state = level.getBlockState(pos);
+            float hardness = state.getDestroySpeed(level, pos);
+            if (state.isAir() || state.is(BlockTags.WITHER_IMMUNE) || hardness < 0 || hardness >= 50
+                    || !state.canEntityDestroy(level, pos, this)
+                    || !ForgeEventFactory.onEntityDestroyBlock(this, pos, state)) {
+                continue;
+            }
+            level.destroyBlock(pos, false, this);
+            broken++;
+        }
     }
 
     /**
@@ -804,7 +839,8 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
 
     private boolean isValidVictim(LivingEntity e) {
         return e != this && e.isAlive() && !e.getTags().contains(MINION_TAG)
-                && !(e instanceof Player p && (p.isCreative() || p.isSpectator()));
+                && !(e instanceof Player p && (p.isCreative() || p.isSpectator()))
+                && !GuardianShields.shieldedFromBoss(e); // 守护结界里的目标碰不到
     }
 
     /**
@@ -937,6 +973,13 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        // 旧存档中的 Boss 属性需要同步到当前版本的数值。
+        var armor = this.getAttribute(Attributes.ARMOR);
+        var toughness = this.getAttribute(Attributes.ARMOR_TOUGHNESS);
+        var attack = this.getAttribute(Attributes.ATTACK_DAMAGE);
+        if (armor != null) armor.setBaseValue(BASE_ARMOR);
+        if (toughness != null) toughness.setBaseValue(BASE_ARMOR_TOUGHNESS);
+        if (attack != null) attack.setBaseValue(BASE_ATTACK_DAMAGE);
         // 不保存的话，重进存档后低血量会再次触发二阶段，重复召唤凋灵并再飞高 30 格
         secondPhaseTriggered = tag.getBoolean(TAG_SECOND_PHASE);
         if (secondPhaseTriggered) {
@@ -1021,7 +1064,7 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
     }
 
     /**
-     * 死亡掉落：天道碎片 4-8、附魔金苹果 16、龙蛋 1、下界之星 2
+     * 死亡掉落：天道碎片 4-8、附魔金苹果 16、下界之星 2
      * 放在 dropCustomDeathLoot 中，遵守 doMobLoot 游戏规则
      */
     @Override
@@ -1029,7 +1072,6 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
         super.dropCustomDeathLoot(source, looting, recentlyHit);
         dropScattered(new ItemStack(ModItems.HEAVENLY_DAO_FRAGMENT.get(), 4 + this.random.nextInt(5)), 3.0);
         dropScattered(new ItemStack(Items.ENCHANTED_GOLDEN_APPLE, 16), 2.0);
-        dropScattered(new ItemStack(Items.DRAGON_EGG), 0.0);
         dropScattered(new ItemStack(Items.NETHER_STAR, 2), 2.0);
     }
 

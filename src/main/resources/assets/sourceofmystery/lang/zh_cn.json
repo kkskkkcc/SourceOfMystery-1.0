@@ -21,6 +21,7 @@
   "message.sourceofmystery.altar.energy": "神秘之能: %s / %s",
   "message.sourceofmystery.altar.materials": "检测到材料: %s",
   "message.sourceofmystery.altar.no_recipe": "【无匹配配方】请将材料丢在祭坛周围 %s 格范围内",
+  "message.sourceofmystery.altar.busy": "祭坛正在转化材料，请等待当前合成结束。",
   "message.sourceofmystery.altar.success": "【转化成功！】%s 级配方，获得: %sx %s",
   "message.sourceofmystery.boss.prefix": "【神威天道】",
   "message.sourceofmystery.boss.awakening": "龙魂与五行之源已献祭于神秘祭坛，天道之力开始苏醒……",
@@ -131,6 +132,8 @@
   "entity.sourceofmystery.thrown_scythe": "泣死之主的镰刀",
   "entity.sourceofmystery.death_skull": "泣死凋灵之首",
   "entity.sourceofmystery.space_shatter": "斩碎的空间",
+  "entity.sourceofmystery.guardian_spirit": "守护之灵",
+  "entity.sourceofmystery.guardian_spirit_projectile": "守护之灵的圣光球",
   "message.sourceofmystery.weeping_death_lord.prefix": "【泣死之主】",
   "message.sourceofmystery.weeping_death_lord.omen": "凋灵的残骸开始泛白……有什么东西要从里面出来了。",
   "message.sourceofmystery.weeping_death_lord.arrived": "泣死之主睁开了双眼。她不会主动与你为敌——除非你先动手。",
@@ -150,5 +153,15 @@
   "subtitles.sourceofmystery.weeping_death_lord.heartbeat": "心跳声",
   "subtitles.sourceofmystery.weeping_death_lord.laser_charge": "魔法阵凝聚",
   "subtitles.sourceofmystery.weeping_death_lord.laser_boom": "死亡激光发射",
-  "subtitles.sourceofmystery.weeping_death_lord.laser": "死亡激光嗡鸣"
+  "subtitles.sourceofmystery.weeping_death_lord.laser": "死亡激光嗡鸣",
+  "block.sourceofmystery.guardian_altar": "守护祭坛",
+  "tooltip.sourceofmystery.guardian_altar.line1": "手持下界之星右键激活",
+  "tooltip.sourceofmystery.guardian_altar.line2": "守护所在的 3×3 区块（基岩层至 y=%s）：敌对生物消散，玩家获得生命恢复与饱和，Boss 被拒之门外",
+  "message.sourceofmystery.guardian_altar.need_star": "祭坛的法阵在等待一颗下界之星……",
+  "message.sourceofmystery.guardian_altar.activated": "下界之星融入法阵，守护祭坛开始修复……",
+  "message.sourceofmystery.guardian_altar.deployed": "守护结界已展开",
+  "message.sourceofmystery.guardian_altar.running": "守护祭坛运转中：结界覆盖 %s 到 %s，高度至 y=%s",
+  "message.sourceofmystery.guardian_altar.conflict": "无法激活：结界会与 %s 处的守护祭坛重叠（两座祭坛所在区块需相距至少 3 个区块）",
+  "message.sourceofmystery.guardian_altar.too_high": "结界最高只到 y=%s，祭坛放得太高了",
+  "message.sourceofmystery.guardian_altar.withered": "下界之星随祭坛一同凋零，守护结界消散了"
 }

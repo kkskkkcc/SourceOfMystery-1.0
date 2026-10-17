@@ -12,17 +12,17 @@
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:spirit_source_sword",
-      "text": "C 级。秘源锭 ×4 + 下界合金锭 ×4 + 秘源剑。命中后燃烧 10 秒，可以叠加。"
+      "text": "C 级。秘源锭 ×4 + 下界合金碎片 ×4 + 秘源剑。命中后燃烧 10 秒，可以叠加。"
     },
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:dark_source_sword",
-      "text": "B 级。凋灵骷髅头 ×2 + 下界合金锭 ×4 + 下界之星 ×2 + 灵源秘剑。燃烧 + 凋零，均可叠加。"
+      "text": "B 级。下界合金锭 ×4 + 下界之星 + 灵源秘剑。燃烧 + 凋零，均可叠加。"
     },
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:origin_dragon_sword",
-      "text": "A 级。龙魂 + 末地水晶 ×4 + 下界之星 + 龙首 + 鞘翅 + 暗源之剑。追加高亮与虚弱 III。"
+      "text": "A 级。龙魂 + 龙息 ×2 + 下界之星 + 龙首 + 龙蛋 + 暗源之剑。追加高亮与虚弱 III。"
     },
     {
       "type": "patchouli:spotlight",

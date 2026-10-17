@@ -17,6 +17,8 @@ public class ModBlockLootTables extends BlockLootSubProvider {
     @Override
     protected void generate() {
         dropSelf(ModBlocks.MYSTERY_ALTAR.get());
+        // 守护祭坛只返还方块本身，激活用的下界之星随祭坛凋零
+        dropSelf(ModBlocks.GUARDIAN_ALTAR.get());
         // 精准采集掉落矿石本身，否则掉落矿石并受时运加成（矿石需要烧炼成秘源锭）
         add(ModBlocks.MYSTERY_SOURCE_ORE.get(), block -> createOreDrop(block, block.asItem()));
     }

@@ -6,15 +6,15 @@
   "pages": [
     {
       "type": "patchouli:text",
-      "text": "The Divine Heavenly Dao has $(l)30,000 health$(), stands $(l)about 50 blocks tall$(), drifts through terrain to hover over you, and fills the air with an oppressive hum while it lives. It is $(l)immune to all ranged attacks$() and enrages nearby Endermen.$(br2)Its attacks have a wind-up:"
+      "text": "The Divine Heavenly Dao has $(l)30,000 health$(), 100 armor, 30 toughness and 100 base attack damage. Its collision body can break blocks, and oppressive music plays while it lives. It is $(l)immune to all ranged attacks$() and enrages nearby Endermen.$(br2)Its attacks have a wind-up:"
     },
     {
       "type": "patchouli:text",
-      "text": "$(li)$(l)Earthshaker$(): a ring of sparks marks the ground, then it smashes down. Entities standing on the ground take 50 damage and are thrown 20 blocks up, so $(l)jump$() at the right moment.$(li)$(l)Heavenly Thunder$(): 36 bolts over 10 seconds, 100 damage each. $(l)One of them always strikes you$() (only once, and armor still applies); the rest strike nearby creatures.$(li)$(l)Heaven's Strike$(): a charged direct blow for 50 damage."
+      "text": "$(li)$(l)Earthshaker$(): a ring of sparks marks the ground, then it smashes down. Entities standing on the ground take 100 damage and are thrown 20 blocks up, so $(l)jump$() at the right moment.$(li)$(l)Heavenly Thunder$(): 36 bolts over 10 seconds, 150 damage each. $(l)One of them always strikes you$() (only once, and armor still applies); the rest strike nearby creatures.$(li)$(l)Heaven's Strike$(): a charged direct blow for 150 damage."
     },
     {
       "type": "patchouli:text",
-      "text": "$(l)Abyss$(): it raises both hands and gathers a black orb overhead while dark mist pours into it. After 10 seconds it hurls the orb at you for a cataclysmic explosion (damage falls off over 180 blocks and is almost certainly lethal up close, and it blows up terrain). When you see the hands go up, $(l)run$() or get behind thick cover. It is not hurt by its own blast."
+      "text": "$(l)Abyss$(): the orb flies at 5 blocks/tick, explodes with power 100 and a 500-block effect radius. Within the 180-block damage radius, damage falls from 700 at the center to 200 at the edge. When you see the hands go up, $(l)run$() or get behind thick cover. It is not hurt by its own blast."
     },
     {
       "type": "patchouli:text",
@@ -23,7 +23,7 @@
     {
       "type": "patchouli:spotlight",
       "item": "sourceofmystery:heavenly_dao_fragment",
-      "text": "Drops 4-8 Heavenly Dao Fragments, Enchanted Golden Apples, a Dragon Egg and Nether Stars. Fragments craft the S-tier gear."
+      "text": "Drops 4-8 Heavenly Dao Fragments, Enchanted Golden Apples and Nether Stars; it no longer drops a Dragon Egg. Fragments craft the S-tier gear."
     }
   ]
 }

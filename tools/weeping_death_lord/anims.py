@@ -509,7 +509,11 @@ def cleave_core(t):
     else:
         pose = blend(hit, pulled, pull)
     gx = lerp(lerp(lerp(112, 15, up), 5, tense), 35, smash) if t < 2.5 else lerp(35, 100, pull)
-    return merge(pose, hold('R', gx=gx, gz=lerp(-28, 0, up), spin=-90, slide=lerp(20, 2, up), scale=1 + 1.4 * grow, auto=True))
+    # Roll the haft out of the body's centerline on the wind-up, then turn the
+    # cutting lip through the target on impact. Keep the same hit timing.
+    gy = lerp(-14, 18, smash)
+    return merge(pose, hold('R', gx=gx, gy=gy, gz=lerp(-28, 8, up), spin=-90,
+                            slide=lerp(20, 3, up), scale=1 + 1.15 * grow, auto=True))
 
 
 def cleave(t):
@@ -545,7 +549,8 @@ def throw_core(t):
         pose = blend(cocked, thrown, fling)
     if t > THROW_RELEASE:
         pose = merge(thrown, P(UpBody=(-6 * follow, 0, 0), RightArm=(15 * follow, 0, 0)))
-    return merge(pose, hold('R', gx=lerp(112, -20, cock) if t < 1.0 else lerp(-20, 60, fling), gz=lerp(-28, 0, cock),
+    return merge(pose, hold('R', gx=lerp(112, -20, cock) if t < 1.0 else lerp(-20, 60, fling),
+                            gy=lerp(-12, 16, fling), gz=lerp(-28, 0, cock),
                             slide=lerp(20, 4, cock), auto=True))
 
 
@@ -668,7 +673,8 @@ SLASHED = P(AllBody=(14, 0, 0), UpBody=(28, 35, 0), Head=(10, -20, 0),
 def absorb_slash_core(t):
     u = ease_in(seg(t, 0.0, 0.28), 2.5)
     pose = blend(GRAB, SLASHED, u)
-    return merge(pose, hold('R', gx=lerp(-10, 75, u), gz=lerp(0, -10, u), slide=6, auto=True))
+    return merge(pose, hold('R', gx=lerp(-10, 75, u), gy=lerp(-16, 20, u),
+                            gz=lerp(3, -12, u), slide=6, auto=True))
 
 
 def absorb_slash(t):
@@ -686,16 +692,16 @@ def rapid_key(name):
     keys_ = {
         # 右侧蓄势
         'R': (P(UpBody=(0, -40, 0), Head=(0, 30, 0), RightArm=(-80, 0, 70), RightForeArm=(-30, 0, 0),
-                LeftArm=(-20, 0, -30), AllBody=(4, 0, 0)), dict(gx=10, gz=0, slide=8)),
+                LeftArm=(-20, 0, -30), AllBody=(4, 0, 0)), dict(gx=10, gy=-16, gz=0, slide=8)),
         # 横扫到左侧
         'L': (P(UpBody=(10, 45, 0), Head=(0, -30, 0), RightArm=(-85, 0, -45), RightForeArm=(-10, 0, 0),
-                LeftArm=(10, 0, -45), AllBody=(8, 0, 0)), dict(gx=10, gz=0, slide=8)),
+                LeftArm=(10, 0, -45), AllBody=(8, 0, 0)), dict(gx=10, gy=16, gz=0, slide=8)),
         # 上撩到头顶
         'U': (P(UpBody=(-15, -10, 0), Head=(-10, 5, 0), RightArm=(-170, 0, 15), RightForeArm=(-10, 0, 0),
-                LeftArm=(-30, 0, -40), AllBody=(-4, 0, 0)), dict(gx=-20, gz=0, slide=8)),
+                LeftArm=(-30, 0, -40), AllBody=(-4, 0, 0)), dict(gx=-20, gy=-10, gz=0, slide=8)),
         # 下劈
         'D': (P(UpBody=(30, 5, 0), Head=(10, 0, 0), RightArm=(-40, 0, 0), RightForeArm=(-5, 0, 0),
-                LeftArm=(20, 0, -35), AllBody=(14, 0, 0)), dict(gx=70, gz=0, slide=8)),
+                LeftArm=(20, 0, -35), AllBody=(14, 0, 0)), dict(gx=70, gy=12, gz=0, slide=8)),
     }
     pose, grip = keys_[name]
     legs = P(LeftLeg=(-8, 0, -18), RightLeg=(8, 0, 18), LeftLowerLeg=(25, 0, 0), RightLowerLeg=(25, 0, 0),
@@ -729,7 +735,8 @@ RAPID_START_LEN = 0.5
 def rapid_start(t):
     u = ease_out(seg(t, 0, 0.45))
     p, g = rapid_key('R')
-    return merge(blend(hover_pose(0), p, u), hold('R', auto=True, **{k: lerp(HOVER_GRIP[k], g[k], u) for k in g}))
+    return merge(blend(hover_pose(0), p, u), hold('R', auto=True,
+        **{k: lerp(HOVER_GRIP.get(k, 0), g[k], u) for k in g}))
 
 
 def rapid_end(t):

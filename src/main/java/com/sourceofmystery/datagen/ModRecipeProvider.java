@@ -36,6 +36,19 @@ public class ModRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_mystery_ingot", has(ModItems.MYSTERY_INGOT.get()))
                 .save(output);
 
+        // 守护祭坛：原版工作台合成
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.GUARDIAN_ALTAR.get())
+                .pattern("MLM")
+                .pattern("DED")
+                .pattern("MOM")
+                .define('M', ModItems.MYSTERY_INGOT.get())
+                .define('L', Items.LAPIS_LAZULI)
+                .define('D', Items.DIAMOND)
+                .define('E', Items.ENCHANTING_TABLE)
+                .define('O', Items.OBSIDIAN)
+                .unlockedBy("has_mystery_ingot", has(ModItems.MYSTERY_INGOT.get()))
+                .save(output);
+
         SimpleCookingRecipeBuilder.smelting(Ingredient.of(ModItems.MYSTERY_SOURCE_ORE.get()), RecipeCategory.MISC,
                         ModItems.MYSTERY_INGOT.get(), 1.0f, 200)
                 .unlockedBy("has_mystery_source_ore", has(ModItems.MYSTERY_SOURCE_ORE.get()))
@@ -61,15 +74,15 @@ public class ModRecipeProvider extends RecipeProvider {
         // A / A+：龙魂由末影龙掉落（每只一个）
         altar(AltarRecipeTier.A, ModItems.ORIGIN_DRAGON_SWORD.get())
                 .needs(ModItems.DRAGON_SOUL.get(), 1)
-                .needs(Items.END_CRYSTAL, 4)
+                .needs(Items.DRAGON_BREATH, 2)
                 .needs(Items.NETHER_STAR, 1)
                 .needs(Items.DRAGON_HEAD, 1)
-                .needs(Items.ELYTRA, 1)
+                .needs(Items.DRAGON_EGG, 1)
                 .needs(ModItems.DARK_SOURCE_SWORD.get(), 1)
                 .save(output);
         altar(AltarRecipeTier.A_PLUS, ModItems.ORIGIN_DRAGON_CHESTPLATE.get())
                 .needs(ModItems.DRAGON_SOUL.get(), 1)
-                .needs(Items.END_CRYSTAL, 4)
+                .needs(Items.DRAGON_BREATH, 2)
                 .needs(Items.NETHER_STAR, 1)
                 .needs(Items.DRAGON_HEAD, 1)
                 .needs(Items.ELYTRA, 1)
@@ -78,27 +91,25 @@ public class ModRecipeProvider extends RecipeProvider {
 
         // B / B+
         altar(AltarRecipeTier.B, ModItems.DARK_SOURCE_SWORD.get())
-                .needs(Items.WITHER_SKELETON_SKULL, 2)
                 .needs(Items.NETHERITE_INGOT, 4)
-                .needs(Items.NETHER_STAR, 2)
+                .needs(Items.NETHER_STAR, 1)
                 .needs(ModItems.SPIRIT_SOURCE_SWORD.get(), 1)
                 .save(output);
         altar(AltarRecipeTier.B_PLUS, ModItems.DARK_SOURCE_CHESTPLATE.get())
-                .needs(Items.WITHER_SKELETON_SKULL, 2)
                 .needs(Items.NETHERITE_INGOT, 4)
-                .needs(Items.NETHER_STAR, 2)
+                .needs(Items.NETHER_STAR, 1)
                 .needs(ModItems.SPIRIT_SOURCE_CHESTPLATE.get(), 1)
                 .save(output);
 
         // C / C+
         altar(AltarRecipeTier.C, ModItems.SPIRIT_SOURCE_SWORD.get())
                 .needs(ModItems.MYSTERY_INGOT.get(), 4)
-                .needs(Items.NETHERITE_INGOT, 4)
+                .needs(Items.NETHERITE_SCRAP, 4)
                 .needs(ModItems.MYSTERY_SWORD.get(), 1)
                 .save(output);
         altar(AltarRecipeTier.C_PLUS, ModItems.SPIRIT_SOURCE_CHESTPLATE.get())
                 .needs(ModItems.MYSTERY_INGOT.get(), 4)
-                .needs(Items.NETHERITE_INGOT, 4)
+                .needs(Items.NETHERITE_SCRAP, 4)
                 .needs(ModItems.MYSTERY_CHESTPLATE.get(), 1)
                 .save(output);
 

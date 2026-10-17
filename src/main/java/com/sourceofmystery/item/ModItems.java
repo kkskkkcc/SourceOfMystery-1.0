@@ -2,6 +2,7 @@ package com.sourceofmystery.item;
 
 import com.sourceofmystery.SourceOfMystery;
 import com.sourceofmystery.block.ModBlocks;
+import com.sourceofmystery.guardian.GuardianAltarItem;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
@@ -29,6 +30,10 @@ public class ModItems {
     // 方块物品 - 神秘祭坛
     public static final RegistryObject<Item> MYSTERY_ALTAR = ITEMS.register("mystery_altar",
             () -> new BlockItem(ModBlocks.MYSTERY_ALTAR.get(), new Item.Properties()));
+
+    // 方块物品 - 守护祭坛（GeckoLib 模型）
+    public static final RegistryObject<Item> GUARDIAN_ALTAR = ITEMS.register("guardian_altar",
+            () -> new GuardianAltarItem(ModBlocks.GUARDIAN_ALTAR.get()));
 
     // ==================== 武器 ====================
     // 武器伤害（物品栏显示值）= 玩家基础 1 + MysteryTier.attackDamageBonus + 构造参数 attackDamageBonus
@@ -86,10 +91,11 @@ public class ModItems {
             () -> new MysteryChestplateItem(MysteryArmorMaterial.SPIRIT_SOURCE,
                     new Item.Properties().rarity(Rarity.RARE).durability(1000), false));
 
-    // 暗源之甲: 60 护甲 + 增益效果 + 火焰/凋零免疫 + 耐久无限
+    // 暗源之甲: 60 护甲 + 穿戴时生命上限 +50 + 增益效果 + 火焰/凋零免疫 + 耐久无限
     public static final RegistryObject<Item> DARK_SOURCE_CHESTPLATE = ITEMS.register("dark_source_chestplate",
             () -> new MysteryChestplateItem(MysteryArmorMaterial.DARK_SOURCE,
-                    new Item.Properties().rarity(Rarity.EPIC), true));
+                    new Item.Properties().rarity(Rarity.EPIC), true,
+                    UUID.fromString("e9f46f8b-8c8f-4da0-9205-cba45a5e7e76"), 50.0));
 
     // 始源龙甲: 100 护甲 + 生命加成100 + 飞行 + 全免疫 + 耐久无限
     public static final RegistryObject<Item> ORIGIN_DRAGON_CHESTPLATE = ITEMS.register("origin_dragon_chestplate",

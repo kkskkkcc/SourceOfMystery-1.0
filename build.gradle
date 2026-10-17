@@ -94,3 +94,20 @@ repositories {
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
 }
+
+// `gradle jar` 默认输出开发用 jar（仍带官方字段名），放到玩家 mods/ 里会报
+// NoSuchFieldError: Registries.CREATIVE_MODE_TAB。让 `jar` 走完 `reobfJar`，
+// 并把 SRG 重命名后的 jar 覆盖回 build/libs/，发布到 mods/ 才不会崩。
+jar.finalizedBy('reobfJar')
+afterEvaluate {
+    tasks.named('reobfJar').configure {
+        doLast {
+            def reobfed = file('build/reobfJar/output.jar')
+            def target = file('build/libs/sourceofmystery-1.0.0.jar')
+            if (reobfed.exists()) {
+                target.delete()
+                copy { from reobfed; into 'build/libs'; rename { 'sourceofmystery-1.0.0.jar' } }
+            }
+        }
+    }
+}

@@ -1,0 +1,11 @@
+{
+  "values": [
+    "minecraft:wither",
+    "minecraft:ender_dragon",
+    "sourceofmystery:dragon_soul_boss",
+    "sourceofmystery:divine_heavenly_dao_boss",
+    "sourceofmystery:giant_wither",
+    "sourceofmystery:weeping_death_lord",
+    { "id": "#forge:bosses", "required": false }
+  ]
+}

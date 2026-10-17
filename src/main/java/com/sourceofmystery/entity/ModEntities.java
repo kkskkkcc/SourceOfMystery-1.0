@@ -126,10 +126,32 @@ public class ModEntities {
                             .updateInterval(20)
                             .build(new ResourceLocation(SourceOfMystery.MOD_ID, "space_shatter").toString()));
 
+    // 守护之灵：友好阵营，按村庄登记刷新，使用独立 GeckoLib 模型与动画。
+    public static final RegistryObject<EntityType<GuardianSpirit>> GUARDIAN_SPIRIT =
+            ENTITIES.register("guardian_spirit",
+                    () -> EntityType.Builder.of(GuardianSpirit::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.95F)  // 与村民一样大
+                            .clientTrackingRange(64)
+                            .updateInterval(1)
+                            .build(new ResourceLocation(SourceOfMystery.MOD_ID, "guardian_spirit").toString()));
+
+    // 守护之灵的投射物（蓝球追踪弹）
+    public static final RegistryObject<EntityType<GuardianSpiritProjectile>> GUARDIAN_SPIRIT_PROJECTILE =
+            ENTITIES.register("guardian_spirit_projectile",
+                    () -> EntityType.Builder.<GuardianSpiritProjectile>of(GuardianSpiritProjectile::new, MobCategory.MISC)
+                            .sized(0.3F, 0.3F)
+                            .noSave()
+                            .fireImmune()
+                            .clientTrackingRange(64)
+                            .updateInterval(1)
+                            .build(new ResourceLocation(SourceOfMystery.MOD_ID, "guardian_spirit_projectile").toString()));
+
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(DIVINE_HEAVENLY_DAO_BOSS.get(), DivineHeavenlyDaoBoss.createAttributes().build());
         event.put(DRAGON_SOUL_BOSS.get(), DragonSoulBoss.createAttributes().build());
         event.put(GIANT_WITHER.get(), WitherBoss.createAttributes().build());
         event.put(WEEPING_DEATH_LORD.get(), WeepingDeathLord.createAttributes().build());
+        event.put(GUARDIAN_SPIRIT.get(), GuardianSpirit.createAttributes().build());
+        // 投射物没有自己的属性表，复用 snowball 默认的（MobCategory.MISC 会自动用 Projectile 默认）
     }
 }

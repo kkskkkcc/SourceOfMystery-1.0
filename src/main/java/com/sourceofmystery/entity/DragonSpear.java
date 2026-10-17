@@ -23,13 +23,24 @@ import net.minecraft.world.phys.Vec3;
  * 龙魂掷出的长枪：直线飞出，命中第一个实体（或撞墙、飞够距离）后掉头飞回龙魂手中。
  * 位置全部由服务端计算后同步，客户端只负责渲染（DragonSpearRenderer）。
  */
-public class DragonSpear extends Projectile {
+public class DragonSpear extends Projectile implements software.bernie.geckolib.animatable.GeoEntity {
+    private final software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache cache =
+            software.bernie.geckolib.util.GeckoLibUtil.createInstanceCache(this);
+
+    @Override
+    public void registerControllers(software.bernie.geckolib.core.animation.AnimatableManager.ControllerRegistrar controllers) {}
+
+    @Override
+    public software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache getAnimatableInstanceCache() {
+        return cache;
+    }
+
 
     private static final int MAX_OUTBOUND_TICKS = 30;
     private static final int MAX_LIFE_TICKS = 160;
     private static final double RETURN_SPEED = 1.6;
     private static final double CATCH_DISTANCE = 1.8;
-    private static final float DAMAGE = 18.0f;
+    private static final float DAMAGE = 60.0f;
 
     private static final EntityDataAccessor<Boolean> DATA_RETURNING =
             SynchedEntityData.defineId(DragonSpear.class, EntityDataSerializers.BOOLEAN);

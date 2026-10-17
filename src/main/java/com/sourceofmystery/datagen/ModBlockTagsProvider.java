@@ -20,7 +20,8 @@ public class ModBlockTagsProvider extends BlockTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
-        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.MYSTERY_SOURCE_ORE.get(), ModBlocks.MYSTERY_ALTAR.get());
-        tag(BlockTags.NEEDS_IRON_TOOL).add(ModBlocks.MYSTERY_SOURCE_ORE.get());
+        tag(BlockTags.MINEABLE_WITH_PICKAXE).add(ModBlocks.MYSTERY_SOURCE_ORE.get(), ModBlocks.MYSTERY_ALTAR.get(),
+                ModBlocks.GUARDIAN_ALTAR.get());
+        tag(BlockTags.NEEDS_IRON_TOOL).add(ModBlocks.MYSTERY_SOURCE_ORE.get(), ModBlocks.GUARDIAN_ALTAR.get());
     }
 }

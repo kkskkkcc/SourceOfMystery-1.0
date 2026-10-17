@@ -10,11 +10,11 @@
     },
     {
       "type": "patchouli:text",
-      "text": "She is $(l)neutral$(): if you never attack her, she never attacks you. She drifts like a jellyfish within 120 blocks of where she was born and hunts the $(l)animals and monsters$() there.$(br2)She swings a huge, heavy scythe: every move winds up in at most 2 seconds and leaves at least 3 seconds of recovery - that is your window.$(br2)A $(l)black halo$() always hangs behind her, breathing out the smell of death and now and then a floating skull. 5000 health, 30 armor (10 toughness). She is tuned for $(l)Dark Source Armor$(): wearing it (with netherite in the other slots) you can just about beat her."
+      "text": "She is $(l)neutral$(): if you never attack her, she never attacks you. She drifts like a jellyfish within 120 blocks of where she was born and hunts the $(l)animals and monsters$() there.$(br2)She swings a huge, heavy scythe: every move winds up in at most 2 seconds and leaves at least 3 seconds of recovery - that is your window.$(br2)A $(l)black halo$() always hangs behind her, breathing out the smell of death and now and then a floating skull. 5000 health, 50 armor and 20 toughness."
     },
     {
       "type": "patchouli:text",
-      "text": "$(li)$(l)Cleave$(): the scythe swings behind her, grows and crashes down, the impact sets off an $(l)earthquake$() for 45 damage.$(li)$(l)Wither Heads$(): she hurls the scythe first - if it hits you, you are $(l)pinned in place$(). Then her two wither heads float to her hands and fire 3 fast wither skulls per second for 5 seconds, 20 damage each plus Wither (projectile damage, so Dark Source Armor does not block it). The scythe only returns when they are done."
+      "text": "$(li)$(l)Cleave$(): the scythe swings behind her, grows and crashes down, the impact sets off an $(l)earthquake$() for 60 damage.$(li)$(l)Wither Heads$(): she hurls the scythe first - if it hits you, you are $(l)pinned in place$(). Then her two wither heads float to her hands and fire 3 fast wither skulls per second for 5 seconds, 20 damage each plus Wither (projectile damage, so Dark Source Armor does not block it). The scythe only returns when they are done."
     },
     {
       "type": "patchouli:text",

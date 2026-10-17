@@ -5,6 +5,10 @@ import com.sourceofmystery.config.MysteryConfig;
 import com.sourceofmystery.energy.MysteryEnergy;
 import com.sourceofmystery.network.ModNetwork;
 import com.sourceofmystery.network.SatelliteSyncPacket;
+import com.sourceofmystery.entity.DivineHeavenlyDaoBoss;
+import com.sourceofmystery.entity.DragonSoulBoss;
+import com.sourceofmystery.entity.GiantWither;
+import com.sourceofmystery.entity.WeepingDeathLord;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
@@ -365,7 +369,14 @@ public final class SatelliteAttackHandler {
     private static void hit(ServerPlayer player, ServerLevel level, LivingEntity target, float damage) {
         // 每颗卫星独立计算伤害，不受其他卫星或近战攻击的无敌帧影响
         target.invulnerableTime = 0;
-        target.hurt(level.damageSources().indirectMagic(player, player), damage);
+        // 间接魔法伤害会绕过护甲。卫星对玩家和本模组 Boss 改用普通玩家攻击伤害，
+        // 让护甲、护甲韧性和保护附魔正常生效；其他实体保持原有的穿甲机制和伤害数值。
+        var source = target instanceof Player || target instanceof DragonSoulBoss
+                || target instanceof DivineHeavenlyDaoBoss || target instanceof WeepingDeathLord
+                || target instanceof GiantWither
+                ? level.damageSources().playerAttack(player)
+                : level.damageSources().indirectMagic(player, player);
+        target.hurt(source, damage);
         Vec3 center = orbitCenter(target);
         level.sendParticles(ParticleTypes.ENCHANTED_HIT, center.x, center.y, center.z, 8,
                 target.getBbWidth() * 0.4, target.getBbHeight() * 0.3, target.getBbWidth() * 0.4, 0.1);
