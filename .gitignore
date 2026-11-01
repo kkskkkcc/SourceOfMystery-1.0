@@ -37,9 +37,19 @@ root
 原版素材/
 开发需求/
 神秘之源素材/
-art/
+art/*
 mmd模型/
 模型/
+
+# 域外魔导师模型源文件：协作开发需要，故例外入库
+!art/outsider_void_boss/
+art/outsider_void_boss/*
+!art/outsider_void_boss/v1/
+art/outsider_void_boss/v1/*
+!art/outsider_void_boss/v1/outsider_void_boss_v1.pmx
+!art/outsider_void_boss/v1/combat/
+art/outsider_void_boss/v1/combat/*
+!art/outsider_void_boss/v1/combat/outsider_combat.pmx
 
 # ---- 本地 Gradle 缓存目录 ----
 .gradle-local/
