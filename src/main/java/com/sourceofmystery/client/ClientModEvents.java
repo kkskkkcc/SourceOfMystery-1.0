@@ -38,6 +38,8 @@ public class ClientModEvents {
         event.registerEntityRenderer(ModEntities.SPACE_SHATTER.get(), SpaceShatterRenderer::new);
         event.registerEntityRenderer(ModEntities.GUARDIAN_SPIRIT.get(), GuardianSpiritRenderer::new);
         event.registerEntityRenderer(ModEntities.GUARDIAN_SPIRIT_PROJECTILE.get(), GuardianSpiritProjectileRenderer::new);
+        event.registerEntityRenderer(ModEntities.OUTSIDER.get(), OutsiderRenderer::new);
+        event.registerEntityRenderer(ModEntities.OUTSIDER_SPELL.get(), OutsiderSpellRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.GUARDIAN_ALTAR.get(), GuardianAltarRenderer::new);
 
         // 手动注册神威天佑光环的监听器。

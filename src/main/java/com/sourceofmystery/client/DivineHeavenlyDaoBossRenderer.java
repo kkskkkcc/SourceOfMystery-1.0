@@ -2,6 +2,8 @@ package com.sourceofmystery.client;
 
 import com.sourceofmystery.entity.DivineHeavenlyDaoBoss;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.renderer.MultiBufferSource;
+import com.mojang.blaze3d.vertex.PoseStack;
 import software.bernie.geckolib.renderer.GeoEntityRenderer;
 import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 
@@ -16,5 +18,14 @@ public class DivineHeavenlyDaoBossRenderer extends GeoEntityRenderer<DivineHeave
         this.withScale(DivineHeavenlyDaoBoss.SCALE);
         this.shadowRadius = 0.75F * DivineHeavenlyDaoBoss.SCALE;
         this.addRenderLayer(new AutoGlowingGeoLayer<>(this));
+    }
+
+    @Override
+    public void render(DivineHeavenlyDaoBoss entity, float yaw, float partialTick, PoseStack pose,
+                       MultiBufferSource buffers, int light) {
+        // Mob body yaw is not a synchronized field. Match the server hurtbox yaw.
+        entity.yBodyRotO = entity.yRotO;
+        entity.yBodyRot = entity.getYRot();
+        super.render(entity, yaw, partialTick, pose, buffers, light);
     }
 }

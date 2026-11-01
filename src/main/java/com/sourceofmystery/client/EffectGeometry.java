@@ -10,6 +10,14 @@ final class EffectGeometry {
 
     private EffectGeometry() {
     }
+    static VertexConsumer voidBuffer(net.minecraft.client.renderer.MultiBufferSource buffers){
+        // Oculus replaces vanilla portal block rendering rather than its core
+        // shader getter. Custom portal meshes need a standard entity material.
+        if(OutsiderShaderCompat.active())return OutsiderShaderCompat.complete(buffers.getBuffer(
+                net.minecraft.client.renderer.RenderType.entitySolid(new net.minecraft.resources.ResourceLocation(
+                        "sourceofmystery","textures/entity/outsider/white.png"))),7,2,14);
+        return buffers.getBuffer(net.minecraft.client.renderer.RenderType.endPortal());
+    }
 
     /** 双面四边形（虚空填充用，endPortal 格式只有坐标） */
     static void voidQuad(VertexConsumer vc, Matrix4f m, float[] a, float[] b, float[] c, float[] d) {

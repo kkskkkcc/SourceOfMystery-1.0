@@ -60,7 +60,7 @@ public class VoidRiftRenderer extends EntityRenderer<VoidRift> {
             normal[i] = new float[]{nx / len, ny / len, 0};
         }
 
-        VertexConsumer voidBuffer = buffers.getBuffer(RenderType.endPortal());
+        VertexConsumer voidBuffer = EffectGeometry.voidBuffer(buffers);
         float[] center = {0, 0, 0};
         for (int i = 0; i < POINTS; i++) {
             float[] p = rim[i];

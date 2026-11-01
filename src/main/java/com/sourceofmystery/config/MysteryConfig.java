@@ -120,9 +120,9 @@ public final class MysteryConfig {
         common.pop();
 
         common.comment("神威天道 Boss / Divine Heavenly Dao").push("boss");
-        // 配置项改过名（原 maxHealth = 5000、bossMaxHealth = 10000）：这样旧配置文件里的旧值不会覆盖新的默认值 30000
+        // 配置项改过名（原 maxHealth = 5000、bossMaxHealth = 10000）：神威天道当前默认 8000
         BOSS_MAX_HEALTH = common.comment("Boss（神威天道）生命上限（只影响之后新生成的 Boss）")
-                .defineInRange("bossHealth", 30000.0, 1.0, 1_000_000.0);
+                .defineInRange("bossHealth", 8000.0, 1.0, 1_000_000.0);
         BOSS_SECOND_PHASE_HEALTH = common.comment("Boss 生命低于该值时进入第二阶段")
                 .defineInRange("secondPhaseHealth", 100.0, 0.0, 1_000_000.0);
         BOSS_MINION_DAMAGE_REDUCTION = common.comment("第二阶段召唤的凋灵存活期间，Boss 受到伤害的减免比例（0-1）")

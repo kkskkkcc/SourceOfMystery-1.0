@@ -11,11 +11,39 @@ base {
     archivesName = 'sourceofmystery'
 }
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+sourceSets {
+    gameTest {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+    shaderTest {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += sourceSets.main.output + sourceSets.main.runtimeClasspath
+    }
+}
 minecraft {
     mappings channel: 'official', version: '1.20.1'
     runs {
+        gameTestServer {
+            workingDirectory project.file('build/outsider-gametest')
+            property 'forge.enabledGameTestNamespaces', 'sourceofmystery'
+            property 'forge.logging.console.level', 'info'
+            mods {
+                sourceofmystery {
+                    source sourceSets.main
+                    source sourceSets.gameTest
+                }
+            }
+        }
         client {
             workingDirectory project.file('run')
+            if (project.hasProperty('ritualCheck')) {
+                workingDirectory project.file('build/ritual-client-check')
+                property 'sourceofmystery.ritualCheck', 'true'
+                property 'mixin.env.remapRefMap', 'true'
+                property 'mixin.env.refMapRemappingFile', project.file('build/createSrgToMcp/output.srg').absolutePath
+                mods { sourceofmystery { source sourceSets.gameTest } }
+            }
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             property 'forge.enabledGameTestNamespaces', 'sourceofmystery'
@@ -59,8 +87,8 @@ sourceSets.main.resources {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.20.1-47.2.0'
-    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-1.20.1:4.8.2")
+    minecraft 'net.minecraftforge:forge:1.20.1-47.4.20'
+    implementation fg.deobf("software.bernie.geckolib:geckolib-forge-1.20.1:4.8.4")
 
     // JEI（可选依赖）：编译只需要 API，开发环境运行时带上完整 JEI 方便测试
     compileOnly fg.deobf("mezz.jei:jei-1.20.1-common-api:${jei_version}")
@@ -99,6 +127,13 @@ tasks.withType(JavaCompile).configureEach {
 // NoSuchFieldError: Registries.CREATIVE_MODE_TAB。让 `jar` 走完 `reobfJar`，
 // 并把 SRG 重命名后的 jar 覆盖回 build/libs/，发布到 mods/ 才不会崩。
 jar.finalizedBy('reobfJar')
+tasks.register('shaderCheckJar', Jar) {
+    archiveClassifier = 'shader-check'
+    from sourceSets.main.output
+    from sourceSets.shaderTest.output
+}
+reobf { shaderCheckJar {} }
+tasks.named('shaderCheckJar').configure { finalizedBy('reobfShaderCheckJar') }
 afterEvaluate {
     tasks.named('reobfJar').configure {
         doLast {

@@ -18,6 +18,16 @@ public final class ModSounds {
 
     public static final DeferredRegister<SoundEvent> SOUNDS =
             DeferredRegister.create(ForgeRegistries.SOUND_EVENTS, SourceOfMystery.MOD_ID);
+    public static final RegistryObject<SoundEvent> ARCHMAGE_CHARGE=register("archmage.charge");
+    public static final RegistryObject<SoundEvent> ARCHMAGE_CHANT=register("archmage.chant");
+    public static final RegistryObject<SoundEvent> ARCHMAGE_THUNDER=register("archmage.thunder");
+    public static final RegistryObject<SoundEvent> ARCHMAGE_RELEASE=register("archmage.release");
+    public static final RegistryObject<SoundEvent> ARCHMAGE_METEOR_FALL=register("archmage.meteor_fall");
+    public static final RegistryObject<SoundEvent> ARCHMAGE_RITUAL_WIND=register("archmage.ritual_wind");
+    public static final Map<String,RegistryObject<SoundEvent>> ARCHMAGE_VOICES=new HashMap<>();
+    static {
+        for(String id:com.sourceofmystery.entity.OutsiderVoice.IDS)ARCHMAGE_VOICES.put(id,register("archmage.voice."+id));
+    }
 
     /** 瞬移前的蓄力声 */
     public static final RegistryObject<SoundEvent> DRAGON_SOUL_TELEPORT_CHARGE = register("dragon_soul.teleport_charge");
@@ -158,6 +168,11 @@ public final class ModSounds {
         }
     }
 
+    public static final RegistryObject<SoundEvent> ARCHMAGE_VOID_WAKE=register("archmage.void_wake");
+    public static final RegistryObject<SoundEvent> ARCHMAGE_VOID_BREAK=register("archmage.void_break");
+    public static final RegistryObject<SoundEvent> ARCHMAGE_VOID_SEAL=register("archmage.void_seal");
+    public static final RegistryObject<SoundEvent> ARCHMAGE_HEEL_STEP=register("archmage.heel_step");
+    public static final RegistryObject<SoundEvent> ARCHMAGE_FINGER_SNAP=register("archmage.finger_snap");
     private ModSounds() {
     }
 

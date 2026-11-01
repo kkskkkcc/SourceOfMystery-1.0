@@ -45,7 +45,7 @@ public class SpaceShatterRenderer extends EntityRenderer<SpaceShatter> {
         // 裂缝后面的虚空：碎片飞散时一起收拢
         float hole = radius * 0.92f * (1 - scatter * scatter);
         if (hole > 0.05f) {
-            VertexConsumer voidBuffer = buffers.getBuffer(RenderType.endPortal());
+            VertexConsumer voidBuffer = EffectGeometry.voidBuffer(buffers);
             Matrix4f m = poseStack.last().pose();
             float[] c = {0, 0, 0.05f};
             for (int i = 0; i < n; i++) {

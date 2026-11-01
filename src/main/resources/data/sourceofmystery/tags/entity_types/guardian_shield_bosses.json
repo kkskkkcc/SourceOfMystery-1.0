@@ -6,6 +6,7 @@
     "sourceofmystery:divine_heavenly_dao_boss",
     "sourceofmystery:giant_wither",
     "sourceofmystery:weeping_death_lord",
+    "sourceofmystery:outsider",
     { "id": "#forge:bosses", "required": false }
   ]
 }

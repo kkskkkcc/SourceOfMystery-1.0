@@ -39,6 +39,9 @@ public final class ArmorLimits {
      * 提高护甲 / 护甲韧性的属性上限。需要在属性被使用之前（通用设置阶段）调用。
      */
     public static void raiseAttributeCaps() {
+        // Both configured bosses must actually reach their configured health;
+        // vanilla otherwise clamps the MAX_HEALTH attribute to 1024.
+        setMaxValue(Attributes.MAX_HEALTH, Math.max(30000, MysteryConfig.BOSS_MAX_HEALTH.get()));
         if (!MysteryConfig.RAISE_ARMOR_CAPS.get()) {
             return;
         }

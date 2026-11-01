@@ -39,6 +39,8 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityDimensions;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
@@ -82,6 +84,10 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
     /** 降临前隐藏本体（不用原版隐身标记：LivingEntity 第一次 tick 状态效果时会把它重置成可见） */
     private static final EntityDataAccessor<Boolean> DATA_HIDDEN =
             SynchedEntityData.defineId(DivineHeavenlyDaoBoss.class, EntityDataSerializers.BOOLEAN);
+    private static final EntityDataAccessor<Integer> DATA_MODEL_BOUNDS =
+            SynchedEntityData.defineId(DivineHeavenlyDaoBoss.class, EntityDataSerializers.INT);
+    private int modelBoundsUntil;
+    private final DivineModelHitbox[] modelHitboxes = {new DivineModelHitbox(this)};
 
     private static final String ANIM_PREFIX = "animation.divine_heavenly_dao_boss.";
     private static final RawAnimation IDLE = RawAnimation.begin().thenLoop(ANIM_PREFIX + "idle");
@@ -108,9 +114,11 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
 
     /**
      * 体型倍数（相对模型原始大小约 4 格高）：约 50 格高，接近凋零风暴完全体那样遮天蔽日。
-     * 碰撞箱在 ModEntities 里按同样倍数放大，渲染器用 GeckoLib 的 withScale 放大模型。
+     * 渲染器用 GeckoLib 的 withScale 放大；受击箱由实际模型与动作包络生成，包含原点下的尾部。
      */
     public static final float SCALE = 12.0f;
+    public static final float HITBOX_WIDTH = DivineModelBounds.WIDTH;
+    public static final float HITBOX_HEIGHT = DivineModelBounds.HEIGHT;
 
     private static final float SECOND_PHASE_HEAL_PER_SECOND = 10.0f;
     private static final float KILL_HEAL = 1000.0f;
@@ -207,6 +215,9 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
 
         this.bossEvent = new ServerBossEvent(name, BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.PROGRESS);
         this.bossEvent.setDarkenScreen(true);
+        // Same contiguous parent/part ID allocation used by EnderDragon.
+        this.setId(ENTITY_COUNTER.getAndAdd(modelHitboxes.length + 1) + 1);
+        this.refreshModelBounds();
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -214,7 +225,7 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
                 .add(Attributes.ATTACK_DAMAGE, BASE_ATTACK_DAMAGE)
                 .add(Attributes.ARMOR, BASE_ARMOR)
                 .add(Attributes.ARMOR_TOUGHNESS, BASE_ARMOR_TOUGHNESS)
-                .add(Attributes.MAX_HEALTH, 30000.0)
+                .add(Attributes.MAX_HEALTH, 8000.0)
                 .add(Attributes.MOVEMENT_SPEED, 0.3)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0)
                 .add(Attributes.FOLLOW_RANGE, 128.0);
@@ -266,13 +277,101 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
     }
 
     @Override
+    protected AABB makeBoundingBox() {
+        return modelBounds(0);
+    }
+
+    AABB modelHurtbox() {
+        int profile = this.entityData != null && this.entityData.hasItem(DATA_MODEL_BOUNDS)
+                ? this.entityData.get(DATA_MODEL_BOUNDS) : 0;
+        return modelBounds(profile);
+    }
+
+    private AABB modelBounds(int profile) {
+        double[] b = DivineModelBounds.PROFILES[Mth.clamp(profile, 0, DivineModelBounds.PROFILES.length - 1)];
+        // Same 180 - yaw rotation as GeoEntityRenderer; the rear ring is not centred in Z.
+        double angle = Math.toRadians(180 - this.getYRot()), c = Math.cos(angle), s = Math.sin(angle);
+        double minX = Double.POSITIVE_INFINITY, minZ = Double.POSITIVE_INFINITY;
+        double maxX = Double.NEGATIVE_INFINITY, maxZ = Double.NEGATIVE_INFINITY;
+        for (double x : new double[]{b[0], b[3]}) {
+            for (double z : new double[]{b[2], b[5]}) {
+                double rx = x * c + z * s, rz = z * c - x * s;
+                minX = Math.min(minX, rx); maxX = Math.max(maxX, rx);
+                minZ = Math.min(minZ, rz); maxZ = Math.max(maxZ, rz);
+            }
+        }
+        return new AABB(getX() + minX, getY() + b[1], getZ() + minZ,
+                getX() + maxX, getY() + b[4], getZ() + maxZ);
+    }
+
+    @Override
+    protected float getStandingEyeHeight(Pose pose, EntityDimensions dimensions) {
+        // Keep the original eye/aim point, independent of the tail-inclusive box height.
+        return 4.0f * SCALE * .85f;
+    }
+
+    private void refreshModelBounds() {
+        this.setBoundingBox(this.makeBoundingBox());
+        if (modelHitboxes != null) for (DivineModelHitbox part : modelHitboxes) part.followParent();
+    }
+
+    @Override
+    public void setPos(double x, double y, double z) {
+        super.setPos(x, y, z);
+        if (modelHitboxes != null) for (DivineModelHitbox part : modelHitboxes) part.followParent();
+    }
+
+    @Override
+    public void setYRot(float yaw) {
+        super.setYRot(yaw);
+        this.refreshModelBounds();
+    }
+
+    @Override
+    public void onSyncedDataUpdated(EntityDataAccessor<?> key) {
+        super.onSyncedDataUpdated(key);
+        if (DATA_MODEL_BOUNDS.equals(key)) this.refreshModelBounds();
+    }
+
+    // The part owns picking. A huge normal entity is missed by section-based ray
+    // queries when the player aims several sections away from its origin.
+    @Override public boolean isMultipartEntity() { return true; }
+    @Override public net.minecraftforge.entity.PartEntity<?>[] getParts() { return modelHitboxes; }
+    @Override public boolean isPickable() { return false; }
+
+    @Override
+    public void setId(int id) {
+        super.setId(id);
+        if (modelHitboxes != null) for (int i = 0; i < modelHitboxes.length; i++) modelHitboxes[i].setId(id + i + 1);
+    }
+
+    private void triggerModelAction(String animation) {
+        int profile = switch (animation) {
+            case TRIGGER_ATTACK -> 1;
+            case TRIGGER_THUNDER -> 2;
+            case TRIGGER_SLAM -> 3;
+            case TRIGGER_ORB_CHARGE -> 4;
+            case TRIGGER_ORB_THROW -> 5;
+            case TRIGGER_DESCEND -> 6;
+            default -> throw new IllegalArgumentException(animation);
+        };
+        int duration = new int[]{0, 10, 30, 50, 210, 30, 100}[profile];
+        modelBoundsUntil = this.tickCount + duration + 5;
+        this.entityData.set(DATA_MODEL_BOUNDS, profile);
+        this.refreshModelBounds();
+        this.triggerAnim(ACTION_CONTROLLER, animation);
+    }
+
+    @Override
     public void tick() {
         // 天道实体使用真实碰撞箱；移动时会撞到方块，并在下方按 mobGriefing 规则破坏可破坏方块。
         this.noPhysics = false;
         super.tick();
+        this.refreshModelBounds();
         if (this.level().isClientSide) {
             return;
         }
+        if (this.tickCount >= modelBoundsUntil) this.entityData.set(DATA_MODEL_BOUNDS, 0);
         tickCounter++;
 
         this.bossEvent.setProgress(this.getHealth() / this.getMaxHealth());
@@ -436,14 +535,14 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
         activeSkill = skill;
         skillTicks = 0;
         switch (skill) {
-            case SLAM -> this.triggerAnim(ACTION_CONTROLLER, TRIGGER_SLAM);
+            case SLAM -> this.triggerModelAction(TRIGGER_SLAM);
             case THUNDER_STORM -> {
-                this.triggerAnim(ACTION_CONTROLLER, TRIGGER_THUNDER);
+                this.triggerModelAction(TRIGGER_THUNDER);
                 planThunderStorm();
             }
             case ABYSS -> {
                 abyssCooldown = ABYSS_COOLDOWN;
-                this.triggerAnim(ACTION_CONTROLLER, TRIGGER_ORB_CHARGE);
+                this.triggerModelAction(TRIGGER_ORB_CHARGE);
                 if (this.level() instanceof ServerLevel level) {
                     notifyNearby(level, ModSounds.DIVINE_HEAVENLY_DAO_ORB_CHARGE.get(), 0.8f, 200.0);
                     broadcastLine(level, Component.translatable("message.sourceofmystery.boss.abyss")
@@ -477,7 +576,7 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
             return;
         }
         if (skillTicks == STRIKE_WINDUP) {
-            this.triggerAnim(ACTION_CONTROLLER, TRIGGER_ATTACK);
+            this.triggerModelAction(TRIGGER_ATTACK);
             return;
         }
         if (skillTicks == STRIKE_WINDUP + STRIKE_HIT_DELAY) {
@@ -662,7 +761,7 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
                 notifyNearby(level, ModSounds.DIVINE_HEAVENLY_DAO_ORB_CHARGE.get(), 0.6f + u * 0.4f, 200.0);
             }
             if (skillTicks == ABYSS_CHARGE) {
-                this.triggerAnim(ACTION_CONTROLLER, TRIGGER_ORB_THROW);
+                this.triggerModelAction(TRIGGER_ORB_THROW);
             }
         } else if (skillTicks == ABYSS_RELEASE) {
             if (orb != null && orb.isAlive()) {
@@ -744,7 +843,7 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
         }
         if (introTick == SIGIL_OPEN) {
             this.setHidden(false);
-            this.triggerAnim(ACTION_CONTROLLER, TRIGGER_DESCEND);
+            this.triggerModelAction(TRIGGER_DESCEND);
             notifyNearby(level, ModSounds.DIVINE_HEAVENLY_DAO_CHARGE.get(), 0.7f, INTRO_CAMERA_RANGE);
         }
         if (introTick >= SIGIL_OPEN && introTick < LANDED) {
@@ -1024,6 +1123,7 @@ public class DivineHeavenlyDaoBoss extends Monster implements GeoEntity {
     protected void defineSynchedData() {
         super.defineSynchedData();
         this.entityData.define(DATA_HIDDEN, false);
+        this.entityData.define(DATA_MODEL_BOUNDS, 0);
     }
 
     /** 由生成逻辑在加入世界之前调用 */

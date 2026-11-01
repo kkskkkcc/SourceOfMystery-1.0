@@ -914,5 +914,298 @@
         "volume": 1.0
       }
     ]
+  },
+  "archmage.charge": {
+    "subtitle": "subtitles.sourceofmystery.archmage.charge",
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.activate",
+        "type": "event",
+        "pitch": 0.65,
+        "volume": 1
+      }
+    ]
+  },
+  "archmage.chant": {
+    "subtitle": "subtitles.sourceofmystery.archmage.chant",
+    "sounds": [
+      {
+        "name": "minecraft:block.enchantment_table.use",
+        "type": "event",
+        "pitch": 0.65,
+        "volume": 1
+      }
+    ]
+  },
+  "archmage.thunder": {
+    "subtitle": "subtitles.sourceofmystery.archmage.thunder",
+    "sounds": [
+      {
+        "name": "minecraft:entity.lightning_bolt.thunder",
+        "type": "event",
+        "pitch": 0.72,
+        "volume": 0.85
+      }
+    ]
+  },
+  "archmage.meteor_fall": {
+    "subtitle": "subtitles.sourceofmystery.archmage.meteor_fall",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/meteor_fall",
+        "stream": false
+      }
+    ]
+  },
+  "archmage.release": {
+    "subtitle": "subtitles.sourceofmystery.archmage.release",
+    "sounds": [
+      {
+        "name": "minecraft:entity.warden.sonic_boom",
+        "type": "event",
+        "pitch": 0.65,
+        "volume": 1
+      }
+    ]
+  },
+  "archmage.voice.engage": {
+    "subtitle": "subtitles.sourceofmystery.archmage.voice.engage",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/voice/engage",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.voice.grasp_a": {
+    "subtitle": "subtitles.sourceofmystery.archmage.voice.grasp_a",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/voice/grasp_a",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.voice.grasp_b": {
+    "subtitle": "subtitles.sourceofmystery.archmage.voice.grasp_b",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/voice/grasp_b",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.voice.silence_a": {
+    "subtitle": "subtitles.sourceofmystery.archmage.voice.silence_a",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/voice/silence_a",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.voice.silence_b": {
+    "subtitle": "subtitles.sourceofmystery.archmage.voice.silence_b",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/voice/silence_b",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.voice.ultimate_a": {
+    "subtitle": "subtitles.sourceofmystery.archmage.voice.ultimate_a",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/voice/ultimate_a",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.voice.ultimate_b": {
+    "subtitle": "subtitles.sourceofmystery.archmage.voice.ultimate_b",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/voice/ultimate_b",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.voice.chant_a": {
+    "subtitle": "subtitles.sourceofmystery.archmage.voice.chant_a",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/voice/chant_a",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.voice.chant_b": {
+    "subtitle": "subtitles.sourceofmystery.archmage.voice.chant_b",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/voice/chant_b",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.voice.release_a": {
+    "subtitle": "subtitles.sourceofmystery.archmage.voice.release_a",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/voice/release_a",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.voice.release_b": {
+    "subtitle": "subtitles.sourceofmystery.archmage.voice.release_b",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/voice/release_b",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.voice.kill": {
+    "subtitle": "subtitles.sourceofmystery.archmage.voice.kill",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/voice/kill",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.voice.death": {
+    "subtitle": "subtitles.sourceofmystery.archmage.voice.death",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/voice/death",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.ritual_wind": {
+    "subtitle": "subtitles.sourceofmystery.archmage.ritual_wind",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/ritual_wind",
+        "stream": false,
+        "attenuation_distance": 48
+      }
+    ]
+  },
+  "archmage.voice.idle_ground": {
+    "subtitle": "subtitles.sourceofmystery.archmage.voice.idle_ground",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/voice/idle_ground",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.voice.idle_flight": {
+    "subtitle": "subtitles.sourceofmystery.archmage.voice.idle_flight",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/voice/idle_flight",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.voice.takeoff": {
+    "subtitle": "subtitles.sourceofmystery.archmage.voice.takeoff",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/voice/takeoff",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.voice.landing": {
+    "subtitle": "subtitles.sourceofmystery.archmage.voice.landing",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/voice/landing",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.void_wake": {
+    "subtitle": "subtitles.sourceofmystery.archmage.void_wake",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/void_wake",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.void_break": {
+    "subtitle": "subtitles.sourceofmystery.archmage.void_break",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/void_break",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.void_seal": {
+    "subtitle": "subtitles.sourceofmystery.archmage.void_seal",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/void_seal",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.heel_step": {
+    "subtitle": "subtitles.sourceofmystery.archmage.heel_step",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/heel_step_01",
+        "stream": false,
+        "attenuation_distance": 32
+      },
+      {
+        "name": "sourceofmystery:archmage/heel_step_02",
+        "stream": false,
+        "attenuation_distance": 32
+      },
+      {
+        "name": "sourceofmystery:archmage/heel_step_03",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
+  },
+  "archmage.finger_snap": {
+    "subtitle": "subtitles.sourceofmystery.archmage.finger_snap",
+    "sounds": [
+      {
+        "name": "sourceofmystery:archmage/finger_snap",
+        "stream": false,
+        "attenuation_distance": 32
+      }
+    ]
   }
 }

@@ -57,5 +57,8 @@ public class ModNetwork {
                 RootPacket::decode,
                 RootPacket::handle,
                 Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CHANNEL.registerMessage(id++, DimensionalOfferingPacket.class,
+                DimensionalOfferingPacket::encode, DimensionalOfferingPacket::decode,
+                DimensionalOfferingPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 }

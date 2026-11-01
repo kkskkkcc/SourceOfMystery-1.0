@@ -2,8 +2,10 @@ package com.sourceofmystery.item;
 
 import com.sourceofmystery.SourceOfMystery;
 import com.sourceofmystery.block.ModBlocks;
+import com.sourceofmystery.entity.ModEntities;
 import com.sourceofmystery.guardian.GuardianAltarItem;
 import net.minecraft.world.item.BlockItem;
+import net.minecraftforge.common.ForgeSpawnEggItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Rarity;
 import net.minecraftforge.registries.DeferredRegister;
@@ -34,6 +36,14 @@ public class ModItems {
     // 方块物品 - 守护祭坛（GeckoLib 模型）
     public static final RegistryObject<Item> GUARDIAN_ALTAR = ITEMS.register("guardian_altar",
             () -> new GuardianAltarItem(ModBlocks.GUARDIAN_ALTAR.get()));
+
+    // 域外人测试实体刷怪蛋（仅手动获取，不配置自然生成）。
+    public static final RegistryObject<Item> OUTSIDER_SPAWN_EGG = ITEMS.register("outsider_spawn_egg",
+            () -> new ForgeSpawnEggItem(ModEntities.OUTSIDER, 0xD9C7B2, 0x3B304A, new Item.Properties()));
+
+    // 唤魔者稀有掉落；用于在未激活的标准黑曜石门上开启域外魔导师出场仪式。
+    public static final RegistryObject<Item> DARK_DIMENSIONAL_OFFERING = ITEMS.register("dark_dimensional_offering",
+            () -> new DarkDimensionalOfferingItem(new Item.Properties().rarity(Rarity.EPIC).stacksTo(1).fireResistant()));
 
     // ==================== 武器 ====================
     // 武器伤害（物品栏显示值）= 玩家基础 1 + MysteryTier.attackDamageBonus + 构造参数 attackDamageBonus

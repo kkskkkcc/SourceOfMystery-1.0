@@ -16,7 +16,7 @@ public class ModEntities {
     public static final RegistryObject<EntityType<DivineHeavenlyDaoBoss>> DIVINE_HEAVENLY_DAO_BOSS =
             ENTITIES.register("divine_heavenly_dao_boss",
                     () -> EntityType.Builder.of(DivineHeavenlyDaoBoss::new, MobCategory.MONSTER)
-                            .sized(1.5f * DivineHeavenlyDaoBoss.SCALE, 4.0f * DivineHeavenlyDaoBoss.SCALE)
+                            .sized(DivineHeavenlyDaoBoss.HITBOX_WIDTH, DivineHeavenlyDaoBoss.HITBOX_HEIGHT)
                             .fireImmune()
                             .clientTrackingRange(16)
                             .updateInterval(1)
@@ -146,12 +146,30 @@ public class ModEntities {
                             .updateInterval(1)
                             .build(new ResourceLocation(SourceOfMystery.MOD_ID, "guardian_spirit_projectile").toString()));
 
+    public static final RegistryObject<EntityType<OutsiderSpell>> OUTSIDER_SPELL =
+            ENTITIES.register("outsider_spell", () -> EntityType.Builder.<OutsiderSpell>of(OutsiderSpell::new, MobCategory.MISC)
+                    .sized(.4F,.4F).noSave().fireImmune().clientTrackingRange(24).updateInterval(1)
+                    .build(new ResourceLocation(SourceOfMystery.MOD_ID,"outsider_spell").toString()));
+
+    // 手动召唤的飞行 BOSS；不登记任何自然生成规则。
+    public static final RegistryObject<EntityType<OutsiderEntity>> OUTSIDER =
+            ENTITIES.register("outsider",
+                    () -> EntityType.Builder.of(OutsiderEntity::new, MobCategory.MONSTER)
+                            // Match the vanilla Wither height while leaving
+                            // enough width for the model's wings, hair and
+                            // staff without making the hitbox absurdly wide.
+                            .sized(1.25F, 3.5F)
+                            .clientTrackingRange(32)
+                            .updateInterval(1)
+                            .build(new ResourceLocation(SourceOfMystery.MOD_ID, "outsider").toString()));
+
     public static void registerAttributes(EntityAttributeCreationEvent event) {
         event.put(DIVINE_HEAVENLY_DAO_BOSS.get(), DivineHeavenlyDaoBoss.createAttributes().build());
         event.put(DRAGON_SOUL_BOSS.get(), DragonSoulBoss.createAttributes().build());
         event.put(GIANT_WITHER.get(), WitherBoss.createAttributes().build());
         event.put(WEEPING_DEATH_LORD.get(), WeepingDeathLord.createAttributes().build());
         event.put(GUARDIAN_SPIRIT.get(), GuardianSpirit.createAttributes().build());
+        event.put(OUTSIDER.get(), OutsiderEntity.createAttributes().build());
         // 投射物没有自己的属性表，复用 snowball 默认的（MobCategory.MISC 会自动用 Projectile 默认）
     }
 }

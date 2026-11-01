@@ -35,7 +35,7 @@ public class AbyssOrbRenderer extends EntityRenderer<AbyssOrb> {
         r *= 1.0f + 0.03f * Mth.sin(age * 0.9f);
         Matrix4f m = poseStack.last().pose();
 
-        VertexConsumer voidBuffer = buffers.getBuffer(RenderType.endPortal());
+        VertexConsumer voidBuffer = EffectGeometry.voidBuffer(buffers);
         for (int i = 0; i < LAT; i++) {
             double t0 = Math.PI * i / LAT - Math.PI / 2;
             double t1 = Math.PI * (i + 1) / LAT - Math.PI / 2;
