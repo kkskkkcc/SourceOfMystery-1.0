@@ -71,7 +71,10 @@ public final class StaffItemExtensions implements IClientItemExtensions {
 
     private static final class StaffRenderer extends GeoItemRenderer<DimensionBreakerStaffItem> {
         private org.joml.Matrix4f crystal;
-        StaffRenderer(){super(new DefaultedItemGeoModel<>(new ResourceLocation("sourceofmystery","dimension_breaker_staff")));}
+        StaffRenderer(){
+            super(new DefaultedItemGeoModel<>(new ResourceLocation("sourceofmystery","dimension_breaker_staff")));
+            addRenderLayer(new software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer<>(this));
+        }
         @Override public void renderRecursively(PoseStack poses,DimensionBreakerStaffItem item,software.bernie.geckolib.cache.object.GeoBone bone,
                 net.minecraft.client.renderer.RenderType type,net.minecraft.client.renderer.MultiBufferSource buffers,
                 com.mojang.blaze3d.vertex.VertexConsumer vertices,boolean reRender,float partial,int light,int overlay,float r,float g,float b,float a) {

@@ -25,7 +25,9 @@
 
 模型使用 GeckoLib 4：银色长杖、四瓣弯曲杖冠、淡紫色晶体与双环，参考原有 Boss 权杖的形态。包含待机、吟唱、劈砍、悬浮、撕裂和时停六段独立动画。可编辑源文件是 `tools/staff/dimension_breaker_staff.bbmodel`，已经通过 Blockbench MCP 导入、修正并保存。
 
-`tools/staff/generate_assets.py` 生成几何、动画和像素材质；`tools/staff/generate_audio.py` 生成五种法术各自的吟唱与释放音效，共十个原创合成片段，编码需要 PATH 中的 FFmpeg。重新生成素材后，需同步保存 Blockbench 工程中的对应编辑。
+模型现已更新为 [v2](staff-model-v2.md)，包含分层银瓣、镂空花萼、切面晶核、雕纹双环与编织握柄；该文档包含当前预览和素材维护步骤。
+
+`tools/staff/generate_assets.py` 使用 Python 3 与 Pillow 生成几何、动画和材质；`tools/staff/generate_audio.py` 生成五种法术各自的吟唱与释放音效，共十个原创合成片段，编码需要 PATH 中的 FFmpeg。重新生成素材后，需同步保存 Blockbench 工程中的对应编辑。
 
 ## 配置与实现
 
@@ -49,7 +51,7 @@ gradlew build
 
 `StaffGameTests` 在独立测试世界验证能量累计、攻击和挖掘数值、命令方块实际挖掘、掉落、施法结算、自伤豁免、悬浮存档和箱子内容、跨维度时停、红石暂停与恢复、冷却、传送及裂地真实伤害。原有 Boss 和献祭传送门测试同时保留。
 
-`StaffClientCheck` 只包含在开发测试运行中，会新建隔离世界并保存十四张实际客户端截图，覆盖第一/第三人称、轮盘、五种法术、时停扭曲与灰度恢复。测试类不打包进入发布模组。
+`StaffClientCheck` 只包含在开发测试运行中，会新建隔离世界并保存十五张实际客户端截图，覆盖第一/第三人称、轮盘、五种法术、时停扭曲、灰度恢复及夜间发光材质。测试类不打包进入发布模组。
 
 2026-11-01 验证结果：
 

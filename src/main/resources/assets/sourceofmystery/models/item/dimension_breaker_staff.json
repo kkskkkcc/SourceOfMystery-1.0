@@ -111,5 +111,8 @@
         0.47
       ]
     }
+  },
+  "textures": {
+    "particle": "sourceofmystery:item/dimension_breaker_staff"
   }
 }

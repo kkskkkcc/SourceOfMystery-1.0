@@ -100,7 +100,9 @@ public final class StaffClientCheck {
             if(ticks==815)capture("12-time-distortion.png");
             if(ticks==850){if(!StaffVisuals.timeStopped())throw new AssertionError("Client did not receive time stop");capture("13-time-grayscale.png");}
             if(ticks==1060){if(StaffVisuals.timeStopped())throw new AssertionError("Client did not resume time");capture("14-time-restored.png");}
-            if(ticks==1100){Files.writeString(mc.gameDirectory.toPath().resolve("staff-client-ok.txt"),"STAFF_CLIENT_OK frames=14\n");SourceOfMystery.LOGGER.info("STAFF_CLIENT_OK frames=14");mc.stop();}
+            if(ticks==1065)server(p->{p.removeEffect(net.minecraft.world.effect.MobEffects.NIGHT_VISION);p.serverLevel().setDayTime(18000);});
+            if(ticks==1120)capture("15-staff-emissive-night.png");
+            if(ticks==1160){Files.writeString(mc.gameDirectory.toPath().resolve("staff-client-ok.txt"),"STAFF_CLIENT_OK frames=15\n");SourceOfMystery.LOGGER.info("STAFF_CLIENT_OK frames=15");mc.stop();}
         }catch(Throwable failure){failure.printStackTrace();System.exit(1);}
     }
 }
