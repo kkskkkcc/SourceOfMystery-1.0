@@ -36,15 +36,16 @@ public final class OutsiderBlastTasks extends SavedData {
     static OutsiderBlastTasks get(ServerLevel level){
         return level.getDataStorage().computeIfAbsent(OutsiderBlastTasks::load,OutsiderBlastTasks::new,NAME);
     }
-    static boolean enqueue(ServerLevel level,OutsiderEntity owner,BlockPos centre){
+    static boolean enqueue(ServerLevel level,LivingEntity owner,BlockPos centre){
         return enqueue(level,owner,Vec3.atCenterOf(centre));
     }
-    static boolean enqueue(ServerLevel level,OutsiderEntity owner,Vec3 centre){
-        if(!ForgeEventFactory.getMobGriefingEvent(level,owner)){
+    static boolean enqueue(ServerLevel level,LivingEntity owner,Vec3 centre){
+        boolean playerCast=owner instanceof net.minecraft.world.entity.player.Player;
+        if(!playerCast&&!ForgeEventFactory.getMobGriefingEvent(level,owner)){
             SourceOfMystery.LOGGER.info("Outsider meteor terrain disabled by mobGriefing/event at {}",centre);
             return false;
         }
-        var data=get(level);data.jobs.add(new Job(centre,owner.getUUID()));data.setDirty();
+        var data=get(level);Job job=new Job(centre,owner.getUUID());job.playerCast=playerCast;job.source=owner;data.jobs.add(job);data.setDirty();
         SourceOfMystery.LOGGER.info("Outsider meteor terrain queued at {} (radius {})",centre,OutsiderSpell.BLAST_RADIUS);
         return true;
     }
@@ -57,6 +58,7 @@ public final class OutsiderBlastTasks extends SavedData {
     }
     private static final class Budget {int visited,broken;long deadline=System.nanoTime()+2_000_000;}
     private void advance(ServerLevel level){
+        if(com.sourceofmystery.staff.TimeStop.active(level))return;
         if(jobs.isEmpty())return;
         Budget budget=new Budget();int count=jobs.size();
         // Rotate the first job so simultaneous blasts share the budget fairly.
@@ -73,7 +75,7 @@ public final class OutsiderBlastTasks extends SavedData {
     private static final class Job {
         final Vec3 centre;final BlockPos anchor;final UUID owner;
         int[] nextY=new int[COLUMNS.length];int cursor,remaining=COLUMNS.length,broken;
-        long retryAt;LivingEntity source;
+        long retryAt;LivingEntity source;boolean playerCast;
         Job(Vec3 centre,UUID owner){this.centre=centre;this.anchor=BlockPos.containing(centre);this.owner=owner;Arrays.fill(nextY,NEW);}
         boolean advance(ServerLevel level,Budget budget){
             if(source==null){
@@ -85,7 +87,7 @@ public final class OutsiderBlastTasks extends SavedData {
                     source.setUUID(owner);source.setPos(centre);
                 }
             }
-            if(!ForgeEventFactory.getMobGriefingEvent(level,source))return false;
+            if(!playerCast&&!ForgeEventFactory.getMobGriefingEvent(level,source))return false;
             boolean progress=false;BlockPos.MutableBlockPos pos=new BlockPos.MutableBlockPos();
             for(int tried=0;tried<COLUMNS.length&&budget.visited<8192&&budget.broken<1024&&System.nanoTime()<budget.deadline;tried++){
                 int i=cursor;cursor=(cursor+1)%COLUMNS.length;budget.visited++;
@@ -124,7 +126,7 @@ public final class OutsiderBlastTasks extends SavedData {
         CompoundTag save(){
             CompoundTag tag=new CompoundTag();tag.putLong("Centre",anchor.asLong());tag.putUUID("Owner",owner);
             tag.putDouble("CentreX",centre.x);tag.putDouble("CentreY",centre.y);tag.putDouble("CentreZ",centre.z);
-            tag.putIntArray("NextY",nextY);tag.putInt("Cursor",cursor);tag.putInt("Broken",broken);return tag;
+            tag.putIntArray("NextY",nextY);tag.putInt("Cursor",cursor);tag.putInt("Broken",broken);tag.putBoolean("PlayerCast",playerCast);return tag;
         }
     }
     static OutsiderBlastTasks load(CompoundTag tag){
@@ -134,6 +136,7 @@ public final class OutsiderBlastTasks extends SavedData {
             Vec3 centre=t.contains("CentreX")?new Vec3(t.getDouble("CentreX"),t.getDouble("CentreY"),t.getDouble("CentreZ"))
                     :Vec3.atCenterOf(BlockPos.of(t.getLong("Centre")));
             Job j=new Job(centre,t.getUUID("Owner"));
+            j.playerCast=t.getBoolean("PlayerCast");
             int[] saved=t.getIntArray("NextY");if(saved.length==COLUMNS.length)j.nextY=saved;
             j.remaining=(int)Arrays.stream(j.nextY).filter(y->y!=DONE).count();
             j.cursor=Math.floorMod(t.getInt("Cursor"),COLUMNS.length);j.broken=t.getInt("Broken");data.jobs.add(j);

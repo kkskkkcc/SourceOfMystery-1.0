@@ -41,6 +41,7 @@ public class ModCreativeTabs {
                         output.accept(ModItems.DARK_SOURCE_SWORD.get());
                         output.accept(ModItems.ORIGIN_DRAGON_SWORD.get());
                         output.accept(ModItems.DIVINE_PUNISHMENT_SWORD.get());
+                        output.accept(ModItems.DIMENSION_BREAKER_STAFF.get());
 
                         // 装备
                         output.accept(ModItems.MYSTERY_CHESTPLATE.get());
