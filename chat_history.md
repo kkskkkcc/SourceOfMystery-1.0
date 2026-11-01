@@ -178,6 +178,53 @@
 
 ---
 
+## 9. 完整同步当前项目到 GitHub（域外魔导师）
+
+**用户**：将当前项目上传至github → 要完整同步，参考以前的同步流程 → 新boss模型等必要资源也同步，有另一个工程师通过仓库一起开发。
+
+**Agent**：
+
+### 9.1 提交范围判定
+盘点未跟踪目录体积后确认必须排除项，并补进 `.gitignore`：
+
+| 路径 | 体积 | 处理 | 原因 |
+|---|---|---|---|
+| `tools/ai_runtime/` | 1252 MB / 55057 文件 | 排除 | uv 包缓存（`CACHEDIR.TAG`、`.tmp*`），机器相关 |
+| `art/` | 324 MB | 排除 | 设计资料，与既有 `原版素材/`、`开发需求/` 同类 |
+| `mmd模型/` | 327 MB | 排除 | 第三方 PMX 原模型（林德薇恩/元空 Ame、Abby/是luruka才不是llk） |
+| `模型/` | 6 MB | 排除 | YSM 设计参考图 |
+| `形势与政策课程论文/` | 0.5 MB | 排除 | 课程作业，与项目无关 |
+| `.gradle-local/` | 1.5 MB | 排除 | 本地 Gradle 缓存 |
+
+入库：源码 146 文件 + `tools/` 49 个脚本（`divine`/`outsider`/`dragon_soul`/`guardian_spirit`/`weeping_death_lord`/`divine_halo`，含 quaternius 参考库及其 LICENSE）+ 运行时资源。合计 **196 文件 / 113.7 MB**，最大单文件 27.3 MB（低于 GitHub 100 MB 限制）。
+
+**模型源文件例外**：`art/` 下用 `art/*` + `!art/outsider_void_boss/...` 逐级反选，仅放行 `outsider_void_boss_v1.pmx` 与 `outsider_combat.pmx` 两个加工后模型（各 3.3 MB），供协作工程师改模型。原始第三方 PMX 继续排除。按用户决定**不补署名**（`mods.toml` 未署名元空 Ame，与既有 Quaternius-CC0/VOX 的署名规范不同，属后续待办）。
+
+### 9.2 提交与推送
+- `51d2753` feat: 21 个已跟踪文件修改（+1014/-20）
+- `8a0ba06` feat: 196 个新文件（+180972）
+- `088bab9` chore: 2 个 PMX 模型源文件
+
+推送 `8923469..088bab9`（3 次 push 累计 4 个提交，含原有 `fdd11e8`）。
+
+### 9.3 CI 与 Release 资产
+- Run #39（`8a0ba06`）success；Run #40（`088bab9`）success → 采用 Run #40 artifact（`13079797025`）。
+- 认证：装 `gh` 2.103.3 + 设备码登录（`auth login --web --skip-ssh-key`），token 存 keyring，scopes `gist, read:org, repo`。免去手写 PAT。
+- 删除旧资产 `611999304`（1,543,296 B）→ 上传新资产 `698047819`（**34,850,043 B**，SHA256 `aa1dbe0a…`）。
+- 本地 `build\libs\sourceofmystery-1.0.0.jar` 同步为 CI 产物（SHA256 一致）。
+
+### 9.4 本地构建验证
+`gradlew.bat build --no-daemon` → BUILD SUCCESSFUL in 1m 2s，验证 25 个新增 Outsider 类可编译。jar 内容抽查：12 动画 / 17 mesh / 17 贴图 / 11 shader / 29 语音全部打包。
+
+**注意**：本地构建与 CI jar 差 9028 字节（Gradle 时间戳差异），发布一律用 CI 产物。
+
+### 9.5 踩坑
+- `gh run download` 与 `curl` 下载 67.9 MB artifact 均在前台超时，须后台跑。
+- Git ignore 反选：`art/` 被排除后其子项无法用 `!` 重新包含，必须改为排除 `art/*` 再逐级反选目录。
+- 本机无 `gh`、无 PAT、无 `gh` hosts.yml；winget 可用，安装 `GitHub.cli` 成功。
+
+---
+
 ## 附录 A：Release 资产历史
 
 | 时间(UTC)         | 资产 ID    | 大小        | 备注                                  |
@@ -188,6 +235,7 @@
 | PR #10             | 611444883 | 1,210,150 B | +泣死之主基础                      |
 | PR #11             | 611705661 | 1,542,381 B | +死亡激光 / 动画返工           |
 | PR #12             | 611999304 | 1,543,296 B | polish                               |
+| 域外魔导师同步     | 698047819 | 34,850,043 B | +域外魔导师完整实现（CI Run #40）    |
 
 ## 附录 B：本地合并 commit
 
@@ -200,10 +248,29 @@
 | `e8e0ad4` | PR #10 merge（泣死之主新增）                |
 | `9af0507` | PR #11 merge（泣死返工 + 死亡激光）       |
 | `8923469` | PR #12 merge（泣死 polish）                  |
+| `fdd11e8` | 守护系统整合与当前模组更新                    |
+| `51d2753` | 已跟踪文件修改（+1014/-20）                 |
+| `8a0ba06` | 域外魔导师完整实现：196 文件 / 113.7 MB     |
+| `088bab9` | 归档域外魔导师 PMX 模型源文件供协作开发      |
 
 ## 附录 C：常驻脚本与命令
 
-### 合并 PR 全流程
+### gh CLI 认证（2026-11 新增，替代一次性 __gh_*.cjs）
+本机已装 `gh` 2.103.3（`C:\Program Files\GitHub CLI\gh.exe`），用**设备码**登录，token 存于 Windows keyring，无需手写 PAT：
+```
+& "$env:ProgramFiles\GitHub CLI\gh.exe" auth login --hostname github.com --git-protocol ssh --web --skip-ssh-key
+```
+登录后账号 `kkskkkcc`，token scopes `gist, read:org, repo`，可完成 artifact 下载与 Release 资产增删。
+
+### 同步 Release 资产全流程（gh CLI 版）
+1. `gh run list --limit 4 --json databaseId,headSha,status,conclusion` — 取最新成功 run。
+2. `gh run download <run-id> --name sourceofmystery --dir __gh_dl` — 下载 artifact（67.9 MB zip，**可能超时，须后台跑**）。
+3. `gh api --method DELETE repos/kkskkkcc/SourceOfMystery-1.0/releases/assets/<old-asset-id>` — 删除旧资产。
+4. `gh release upload v1.0.0 "<path>/sourceofmystery-1.0.0.jar#sourceofmystery-1.0.0.jar" --clobber` — 上传新资产（33 MB，**须后台跑**）。
+5. `Copy-Item __gh_dl/sourceofmystery-1.0.0.jar build\libs\sourceofmystery-1.0.0.jar -Force` — 同步本地。
+6. 清理：`Remove-Item -Recurse -Force .\__gh_dl; Remove-Item -Force .\__gh_*.cjs`
+
+### 合并 PR 全流程（旧版一次性脚本，仍可用）
 1. `node __gh_list.cjs` — 列出 open PR。
 2. `node __gh_merge.cjs <pr>` — 合并。
 3. `git pull origin main` — 拉取。
