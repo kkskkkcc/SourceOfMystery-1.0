@@ -37,6 +37,18 @@ root
 原版素材/
 开发需求/
 神秘之源素材/
+art/
+mmd模型/
+模型/
+
+# ---- 本地 Gradle 缓存目录 ----
+.gradle-local/
+
+# ---- 无关内容 ----
+形势与政策课程论文/
+
+# ---- uv / Python 包运行时缓存（机器相关）----
+tools/ai_runtime/
 
 # ---- 临时上传辅助脚本 / 本地 SSH 密钥 ----
 .gh_helper.cjs
