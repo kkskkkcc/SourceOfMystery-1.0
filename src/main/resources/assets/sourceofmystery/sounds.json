@@ -1207,5 +1207,105 @@
         "attenuation_distance": 32
       }
     ]
+  },
+  "staff.annihilation.charge": {
+    "subtitle": "subtitles.sourceofmystery.staff.annihilation",
+    "sounds": [
+      {
+        "name": "sourceofmystery:staff/annihilation_charge",
+        "stream": true,
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "staff.annihilation.release": {
+    "subtitle": "subtitles.sourceofmystery.staff.annihilation",
+    "sounds": [
+      {
+        "name": "sourceofmystery:staff/annihilation_release",
+        "stream": false,
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "staff.earth_split.charge": {
+    "subtitle": "subtitles.sourceofmystery.staff.earth_split",
+    "sounds": [
+      {
+        "name": "sourceofmystery:staff/earth_split_charge",
+        "stream": false,
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "staff.earth_split.release": {
+    "subtitle": "subtitles.sourceofmystery.staff.earth_split",
+    "sounds": [
+      {
+        "name": "sourceofmystery:staff/earth_split_release",
+        "stream": false,
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "staff.earth_lift.charge": {
+    "subtitle": "subtitles.sourceofmystery.staff.earth_lift",
+    "sounds": [
+      {
+        "name": "sourceofmystery:staff/earth_lift_charge",
+        "stream": false,
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "staff.earth_lift.release": {
+    "subtitle": "subtitles.sourceofmystery.staff.earth_lift",
+    "sounds": [
+      {
+        "name": "sourceofmystery:staff/earth_lift_release",
+        "stream": false,
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "staff.time_stop.charge": {
+    "subtitle": "subtitles.sourceofmystery.staff.time_stop",
+    "sounds": [
+      {
+        "name": "sourceofmystery:staff/time_stop_charge",
+        "stream": false,
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "staff.time_stop.release": {
+    "subtitle": "subtitles.sourceofmystery.staff.time_stop",
+    "sounds": [
+      {
+        "name": "sourceofmystery:staff/time_stop_release",
+        "stream": false,
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "staff.space_rift.charge": {
+    "subtitle": "subtitles.sourceofmystery.staff.space_rift",
+    "sounds": [
+      {
+        "name": "sourceofmystery:staff/space_rift_charge",
+        "stream": false,
+        "attenuation_distance": 64
+      }
+    ]
+  },
+  "staff.space_rift.release": {
+    "subtitle": "subtitles.sourceofmystery.staff.space_rift",
+    "sounds": [
+      {
+        "name": "sourceofmystery:staff/space_rift_release",
+        "stream": false,
+        "attenuation_distance": 64
+      }
+    ]
   }
 }

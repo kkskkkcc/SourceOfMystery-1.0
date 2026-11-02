@@ -26,6 +26,7 @@ public class OutsiderSpell extends Projectile {
     private static final EntityDataAccessor<Long> START=SynchedEntityData.defineId(OutsiderSpell.class,EntityDataSerializers.LONG);
     private static final EntityDataAccessor<CompoundTag> TRAJECTORY=SynchedEntityData.defineId(OutsiderSpell.class,EntityDataSerializers.COMPOUND_TAG);
     private Vec3 impactPoint;
+    private LivingEntity castSource;
     public OutsiderSpell(EntityType<? extends OutsiderSpell> type,Level level){super(type,level);setNoGravity(true);}
     @Override protected void defineSynchedData(){entityData.define(KIND,BOLT);entityData.define(START,0L);entityData.define(TRAJECTORY,new CompoundTag());}
     public int kind(){return entityData.get(KIND);}
@@ -37,10 +38,11 @@ public class OutsiderSpell extends Projectile {
         tag.putInt("duration",ticks);tag.putDouble("ex",point.x);tag.putDouble("ey",point.y+OutsiderRitual.ORB_RADIUS);tag.putDouble("ez",point.z);
         entityData.set(TRAJECTORY,tag);
     }
-    public static OutsiderSpell spawn(ServerLevel level,OutsiderEntity owner,int kind,Vec3 position,Vec3 velocity){
+    public static OutsiderSpell spawn(ServerLevel level,LivingEntity owner,int kind,Vec3 position,Vec3 velocity){
         OutsiderSpell spell=new OutsiderSpell(ModEntities.OUTSIDER_SPELL.get(),level);
+        spell.castSource=owner;
         spell.setOwner(owner);spell.entityData.set(KIND,kind);spell.entityData.set(START,level.getGameTime());
-        spell.setPos(position);spell.trajectory(position,velocity);level.addFreshEntity(spell);return spell;
+        spell.setPos(position);spell.trajectory(position,velocity);if(!level.addFreshEntity(spell))spell.discard();return spell;
     }
     private void trajectory(Vec3 origin,Vec3 velocity){
         CompoundTag tag=new CompoundTag();tag.putDouble("x",origin.x);tag.putDouble("y",origin.y);tag.putDouble("z",origin.z);
@@ -69,7 +71,8 @@ public class OutsiderSpell extends Projectile {
         if(level().isClientSide){setPos(trajectoryPosition(0));return;}
         // Terrain work survives the caster and this short-lived visual.
         if(kind()==AFTERMATH){if(age(0)>50)discard();return;}
-        if(!(getOwner() instanceof OutsiderEntity owner)||!owner.isAlive()){discard();return;}
+        LivingEntity owner=getOwner() instanceof LivingEntity living?living:castSource;
+        if(owner==null||(owner instanceof OutsiderEntity&&!owner.isAlive())){discard();return;}
         int age=(int)age(0);
         if(kind()==SKY_SEAL){if(age>=100)discard();return;}
         if(kind()==BOLT){
@@ -88,7 +91,7 @@ public class OutsiderSpell extends Projectile {
         }else if(kind()==PILLAR){
             if(age>=20&&age<80&&(age-20)%20==0){
                 AABB column=new AABB(getX()-.9,getY(),getZ()-.9,getX()+.9,level().getMaxBuildHeight(),getZ()+.9);
-                for(LivingEntity victim:level().getEntitiesOfClass(LivingEntity.class,column,owner::canAffect)){
+                for(LivingEntity victim:level().getEntitiesOfClass(LivingEntity.class,column,e->canAffect(owner,e))){
                     victim.hurt(damage("outsider_pillar"),100);
                 }
             }
@@ -111,11 +114,15 @@ public class OutsiderSpell extends Projectile {
     @Override protected boolean canHitEntity(Entity e){return super.canHitEntity(e)&&e!=getOwner()&&!(e instanceof OutsiderSpell)&&!GuardianShields.shieldedFromBoss(e);}
     private DamageSource damage(String key){return new DamageSource(level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE)
             .getHolderOrThrow(ResourceKey.create(Registries.DAMAGE_TYPE,new ResourceLocation("sourceofmystery",key))),this,getOwner());}
-    private void impact(OutsiderEntity owner,Vec3 point){
+    private static boolean canAffect(LivingEntity owner,LivingEntity victim){
+        return owner instanceof OutsiderEntity boss?boss.canAffect(victim)
+                :!victim.getUUID().equals(owner.getUUID())&&victim.isAlive()&&!victim.isSpectator();
+    }
+    private void impact(LivingEntity owner,Vec3 point){
         setPos(point);entityData.set(START,level().getGameTime());trajectory(point,Vec3.ZERO);entityData.set(KIND,AFTERMATH);
         ServerLevel server=(ServerLevel)level();
         for(LivingEntity victim:server.getEntitiesOfClass(LivingEntity.class,new AABB(point,point).inflate(BLAST_RADIUS),
-                e->owner.canAffect(e)&&e.position().distanceToSqr(point)<=BLAST_RADIUS*BLAST_RADIUS)){
+                e->canAffect(owner,e)&&e.position().distanceToSqr(point)<=BLAST_RADIUS*BLAST_RADIUS)){
             victim.hurt(damage("outsider_annihilation"),200);
         }
         for(var player:server.players())if(player.position().distanceToSqr(point)<160*160)

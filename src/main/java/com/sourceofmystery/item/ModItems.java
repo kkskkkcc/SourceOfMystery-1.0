@@ -17,6 +17,8 @@ import java.util.UUID;
 public class ModItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, SourceOfMystery.MOD_ID);
 
+    public static final RegistryObject<Item> DIMENSION_BREAKER_STAFF = ITEMS.register("dimension_breaker_staff", DimensionBreakerStaffItem::new);
+
     // 秘源锭
     public static final RegistryObject<Item> MYSTERY_INGOT = ITEMS.register("mystery_ingot",
             () -> new Item(new Item.Properties().rarity(Rarity.EPIC).stacksTo(64)));

@@ -44,6 +44,8 @@ public class MysteryEnergyEvents {
             return;
         }
 
+        MysteryEnergy.regenerate(player);
+
         // ==================== 每日回满神秘之能 ====================
         if (!MysteryConfig.DAILY_REFRESH.get()) {
             return;

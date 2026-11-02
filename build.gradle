@@ -4,6 +4,7 @@ plugins {
     id 'idea'
     id 'maven-publish'
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+    id 'org.spongepowered.mixin' version '0.7-SNAPSHOT'
 }
 version = '1.0.0'
 group = 'com.sourceofmystery'
@@ -11,6 +12,10 @@ base {
     archivesName = 'sourceofmystery'
 }
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+mixin {
+    add sourceSets.main, 'sourceofmystery.refmap.json'
+    config 'sourceofmystery.mixins.json'
+}
 sourceSets {
     gameTest {
         compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
@@ -37,6 +42,12 @@ minecraft {
         }
         client {
             workingDirectory project.file('run')
+            if (project.hasProperty('staffCheck')) {
+                workingDirectory project.file('build/staff-client-check')
+                property 'sourceofmystery.staffCheck', 'true'
+                args '--username', 'StaffCheck', '--width', '1280', '--height', '720'
+                mods { sourceofmystery { source sourceSets.gameTest } }
+            }
             if (project.hasProperty('ritualCheck')) {
                 workingDirectory project.file('build/ritual-client-check')
                 property 'sourceofmystery.ritualCheck', 'true'
@@ -87,6 +98,7 @@ sourceSets.main.resources {
 }
 
 dependencies {
+    annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
     minecraft 'net.minecraftforge:forge:1.20.1-47.4.20'
     implementation fg.deobf("software.bernie.geckolib:geckolib-forge-1.20.1:4.8.4")
 
@@ -117,6 +129,7 @@ repositories {
         content { includeGroupByRegex("software\\.bernie.*") }
     }
     mavenCentral()
+    maven { url = 'https://repo.spongepowered.org/repository/maven-public/' }
 }
 
 tasks.withType(JavaCompile).configureEach {

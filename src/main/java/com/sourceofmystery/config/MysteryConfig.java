@@ -16,6 +16,7 @@ public final class MysteryConfig {
     public static final ForgeConfigSpec.LongValue INITIAL_ENERGY;
     public static final ForgeConfigSpec.LongValue ENERGY_PER_KILL;
     public static final ForgeConfigSpec.BooleanValue DAILY_REFRESH;
+    public static final ForgeConfigSpec.DoubleValue ENERGY_REGEN_PER_SECOND;
 
     // ==================== 武器 / 护甲 ====================
     public static final ForgeConfigSpec.DoubleValue DIVINE_PUNISHMENT_STRIKE_DAMAGE;
@@ -84,6 +85,8 @@ public final class MysteryConfig {
                 .defineInRange("energyPerKill", 10L, 0L, Long.MAX_VALUE);
         DAILY_REFRESH = common.comment("每个游戏日是否把神秘之能回满到上限")
                 .define("dailyRefresh", true);
+        ENERGY_REGEN_PER_SECOND = common.comment("每秒恢复能量上限的比例；0.01 为 1%，0 为关闭；恢复不提高上限")
+                .defineInRange("regenerationPerSecond", .01, 0.0, 1.0);
         common.pop();
 
         common.comment("神威系列装备 / Divine equipment").push("divine");

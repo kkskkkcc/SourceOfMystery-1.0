@@ -1,0 +1,10 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.sourceofmystery.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "sourceofmystery.refmap.json",
+  "mixins": ["LevelTimeMixin", "ServerLevelTimeMixin", "ServerPlayerTimeMixin", "PlayerConnectionTimeMixin", "EntityTimeMixin", "StaffBlockBreakingMixin", "NaturalSpawnerTimeMixin", "MobTimeMixin"],
+  "client": ["ClientLevelTimeMixin", "ParticleTimeMixin", "PostChainAccess", "TextureTimeMixin", "LevelRendererTimeMixin", "EntityRenderTimeMixin", "ItemInHandAccess"],
+  "injectors": { "defaultRequire": 1 }
+}
