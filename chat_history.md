@@ -225,6 +225,54 @@
 
 ---
 
+## 10. 合并合作工程师的传奇权杖分支
+
+**用户**：合作的工程师已更新github仓库，合并并同步到本地。
+
+**Agent**：
+
+### 10.1 定位更新
+`git fetch --prune` 发现新分支 `origin/feat/legendary-staff-v1`（作者 Kara251，2 个提交），**协作者未开 PR**，因此走本地合并而非 gh PR 流程。merge-base 为 `088bab9`。
+
+| Commit | 说明 |
+|---|---|
+| `5f414eb` | Add legendary dimension staff and restore energy regeneration |
+| `ac0e452` | Refine legendary staff model and materials v2 |
+
+### 10.2 改动规模
+85 文件 / +138831 / -22，合计 5.2 MB（最大单文件 2.97 MB 的 `dimension_breaker_staff.geo.json`）。核心为**传奇维度法杖** `dimension_breaker_staff`：
+
+- 五种法术：陨灭杀（10000 能量）、裂地（8000）、大地悬浮（1000）、时间停止（1000）、空间撕裂（0），L 键半透明法术轮盘选择。
+- **引入 Mixin 框架**（`org.spongepowered.mixin` 0.7-SNAPSHOT + `annotationProcessor mixin:0.8.5` + SpongePowered maven），16 个 mixin 类实现维度级时停：服务器 tick 计数仍前进，通过 `Level.getGameTime/getDayTime` 注入冻结时钟，`tickNonPassenger/tickChunk/tickCustomSpawners/advanceWeatherCycle` 等在冻结期跳过。
+- `OutsiderSpell` / `OutsiderBlastTasks` 的 owner 由 `OutsiderEntity` 泛化为 `LivingEntity` 以支持玩家施法，玩家施法绕过 `mobGriefing` 检查（Forge 标准语义），非玩家施法路径不变。
+- 新增 `ENERGY_REGEN_PER_SECOND`（默认 0.01，每秒回上限 1%，小数累计，不提高上限），独立于每日回满开关。
+- 资源：GeckoLib geo/animation/model、9 个 staff 音效、时停 post shader、`staff_earth_split` 伤害类型、域外魔导师战利品表（必掉权杖）、`staff_overworld_rift` 方块标签、16 个 mixin 配置。
+- 文档：`docs/staff-v1.md`（完整规则表）、`docs/staff-model-v2.md`、`tools/staff/`（Blockbench 源、资产生成、音频生成）。
+
+### 10.3 合并前验证（关键）
+Mixin 引入改变了构建链（新增插件与 SpongePowered 仓库），且工作流只监听 `main` 与 `pull_request`，**协作者分支从未被 CI 验证过**。因此先本地验证：
+
+1. `git merge-tree --write-tree origin/main origin/feat/legendary-staff-v1` → 无冲突，tree `437fb05b`。
+2. 建临时分支 `merge-test` 合入 main → 仅 `chat_history.md` 文档冲突面，无代码冲突。
+3. `gradlew.bat build --no-daemon` → **BUILD SUCCESSFUL in 1m 49s**，`addMixinsToJar` 正常执行。
+4. jar 抽查：`sourceofmystery.mixins.json` 与 `sourceofmystery.refmap.json` 均在包内，24 个 staff 类 + 15 个 mixin 类 + 21 个 staff 资源齐全。
+5. **refmap 校验**：映射到 SRG 名（`m_46467_` 等），非空且正确 —— 空 refmap 会导致生产环境崩溃。
+
+审查结论：时停用 SavedData 持久化时钟偏移，Mixin 仅在 `TimeStop.active()` 为真时介入，其余情况零开销，设计正确。
+
+### 10.4 合并与推送
+`git merge --no-ff origin/feat/legendary-staff-v1` → `ca22e77`（保留协作者两个提交的历史），85 文件 / 5.2 MB。推送 `5d2f7fe..ca22e77` 成功。
+
+CI Run #41（`41379911846`）→ **success**，确认 SpongePowered 依赖在 CI 环境可解析。
+
+Release 资产：删除 `698047819` → 上传 `700351212`（**35,414,294 B**，SHA256 `1ea34f92…`）。本地 `build\libs\sourceofmystery-1.0.0.jar` 同步为 CI 产物，SHA256 一致。jar 抽查：mixin 配置与 refmap 各 1 份、24 个 staff 类、杖 geo、11 个 staff 音效、域外魔导师 12 个动画全部在包内。
+
+### 10.5 踩坑
+- 协作者未开 PR，`gh pr list` 返回空，需从 `git branch -a` 找远端分支。
+- `gh run download` 下载 67.9 MB artifact 前台必超时，须 `run_in_background` 后 `job_output` 收集。
+
+---
+
 ## 附录 A：Release 资产历史
 
 | 时间(UTC)         | 资产 ID    | 大小        | 备注                                  |
@@ -236,6 +284,7 @@
 | PR #11             | 611705661 | 1,542,381 B | +死亡激光 / 动画返工           |
 | PR #12             | 611999304 | 1,543,296 B | polish                               |
 | 域外魔导师同步     | 698047819 | 34,850,043 B | +域外魔导师完整实现（CI Run #40）    |
+| 超位权杖合并       | 700351212 | 35,414,294 B | +传奇维度法杖与 Mixin 时停（CI Run #41）|
 
 ## 附录 B：本地合并 commit
 
@@ -252,6 +301,8 @@
 | `51d2753` | 已跟踪文件修改（+1014/-20）                 |
 | `8a0ba06` | 域外魔导师完整实现：196 文件 / 113.7 MB     |
 | `088bab9` | 归档域外魔导师 PMX 模型源文件供协作开发      |
+| `5d2f7fe` | 记录完整同步流程与 Release 资产更新          |
+| `ca22e77` | 合并 Kara251 的 feat/legendary-staff-v1      |
 
 ## 附录 C：常驻脚本与命令
 
