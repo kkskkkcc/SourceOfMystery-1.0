@@ -26,7 +26,8 @@ public final class StaffConfig {
         ATTACK_DAMAGE = builder.comment("包含玩家基础攻击力的普通攻击伤害")
                 .defineInRange("attackDamage", 199.0, 1.0, 1000000.0);
         BREAK_SECONDS = builder.defineInRange("breakSeconds", .9, .05, 60);
-        SPLIT_LENGTH = builder.defineInRange("splitLength", 100, 1, 512);
+        SPLIT_LENGTH = builder.comment("裂地魔法的裂缝长度，单位格")
+                .defineInRange("splitLength", 500, 1, 512);
         SPLIT_WIDTH = builder.defineInRange("splitWidth", 30, 1, 128);
         SPLIT_TOP = builder.defineInRange("splitTopY", 255, -2048, 2048);
         SPLIT_DAMAGE = builder.defineInRange("splitDamage", 1000.0, 0, 1000000);

@@ -108,10 +108,18 @@ public final class StaffTerrain extends SavedData {
                         &&withinSplit(e.position(),origin,direction,length,width)))target.hurt(damage,StaffConfig.SPLIT_DAMAGE.get().floatValue());
                 hit=true;
             }
-            int visited=0,changed=0;
+            int visited=0,changed=0,loaded=0;
             while(cursor<columns.length&&visited<16384&&changed<4096&&System.nanoTime()<deadline) {
                 BlockPos column=columns[cursor];
-                if(!level.hasChunkAt(column)){level.getChunk(column.getX()>>4,column.getZ()>>4);return;}
+                if(!level.hasChunkAt(column)) {
+                    // Load the chunk and come back to this column next tick. Bounded so a long
+                    // crack cannot force-load dozens of chunks inside a single tick. Columns the
+                    // server refuses to load (outside the world border) are skipped for good.
+                    if(loaded++>=4)break;
+                    try{level.getChunk(column.getX()>>4,column.getZ()>>4);}
+                    catch(Exception exception){nextY[cursor]=bottom-1;cursor++;continue;}
+                    continue;
+                }
                 if(nextY[cursor]<bottom){cursor++;continue;}
                 BlockPos pos=column.atY(nextY[cursor]--);visited++;
                 BlockState state=level.getBlockState(pos);
