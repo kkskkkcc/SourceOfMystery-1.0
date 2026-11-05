@@ -23,7 +23,22 @@ def allowed(item):
 
 def main():
     global OUT
-    parser=argparse.ArgumentParser();parser.add_argument('--clouds',action='store_true');parser.add_argument('--offering',action='store_true');parser.add_argument('--post-intro-flight',action='store_true');parser.add_argument('--vanilla',action='store_true');parser.add_argument('--axis',action='store_true');parser.add_argument('--capture-fps',type=int,default=30);parser.add_argument('--profile',action='store_true');parser.add_argument('--video',action='store_true');parser.add_argument('--label',default='current');args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--clouds',action='store_true');parser.add_argument('--offering',action='store_true');parser.add_argument('--offering-display',action='store_true');parser.add_argument('--offering-lottery',action='store_true');parser.add_argument('--enchanter',action='store_true');parser.add_argument('--divine-halo',action='store_true');parser.add_argument('--divine-cg',action='store_true');parser.add_argument('--equipment',action='store_true');parser.add_argument('--satellites',action='store_true');parser.add_argument('--post-intro-flight',action='store_true');parser.add_argument('--vanilla',action='store_true');parser.add_argument('--axis',action='store_true');parser.add_argument('--capture-fps',type=int,default=30);parser.add_argument('--profile',action='store_true');parser.add_argument('--video',action='store_true');parser.add_argument('--label',default='current');args=parser.parse_args()
+    if args.equipment:parser.error('Rejected equipment fixture archived in drafts/equipment_gecko; it is not an active verification target.')
+    satellites_check=args.satellites
+    if satellites_check:OUT=ROOT/'build/divine-satellites-smoke'/args.label
+    equipment_check=args.equipment
+    if equipment_check:OUT=ROOT/'build/equipment-gecko-smoke'/args.label
+    cg_check=args.divine_cg
+    if cg_check:OUT=ROOT/'build/divine-cg-smoke'/args.label
+    halo_check=args.divine_halo
+    if halo_check:OUT=ROOT/'build/divine-halo-smoke'/args.label
+    display_check=args.offering_display
+    enchanter_check=args.enchanter
+    if enchanter_check:OUT=ROOT/'build/enchanter-smoke'/args.label
+    lottery_check=args.offering_lottery
+    if lottery_check:OUT=ROOT/'build/offering-lottery-smoke'/args.label
+    if display_check:OUT=ROOT/'build/offering-display-smoke'/args.label
     if args.clouds:OUT=ROOT/'build/oculus-cloud-smoke'/args.label
     if args.offering:OUT=ROOT/'build/offering-smoke'/args.label
     if args.post_intro_flight:OUT=ROOT/'build/post-intro-flight-smoke'/args.label
@@ -32,16 +47,19 @@ def main():
     for pattern in ['oculus-*.jar','embeddium-*.jar','geckolib-*.jar']:
         source=next((INSTANCE/'mods').glob(pattern));shutil.copy2(source,OUT/'mods'/source.name)
     artifact=ROOT/'build/reobfShaderCheckJar/output.jar'
+    if satellites_check:artifact=ROOT/'build/divine-satellites/sourceofmystery-satellites-check.jar'
     assert artifact.exists(),artifact
     shutil.copy2(artifact,OUT/'mods/sourceofmystery-shader-check.jar')
     pack='ComplementaryReimagined_r5.9.3.zip'
     shutil.copy2(INSTANCE/'shaderpacks'/pack,OUT/'shaderpacks'/pack)
     if args.clouds:(OUT/'shaderpacks'/(pack+'.txt')).write_text('CLOUD_SPEED_MULT=0\n')
     (OUT/'config/oculus.properties').write_text('enableShaders='+str(not args.vanilla).lower()+'\nshaderPack='+pack+'\nmaxShadowRenderDistance=12\n')
-    (OUT/'options.txt').write_text('renderDistance:18\nsimulationDistance:5\nmaxFps:60\nenableVsync:false\nfov:0.5\npauseOnLostFocus:false\nhideMatchedNames:true\nguiScale:2\ntutorialStep:none\n')
+    (OUT/'options.txt').write_text('renderDistance:18\nsimulationDistance:5\nmaxFps:60\nenableVsync:false\nfov:0.5\npauseOnLostFocus:false\nhideMatchedNames:true\nguiScale:2\ntutorialStep:none\nsoundCategory_master:0.0\n')
+    if lottery_check or enchanter_check or halo_check or cg_check or equipment_check or satellites_check:
+        with (OUT/'options.txt').open('a') as options:options.write('lang:zh_cn\n')
     world=OUT/'saves/shader-smoke'
     if not (world/'level.dat').exists():
-        if args.clouds:
+        if args.clouds or enchanter_check or halo_check or cg_check or equipment_check or satellites_check:
             # A new isolated all-air world gives real Y=-60 and Y=64 views
             # without terrain hiding the effect. Do not edit any user save.
             sys.path.insert(0,str(ROOT/'build/oculus-deps'));import nbtlib
@@ -50,6 +68,12 @@ def main():
             level['WorldGenSettings']['dimensions']['minecraft:overworld']['generator']=nbtlib.Compound({
                 'type':nbtlib.String('minecraft:flat'),'settings':nbtlib.Compound({'biome':nbtlib.String('minecraft:plains'),
                 'features':nbtlib.Byte(0),'lakes':nbtlib.Byte(0),'layers':nbtlib.List[nbtlib.Compound]([]),'structure_overrides':nbtlib.List[nbtlib.String]([])})})
+            if cg_check:
+                # A real generated surface at Y=199 makes the ascent observable;
+                # the cloud and enchanter fixtures keep their existing air worlds.
+                level['WorldGenSettings']['dimensions']['minecraft:overworld']['generator']['settings']['layers']=nbtlib.List[nbtlib.Compound]([
+                    nbtlib.Compound({'height':nbtlib.Int(height),'block':nbtlib.String(block)}) for height,block in
+                    [(1,'minecraft:bedrock'),(255,'minecraft:stone'),(7,'minecraft:dirt'),(1,'minecraft:grass_block')]])
             level['LevelName']=nbtlib.String('Isolated cloud regression');level['GameType']=nbtlib.Int(1)
             level.pop('Player',None);data.save(world/'level.dat')
         else:shutil.copytree(ROOT/'build/outsider-gametest/world',world,ignore=shutil.ignore_patterns('session.lock'),dirs_exist_ok=True)
@@ -84,11 +108,20 @@ def main():
         return result
     flag='offeringSmoke' if args.offering else 'cloudSmoke' if args.clouds else 'shaderSmoke'
     if args.post_intro_flight:flag='postIntroFlightCheck'
+    if display_check:flag='offeringDisplayCheck'
+    if lottery_check:flag='offeringLotteryCheck'
+    if enchanter_check:flag='enchanterCheck'
+    if halo_check:flag='divineHaloCheck'
+    if cg_check:flag='divineCgCheck'
+    if equipment_check:flag='equipmentCheck'
+    if satellites_check:flag='divineSatellitesCheck'
     command=['-Xmx4G','-Dsourceofmystery.'+flag+'=true','-Dsourceofmystery.offeringCaptureFps='+str(args.capture_fps),'-Dsourceofmystery.offeringAxis='+str(args.axis).lower()]+arguments(data['arguments']['jvm'])+[data['mainClass']]+arguments(data['arguments']['game'])
     if args.profile:command.insert(0,'-XX:StartFlightRecording=filename='+str(OUT/'cinematic.jfr')+',settings=profile,dumponexit=true')
     if args.video:
         sys.path.insert(0,str(ROOT/'build/offering-preview-deps'));import imageio_ffmpeg
         command[:0]=['-Dsourceofmystery.offeringMovie=true','-Dsourceofmystery.offeringFfmpeg='+imageio_ffmpeg.get_ffmpeg_exe()]
+    if args.video and cg_check:
+        command[:0]=['-Dsourceofmystery.divineCgMovie=true','-Dsourceofmystery.divineCgFfmpeg='+imageio_ffmpeg.get_ffmpeg_exe()]
     command+=['--quickPlaySingleplayer','shader-smoke','--width','1280','--height','800']
     argfile=OUT/'launch.args'
     argfile.write_text('\n'.join('"'+arg.replace('\\','/').replace('"','\\"')+'"' for arg in command),encoding='utf8')
@@ -98,6 +131,41 @@ def main():
         process=subprocess.run([str(java),'@'+str(argfile)],cwd=OUT,stdout=log,stderr=subprocess.STDOUT,timeout=180)
     if process.returncode==0:
         log=(OUT/'launch.log').read_text(encoding='utf8',errors='replace')
+        if satellites_check:
+            assert 'DIVINE_SATELLITES_OK' in log and 'AssertionError' not in log
+            print((OUT/'satellites-verification.json').read_text());return 0
+        if equipment_check:
+            assert 'EQUIPMENT_GECKO_OK' in log and 'AssertionError' not in log
+            print((OUT/'equipment-verification.json').read_text());return 0
+        if cg_check:
+            assert 'DIVINE_CG_OK' in log and 'AssertionError' not in log
+            import numpy as np
+            from PIL import Image
+            for name in ['01c-earth-horizon','01d-earth-pullback','01e-orbit-entry','02-cosmos','03-player-close','04-five-stairs','05-climbing','06-facing-armor','07-touch','08-bestowed','09-inspect','10-throne']:
+                pixels=np.asarray(Image.open(OUT/'screenshots'/(name+'.png')).convert('RGB'))
+                assert (pixels.max(2)>45).sum()>6000,'CG scene not visible: '+name
+            print((OUT/'divine-cg-verification.json').read_text());return 0
+        if halo_check:
+            assert 'DIVINE_HALO_OK' in log and 'AssertionError' not in log
+            assert (OUT/'divine-halo-verification.json').exists()
+            for name in ['01-rear-upright.png','02-turned-side.png','03-turned-rear.png','04-crouching.png','05-unequipped.png','06-armor-stand.png']:
+                assert (OUT/'screenshots'/name).exists(),name
+            print('DIVINE_HALO_OK',OUT);return 0
+        if enchanter_check:
+            assert 'ENCHANTER_SMOKE_OK' in log and 'AssertionError' not in log
+            print('ENCHANTER_SMOKE_OK',OUT);return 0
+        if lottery_check:
+            assert 'OFFERING_LOTTERY_OK' in log and 'AssertionError' not in log and 'NullPointerException' not in log
+            for name in ['01-ready.png','02-rolling.png','03-win.png','04-loss.png','05-insufficient.png']:
+                assert (OUT/'screenshots'/name).exists(),name
+            (OUT/'verification.json').write_text(json.dumps({'real_forge_client':True,'native_slot_and_button_packets':True,'energy_per_roll':1000,'win_and_loss_sounds':True,'foreign_namespace_pool':True,'portable_air_use':True,'insufficient_energy_guard':True,'shader_enabled':not args.vanilla,'exit_code':0},indent=2))
+            print('OFFERING_LOTTERY_OK',OUT);return 0
+        if display_check:
+            assert 'OFFERING_DISPLAY_OK' in log and 'AssertionError' not in log and 'NullPointerException' not in log
+            for name in ['01-placed-and-held.png','02-model-close.png','03-model-back.png','04-inventory.png']:
+                assert (OUT/'screenshots'/name).exists(),name
+            (OUT/'verification.json').write_text(json.dumps({'real_forge_client':True,'shader_enabled':not args.vanilla,'ritual_priority_verified':True,'exit_code':0},indent=2))
+            print('OFFERING_DISPLAY_OK',OUT);return 0
         if args.post_intro_flight:
             assert 'POST_INTRO_FLIGHT_OK' in log and 'AssertionError' not in log and 'NullPointerException' not in log
             report=json.loads((OUT/'post-flight-physics.json').read_text())

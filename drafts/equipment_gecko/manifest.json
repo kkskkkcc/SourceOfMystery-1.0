@@ -1,0 +1,485 @@
+{
+  "status": "REJECTED_BY_USER_NOT_BUILD_INPUT",
+  "files": [
+    {
+      "path": "src\\main\\java\\com\\sourceofmystery\\item\\TieredGeckoChestplateItem.java",
+      "sha256": "c7a3a732f6d9f9a3f44d50d2c63cb4a673838bb756f613d1178980f542cc74aa",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\java\\com\\sourceofmystery\\client\\equipment\\TieredArmorExtensions.java",
+      "sha256": "cd4a9ba4535dc304c2289d3397adbfe595cfa1223c6a431d71cc8429163e18a8",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\java\\com\\sourceofmystery\\client\\equipment\\EquipmentSwordExtensions.java",
+      "sha256": "cf0edccc6c360e38a178b6909f1614e1fe6d0be999b0a2da0970ee6a2bb84e05",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\shaderTest\\java\\com\\sourceofmystery\\client\\EquipmentVisualSmokeCheck.java",
+      "sha256": "68198b09c8cdcec7dd89b4bd9d87ee2ed53589bd03c139b414e218ef8286262c",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\java\\com\\sourceofmystery\\item\\MysterySwordItem.java",
+      "sha256": "e88af6408d0db7393f0bbe6f28327cd8a44b1e9ffc184ea8e238ff10274ff1c2",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "src\\main\\java\\com\\sourceofmystery\\item\\ModItems.java",
+      "sha256": "0747c4669e808b2c7bc78b145726f495d001f362a1ad08cac4968aa145ff956b",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "src\\main\\java\\com\\sourceofmystery\\datagen\\ModItemModelProvider.java",
+      "sha256": "d3b50edc4ed733007e1bdb57fa4559b5b3cfd97957f6d35d401bb9c87f6e875e",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\geo\\armor\\mystery.geo.json",
+      "sha256": "bb7b8245b641f63cc28be64a10467d49dba9ce0701f027fbf4a38759256e5a93",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\geo\\item\\mystery_chestplate.geo.json",
+      "sha256": "2cc952562898d571d72c0faeac25515c8038d1c7d356728f95ed0157c35d399d",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\animations\\armor\\mystery.animation.json",
+      "sha256": "50c4b7540059efaba6da1a5d024eb59205d6ef468927d549d39ac9e20578d7c6",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\armor\\mystery.png",
+      "sha256": "5679c9937e525f7aeb3ee3f6d8a91c48e668a0af2168d970a0394ce15edc7314",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\armor\\mystery.png.mcmeta",
+      "sha256": "25ca7743c02d2d4e4385739057df51439ab98ff34618614262168ea47041a312",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\armor\\mystery_glowmask.png",
+      "sha256": "a02c8ce8aff807ca8f6b63cf07c74e63dc25da1e40a8f7ba72dccc094e6e8cc8",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\geo\\armor\\spirit_source.geo.json",
+      "sha256": "1643d0875ed741e0e158c3a4b4f446371137eb04bc513019b152009ba7513907",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\geo\\item\\spirit_source_chestplate.geo.json",
+      "sha256": "5cf4c909178b41cde885ce2a341dae95356d12dbe299bda8e1dfd95d39ea5ccc",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\animations\\armor\\spirit_source.animation.json",
+      "sha256": "50c4b7540059efaba6da1a5d024eb59205d6ef468927d549d39ac9e20578d7c6",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\armor\\spirit_source.png",
+      "sha256": "b8c4fcb83855c995f75318afafd379b35d9276ac8d517e040bc841c16fc227e2",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\armor\\spirit_source.png.mcmeta",
+      "sha256": "25ca7743c02d2d4e4385739057df51439ab98ff34618614262168ea47041a312",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\armor\\spirit_source_glowmask.png",
+      "sha256": "6ce4aa27ceee4380304a2f907a00ec7de3a51431d9bf0fa40a6e63a29877267f",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\geo\\armor\\dark_source.geo.json",
+      "sha256": "3d24dedf1598e5428f47fdee1eb5f71f28cb6befec15e0daf7e93a126ee9c2dd",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\geo\\item\\dark_source_chestplate.geo.json",
+      "sha256": "729c258fd99b3b4ae55cd6564783c861da5f68c6434eefda0ca1d0ead9ca2fce",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\animations\\armor\\dark_source.animation.json",
+      "sha256": "50c4b7540059efaba6da1a5d024eb59205d6ef468927d549d39ac9e20578d7c6",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\armor\\dark_source.png",
+      "sha256": "46cb3c6bef879511fd5030a3c180eeab476b46688995dc7a306090adc825846d",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\armor\\dark_source.png.mcmeta",
+      "sha256": "25ca7743c02d2d4e4385739057df51439ab98ff34618614262168ea47041a312",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\armor\\dark_source_glowmask.png",
+      "sha256": "b043ef1a54c97534ed773630ddce1eee42bdfd1439302df55d190ce5b0e185f5",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\geo\\armor\\origin_dragon.geo.json",
+      "sha256": "16798b27319254d77dbfd4ba8a75c7d8f2637e3476cc853c3268143e8c289a8d",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\geo\\item\\origin_dragon_chestplate.geo.json",
+      "sha256": "b9be460f8943262e62edefa6ddbe5517835e45d1398116521299912f3acfb157",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\animations\\armor\\origin_dragon.animation.json",
+      "sha256": "50c4b7540059efaba6da1a5d024eb59205d6ef468927d549d39ac9e20578d7c6",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\armor\\origin_dragon.png",
+      "sha256": "7fc266e1515f1cad8f88c90b50ea59219c88f40999bc46f0364d53e04cd4d966",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\armor\\origin_dragon.png.mcmeta",
+      "sha256": "25ca7743c02d2d4e4385739057df51439ab98ff34618614262168ea47041a312",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\armor\\origin_dragon_glowmask.png",
+      "sha256": "881a76ee3593429f0ec33a9236396239234b1e7e52eb583333cddb6867bfccfa",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\generated\\resources\\assets\\sourceofmystery\\models\\item\\mystery_sword.json",
+      "sha256": "97d0c4b12be19f190ebaa1121328bf7e50ed038b4b2d7f9790277acb896a9397",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\geo\\item\\mystery_sword.geo.json",
+      "sha256": "9f402abbd091b9649774e38ec7f769fd7f35c853fc7f87a036c0dd5205c2431f",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\animations\\item\\mystery_sword.animation.json",
+      "sha256": "50c4b7540059efaba6da1a5d024eb59205d6ef468927d549d39ac9e20578d7c6",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\item\\mystery_sword.png",
+      "sha256": "4cd9a8a654ff331fe51eeb5a3a555afe222ae154db3fd2e033ab50c09f183dd9",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\item\\mystery_sword.png.mcmeta",
+      "sha256": "25ca7743c02d2d4e4385739057df51439ab98ff34618614262168ea47041a312",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\item\\mystery_sword_glowmask.png",
+      "sha256": "79b2fd8820aadcd24207f6132c48c1ee5b4b0c46c8187133d8d535152fc293ff",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\generated\\resources\\assets\\sourceofmystery\\models\\item\\spirit_source_sword.json",
+      "sha256": "cde062925b57b307e844f785c07d3a03aea8d5403a9e3c43d9e8e77ec180cb5a",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\geo\\item\\spirit_source_sword.geo.json",
+      "sha256": "7c9134cbc5898d201cffdca7ebc04c36fe4dae52bbc9c33515d1fcc983f61345",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\animations\\item\\spirit_source_sword.animation.json",
+      "sha256": "50c4b7540059efaba6da1a5d024eb59205d6ef468927d549d39ac9e20578d7c6",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\item\\spirit_source_sword.png",
+      "sha256": "0e56c886fd078052c5e39fdfc57483140bf2c4ca3f73f09c75b03c050d03d0e7",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\item\\spirit_source_sword.png.mcmeta",
+      "sha256": "25ca7743c02d2d4e4385739057df51439ab98ff34618614262168ea47041a312",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\item\\spirit_source_sword_glowmask.png",
+      "sha256": "2037a7f16dac912172c80bd5016cf53218328ac3448e432f16c1773589efb023",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\generated\\resources\\assets\\sourceofmystery\\models\\item\\dark_source_sword.json",
+      "sha256": "92f3cd8c707eb71a14dd02f02a99be39e9aca883809014c230e77a42218e8aee",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\geo\\item\\dark_source_sword.geo.json",
+      "sha256": "99a06644d1d67097f7edb40dc12ffb5ff5874d40a4f419f397c9e8005c7188f6",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\animations\\item\\dark_source_sword.animation.json",
+      "sha256": "50c4b7540059efaba6da1a5d024eb59205d6ef468927d549d39ac9e20578d7c6",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\item\\dark_source_sword.png",
+      "sha256": "b4710b92b2ae903e85396844a23a983ca4171670f4f17961d081918e77b51d56",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\item\\dark_source_sword.png.mcmeta",
+      "sha256": "25ca7743c02d2d4e4385739057df51439ab98ff34618614262168ea47041a312",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\item\\dark_source_sword_glowmask.png",
+      "sha256": "f548e46b38c30f9b8ee8c16f07485789370081c2bb3347625c7ea8747cc22dfb",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\generated\\resources\\assets\\sourceofmystery\\models\\item\\origin_dragon_sword.json",
+      "sha256": "401a600711d645f819e89b2341f5d9712a9fa61944418a27cefe3be6144aba03",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\geo\\item\\origin_dragon_sword.geo.json",
+      "sha256": "2aabe3ef2abc7bd3c194cf0cdf55355092177fcf9d0ab6d0180ea9899d72b273",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\animations\\item\\origin_dragon_sword.animation.json",
+      "sha256": "50c4b7540059efaba6da1a5d024eb59205d6ef468927d549d39ac9e20578d7c6",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\item\\origin_dragon_sword.png",
+      "sha256": "1cccc4fb31e0af2b00cf98401b9b1fd2553ce82cadb958380c9ac91087593f57",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\item\\origin_dragon_sword.png.mcmeta",
+      "sha256": "25ca7743c02d2d4e4385739057df51439ab98ff34618614262168ea47041a312",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\item\\origin_dragon_sword_glowmask.png",
+      "sha256": "e3a30b0b148cdb2eb5e21522ba8d43ad5b06b66e762eba43272d32b8b70d921b",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\generated\\resources\\assets\\sourceofmystery\\models\\item\\divine_punishment_sword.json",
+      "sha256": "aed7f9dc896513b4c8187ba77e98773c7dc0415f0bf809a5422b41c16a538a57",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\geo\\item\\divine_punishment_sword.geo.json",
+      "sha256": "aa85a8a4afc6cff5df27bd3ed9f55f4d5163332dd6fabefa34205f90a27f3b2e",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\animations\\item\\divine_punishment_sword.animation.json",
+      "sha256": "50c4b7540059efaba6da1a5d024eb59205d6ef468927d549d39ac9e20578d7c6",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\item\\divine_punishment_sword.png",
+      "sha256": "e6b67c077e77ebfd30ecc1ac8ace3786a7e9c87b139141a7fb702fa7c1ca8310",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\item\\divine_punishment_sword.png.mcmeta",
+      "sha256": "25ca7743c02d2d4e4385739057df51439ab98ff34618614262168ea47041a312",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\textures\\item\\divine_punishment_sword_glowmask.png",
+      "sha256": "e27276ce8157d3f1d64d6f1a999d2bc7cd6a4c1c1870e4b0b6b3f0b0288cc617",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\generated\\resources\\assets\\sourceofmystery\\models\\item\\mystery_chestplate.json",
+      "sha256": "2cab7ad1305d18855903664cd0646af1eb8ca30f642c387732248d4c00e71451",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "src\\generated\\resources\\assets\\sourceofmystery\\models\\item\\spirit_source_chestplate.json",
+      "sha256": "915efbf4c3c71385866f1e32b1fcd282cb1a859816b1f3f2826da047618a3b45",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "src\\generated\\resources\\assets\\sourceofmystery\\models\\item\\dark_source_chestplate.json",
+      "sha256": "85abcb8d1c2b0662600f4a610fe8f3ec67c306d516f37d8a2ba5adf56fef7a7b",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "src\\generated\\resources\\assets\\sourceofmystery\\models\\item\\origin_dragon_chestplate.json",
+      "sha256": "1203b798d8ce3219213c7f84ea3003792c5d3c4f05857a8b00104b11840950f3",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\models\\item\\equipment_armor_display.json",
+      "sha256": "fa0fc02e7fd1b60fef821d3895386dfc2cc3cb7bb421f37091d9fc2aa84553fe",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "src\\main\\resources\\assets\\sourceofmystery\\models\\item\\equipment_sword_display.json",
+      "sha256": "0f26f0182548255535273670ccf19393e55153a2354278dd740548710c85c678",
+      "removed_from_active_sources": true
+    },
+    {
+      "path": "art\\equipment_gecko\\asset-plan.json",
+      "sha256": "190c6a17ad09f1337fd55f3bf60940acdb1220fd1f573fe4d5a64118b53d7354",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\dark_source\\dark_source.bbmodel",
+      "sha256": "d2a970fee9cc25ac239b5e93e2c15c2ab58ee01f1bd3efa387a2a5aa3ccac4d6",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\dark_source\\dark_source.geo.json",
+      "sha256": "3d24dedf1598e5428f47fdee1eb5f71f28cb6befec15e0daf7e93a126ee9c2dd",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\dark_source\\parts.json",
+      "sha256": "766bbb4a29f1c30059764bad9b450b00036ad4363de343493b40adeea40312d0",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\dark_source_sword\\dark_source_sword.bbmodel",
+      "sha256": "02f6bcf5deec575c2dd0a15766cd9c51904aacca086ae6d62e41eadfb67759c4",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\dark_source_sword\\dark_source_sword.geo.json",
+      "sha256": "99a06644d1d67097f7edb40dc12ffb5ff5874d40a4f419f397c9e8005c7188f6",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\dark_source_sword\\parts.json",
+      "sha256": "7e3d9f3af471f59c13272007cad14e561ea76a674d2b103d275856bb654d2aa7",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\divine_punishment_sword\\divine_punishment_sword.bbmodel",
+      "sha256": "7ec050bc19d481b38bf5fd63d26de8be387e804f87aea9ae7bb48bd8d67c54ce",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\divine_punishment_sword\\divine_punishment_sword.geo.json",
+      "sha256": "aa85a8a4afc6cff5df27bd3ed9f55f4d5163332dd6fabefa34205f90a27f3b2e",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\divine_punishment_sword\\parts.json",
+      "sha256": "6cf33fcfd875946573aa073760e857e6f8c9c064c5d69c74946ff0bcbccdd9d1",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\mystery\\mystery.bbmodel",
+      "sha256": "f30082338b33da42cfc6f96ca79d94016385cf89ce4f96a9bbc8667edb425939",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\mystery\\mystery.geo.json",
+      "sha256": "bb7b8245b641f63cc28be64a10467d49dba9ce0701f027fbf4a38759256e5a93",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\mystery\\parts.json",
+      "sha256": "d2857a137e55aea9632c5145996164a51c48a4cfa44d60defe2d25d412ecd5e9",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\mystery_sword\\mystery_sword.bbmodel",
+      "sha256": "489b9ea7c19569f97932b8ddbef4daf15fc78055216a75d386e5e172caa10848",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\mystery_sword\\mystery_sword.geo.json",
+      "sha256": "9f402abbd091b9649774e38ec7f769fd7f35c853fc7f87a036c0dd5205c2431f",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\mystery_sword\\parts.json",
+      "sha256": "8b32f26acdeb79706b1319c6bb67e97f9b278fa885b6f03996cac6ff72c0bbb9",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\origin_dragon\\origin_dragon.bbmodel",
+      "sha256": "4ac782202c06b3e2cf4a7e5bccd960dd57be29ec7441e0b7150b532de89972ac",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\origin_dragon\\origin_dragon.geo.json",
+      "sha256": "16798b27319254d77dbfd4ba8a75c7d8f2637e3476cc853c3268143e8c289a8d",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\origin_dragon\\parts.json",
+      "sha256": "a1dd6fbeb4bfa480ae9003727e2aebbc24b275ac20fca91b05a8b31c9c18317b",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\origin_dragon_sword\\origin_dragon_sword.bbmodel",
+      "sha256": "25dc3df68fa6e9308d56ac1cda13b2620b7dd7b43e52e2f635f27306eea2af04",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\origin_dragon_sword\\origin_dragon_sword.geo.json",
+      "sha256": "2aabe3ef2abc7bd3c194cf0cdf55355092177fcf9d0ab6d0180ea9899d72b273",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\origin_dragon_sword\\parts.json",
+      "sha256": "f00f143000979e9db493d2b63545bd1aac615ec9d6e4ecf937a4a74380ba703b",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\spirit_source\\parts.json",
+      "sha256": "b44588dc0a1476f9fa1657cd7097f18f3ee6827757fa5bbeb436f8d29f35cc0f",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\spirit_source\\spirit_source.bbmodel",
+      "sha256": "4b5bb1e38f3b8397b9427f81b38f3ba19337c4acb780b6264d6d2ae5f944dcc7",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\spirit_source\\spirit_source.geo.json",
+      "sha256": "1643d0875ed741e0e158c3a4b4f446371137eb04bc513019b152009ba7513907",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\spirit_source_sword\\parts.json",
+      "sha256": "4408691d3b67834d4802553a3167d05227d42c7d41de09015cab5a1d2b51c1b0",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\spirit_source_sword\\spirit_source_sword.bbmodel",
+      "sha256": "5954923e9bcd28a76207cbc81b61d7ae0e65cceab0d9683d6ae7247d765e0407",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "art\\equipment_gecko\\spirit_source_sword\\spirit_source_sword.geo.json",
+      "sha256": "7c9134cbc5898d201cffdca7ebc04c36fe4dae52bbc9c33515d1fcc983f61345",
+      "removed_from_active_sources": false
+    },
+    {
+      "path": "tools\\equipment\\generate_equipment.py",
+      "sha256": "0f21b2967f5425cc477aadff9d35a86975bd536d8ada0ee941e397d91b91151a",
+      "removed_from_active_sources": false
+    }
+  ]
+}

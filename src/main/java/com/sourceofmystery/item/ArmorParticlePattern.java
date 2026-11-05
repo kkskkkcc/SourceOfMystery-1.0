@@ -121,16 +121,8 @@ public final class ArmorParticlePattern {
      */
     public static void emit(Player wearer, long gameTime, int busyMask, Emitter emitter) {
         ArmorMaterial material = ChestplateEffectHandler.getChestplateMaterial(wearer);
-        if (material == MysteryArmorMaterial.DIVINE_BLESSING) {
-            // 内环黑白两颗只做装饰，不参与攻击
-            double angle = baseAngle(gameTime);
-            double y = wearer.getY() + HEIGHT;
-            for (int i = 0; i < 2; i++) {
-                double a = angle + i * Math.PI;
-                emitter.emit(i == 0 ? WHITE : BLACK,
-                        wearer.getX() + DIVINE_INNER_RADIUS * Math.cos(a), y, wearer.getZ() + DIVINE_INNER_RADIUS * Math.sin(a));
-            }
-        }
+        // Divine inner black/white stars use models; the five outer satellites retain
+        // their original particle ring, including the original busy-mask suppression.
 
         SatelliteRing ring = attackRing(material);
         if (ring == null) {

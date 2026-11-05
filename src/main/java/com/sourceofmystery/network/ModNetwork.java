@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public class ModNetwork {
 
-    private static final String PROTOCOL_VERSION = "5";
+    private static final String PROTOCOL_VERSION = "8";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(SourceOfMystery.MOD_ID, "main"),
             () -> PROTOCOL_VERSION,
@@ -68,5 +68,11 @@ public class ModNetwork {
                 StaffEffectPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         CHANNEL.registerMessage(id++, StaffMiningPacket.class, StaffMiningPacket::encode, StaffMiningPacket::decode,
                 StaffMiningPacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL.registerMessage(id++, OfferingRollPacket.class, OfferingRollPacket::encode, OfferingRollPacket::decode,
+                OfferingRollPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CHANNEL.registerMessage(id++, DivineCinematicPacket.class, DivineCinematicPacket::encode, DivineCinematicPacket::decode,
+                DivineCinematicPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CHANNEL.registerMessage(id++, DivineCinematicDonePacket.class, DivineCinematicDonePacket::encode, DivineCinematicDonePacket::decode,
+                DivineCinematicDonePacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
     }
 }

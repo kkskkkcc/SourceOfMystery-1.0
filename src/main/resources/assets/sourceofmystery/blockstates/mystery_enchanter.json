@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "sourceofmystery:block/mystery_enchanter"
+    },
+    "facing=south": {
+      "model": "sourceofmystery:block/mystery_enchanter"
+    },
+    "facing=east": {
+      "model": "sourceofmystery:block/mystery_enchanter"
+    },
+    "facing=west": {
+      "model": "sourceofmystery:block/mystery_enchanter"
+    }
+  }
+}

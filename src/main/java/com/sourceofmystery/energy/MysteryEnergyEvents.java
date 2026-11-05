@@ -16,6 +16,7 @@ public class MysteryEnergyEvents {
 
     private static final int TICKS_PER_DAY = 24000; // Minecraft 每天 24000 tick
     private static final int DAILY_CHECK_INTERVAL = 20; // 每秒检查一次是否跨天
+    private static final int REGENERATION_INTERVAL = 20 * 10; // 每10秒自然恢复一次
 
     @SubscribeEvent
     public static void onPlayerJoin(PlayerEvent.PlayerLoggedInEvent event) {
@@ -40,14 +41,16 @@ public class MysteryEnergyEvents {
             return;
         }
         Player player = event.player;
-        if (player.tickCount % DAILY_CHECK_INTERVAL != 0 || player.getServer() == null) {
+        if (player.getServer() == null) {
             return;
         }
 
-        MysteryEnergy.regenerate(player);
+        if (player.tickCount % REGENERATION_INTERVAL == 0) {
+            MysteryEnergy.regenerate(player);
+        }
 
         // ==================== 每日回满神秘之能 ====================
-        if (!MysteryConfig.DAILY_REFRESH.get()) {
+        if (player.tickCount % DAILY_CHECK_INTERVAL != 0 || !MysteryConfig.DAILY_REFRESH.get()) {
             return;
         }
         ServerLevel overworld = player.getServer().getLevel(Level.OVERWORLD);

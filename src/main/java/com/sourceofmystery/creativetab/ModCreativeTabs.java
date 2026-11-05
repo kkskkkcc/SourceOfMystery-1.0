@@ -34,6 +34,7 @@ public class ModCreativeTabs {
                         output.accept(ModItems.GUARDIAN_ALTAR.get());
                         output.accept(ModItems.OUTSIDER_SPAWN_EGG.get());
                         output.accept(ModItems.DARK_DIMENSIONAL_OFFERING.get());
+                        output.accept(ModItems.MYSTERY_ENCHANTER.get());
 
                         // 武器
                         output.accept(ModItems.MYSTERY_SWORD.get());

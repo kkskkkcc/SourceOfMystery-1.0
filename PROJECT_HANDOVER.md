@@ -1,5 +1,11 @@
 # 神秘之源项目接手记录
 
+## 最新协作约束（2026-11-05）
+
+用户要求后续测试客户端默认静音。`tools/outsider/run_oculus_smoke.py` 和 `tools/offering/run_integrated_compat.py` 仅在隔离测试目录的 options.txt 设置 `soundCategory_master:0.0`，不得改变用户正常游戏实例音量。预览文件可以保留音轨，由用户自行播放；启动其他测试脚本前也要落实静音。
+
+用户提供宇宙升空 CG 的后续审美参考 https://www.bilibili.com/video/BV1NZxv6rEwJ/ 。具体访问限制、镜头实现与证据见 `docs/DIVINE_ASCENSION_CINEMATIC.md`。本文件是历史追加记录，当前发布信息以末尾最新日期小节及对应发布审计 JSON 为准，不能将下面旧标题的“当前正式版本”当成最新状态。
+
 ## 当前正式版本：光影法阵颜色、天空巨阵与云层遮挡修复（2026-10-20）
 
 已安装 `F:\AAAAmc\versions\1.20.1-Forge_47.4.20\mods\sourceofmystery-1.0.0.jar`，34,109,617字节，SHA256 `b20690a4a709f01534a33f78ccb074c03f76c2fb04b84bd16168cd511050ede2`。旧 f91b84a… 包在 build/release-backups/sourceofmystery-before-cloud-fix-f91b84a6857bde7856860bdcf37e1bef8280099f8370d6da7e3952f01e9bba49.jar。安装报告 build/archmage-cloud-installed.json，已核对安装包与发布包哈希一致。
@@ -92,7 +98,7 @@ Minecraft Java 1.20.1 / Forge 47.4.20 的 RPG 装备成长模组，Mod ID 为 `s
 | 功能 | 当前状态 | 验收重点 |
 | --- | --- | --- |
 | 神秘祭坛合成动画 | 已优化为约 7 秒流程，等待游戏内验收 | 材料上浮并稳定、以祭坛中心做天体环绕并逐圈收拢，能量球结束后是否只生成一次产物；祭坛被破坏时材料是否退回 |
-| 神威天佑胸甲神环 | 已修复渲染与贴图，等待重新游戏内验收 | 穿戴时胸口背后保持明显间距，显示四层带缺口、半透明法阵纹路神环并循环旋转，中心清晰显示“神”字；脱下胸甲后特效立即消失 |
+| 神威天佑胸甲神环 | 2026-11-05 已改为躯干装饰层并安装；普通/光影客户端通过，完整整合包复测按用户要求中止 | 随身体转向和潜行躯干倾斜，背面“神”字正立、无镜像；四层神环保持旋转，脱下胸甲即消失，盔甲架亦可展示 |
 
 ## 域外人外观审核（2026-10-18）
 
@@ -466,3 +472,197 @@ tools/outsider/FreeFlightAttachmentCheck.java 以实际新包装求解器测试1
 预览 build/post-intro-flight-preview/outsider-normal-flight-after-intro.mp4，34秒、43,822,007字节，无音轨；从原出场结束后开始，拍摄真实 Boss AI 自行巡游，非新出场动画、非动作路线代演。实际PBO/NVENC采样，60FPS容器不足时间槽重复实际采样帧，无光流补帧。光影录制1448实际渲染帧/34秒，不能声称锁60FPS。open_in_codex 返回queued，不代表用户已观看。
 
 已安装 F:\AAAAmc\versions\1.20.1-Forge_47.4.20\mods\sourceofmystery-1.0.0.jar，34,859,071字节，SHA256 9e2f00ad8f735cd6c7fc379e97ed8f4070d8a89f8e1e3c0018288590d64e2f52；源和安装文件哈希一致，重启生效。备份 build/release-backups/sourceofmystery-before-post-intro-flight-fix-0d8e91d00fb6b41da988d76e4dbc9df153068b1fb741c4ffed01529a4c1cb199.jar，安装记录 build/post-flight-installation.json。既有声音、末帧交接修复保持，未提交git，未覆盖其他开发改动。
+
+## 黑暗次元祭品升级为 GeckoLib 高精模型及可放置观赏方块（2026-11-05，当前已安装）
+
+用户要求祭品使用 GeckoLib 高精3D模型，可落地作为观赏方块，空手及任意工具均可挖回。用户通过问答明确选“外观优先：更细的镂空骨架和晶体层次”。本轮应用 blockbench-use / blockbench-modeling / blockbench-texturing 的建模、UV和实时预算规范；当前会话没有 Blockbench MCP 工具，已向用户说明，通过原生 GeckoLib JSON 与生成脚本制作，并用真实游戏验证，没有假称用 Blockbench 工具导出。
+
+原创造型：一格内黑曜石符文底座、银色曲面支爪、金银色交错双环、青色/紫色嵌线、悬空紫色16面尖晶核及小晶簇。409个Cube、18个骨骼、2374个导出四边面；512×512原创材质图与发光遮罩，普通表面8像素/模型单位，晶核16像素/单位。晶核用真实倾斜在空间的16个切面搭配紧凑三角形alpha遮罩构成体积，不使用层叠立方体造成阶梯条纹。渲染为cutout+发光，不依赖PBR；静态展示，不添加服务端tick计算。最初预览发现坐标转换方向导致环段不连接，已按 GeckoLib 原始导入坐标修正X/Z旋转符号，完整游戏截图确认环段连接、主晶核尖角与切面清楚。
+
+生成脚本 tools/offering/generate_offering_model.py；运行资源在 assets/sourceofmystery/geo/block/dark_dimensional_offering.geo.json、textures/block/dark_dimensional_offering{,_glowmask,_particle}.png、animations/block/dark_dimensional_offering.animation.json（静态无控制器）。可编辑几何、贴图、预算和说明拷贝在 art/dark_dimensional_offering/；该目录受现有art忽略规则影响，不要声称已提交版本控制，源生成器与运行资源可复现。未使用外部版权图像。
+
+DarkDimensionalOfferingItem 保持原 sourceofmystery:dark_dimensional_offering 物品ID，改为 BlockItem + GeoItem；新增同ID方块与方块实体注册，手持/GUI/掉落及落地显示共用 DefaultedBlockGeoModel 和 AutoGlowingGeoLayer。DarkDimensionalOfferingBlock 水平朝向、非完整不透明方块、亮度6、硬度0、无正确工具门槛；生存空手/木棍/木镐/斧头均立即破坏，loot table 掉同一个祭品1件。ModItems 原注册属性（单件堆叠、史诗、耐火）及唤魔者30%掉落不改；旧物品不需要重新获取。物品右键服务端先尝试原仪式，成功则消耗祭品并召唤，不放置观赏方块；否则按正常 BlockItem 放置。客户端对黑曜石点击不预先摆方块，交给服务器决策。中英文方块名及放置/召唤说明已补充。原出场导演、Boss飞行物理、动作、模型、语音音效和仪式类均未改。
+
+验证：build/offering-gecko-validation.log 的 build、shaderCheckJar、runGameTestServer 全部通过，4项必需GameTest通过（新增 OfferingDisplayGameTests.placeAndRecoverWithAnyTool，原有门框/实体/法杖回归仍通过）。新测试用真实生存 FakePlayer 调用物品 useOn 放置，检查消耗1件、正确方块实体、硬度/破坏进度；分别空手/木棍/木镐/铁斧经 ServerPlayerGameMode.destroyBlock 挖掘，确认掉落精确1件且不要求工具。最终模型美术修正后仅资源变化，build/offering-gecko-final-build.log 重建通过，不重复服务器代码测试。
+
+真实客户端通过 tools/outsider/run_oculus_smoke.py --offering-display --label offering-display-final-shaders，以及 --offering-display --vanilla --label offering-display-final-vanilla。每次均渲染第一人称手持、落地近景、另一侧全貌、GUI图标；调用真实已连接 ServerPlayer 手持祭品右键完整14黑曜石门，验证栈消耗、Boss进入原出场、没有误摆观赏方块。两套配置返回 OFFERING_DISPLAY_OK、正常退出，GL无错。主预览 build/offering-display-smoke/offering-display-final-shaders/screenshots/03-model-back.png（无UI全貌）；01-placed-and-held.png 同时看手持与落地。已查看这些截图，open_in_codex 返回queued不代表用户已查看。
+
+包内资源与最终源资产一致，新测试类没有进入正式JAR；与安装前9d031022...包逐条比较，Boss mesh/所有动作/音频/OfferingPortalRitual.class 保持逐字节一致，记录 build/offering-gecko-release-checks.json。原资产综合回归 build/offering-gecko-existing-assets.log 通过。
+
+已备份并安装到 F:\AAAAmc\versions\1.20.1-Forge_47.4.20\mods\sourceofmystery-1.0.0.jar，新35,692,287字节，SHA256 89d8ac5df82f8aeea8eb92c31131b497eacef2bbb0eaea8a224ec4b9fa32ebde；源与安装文件一致，重启生效。安装记录 build/offering-gecko-installation.json。备份 build/release-backups/sourceofmystery-before-gecko-offering-9d03102288def7314e853ae4f950ca797320434ff6f67e7ab22343f59fba1fc8.jar。本轮开始时已有 chat_history.md 的修改，未覆盖；未提交git，未修改或回退其他窗口的开发成果。
+
+## 黑暗次元祭品：虚空馈赠抽奖（2026-11-05，已安装）
+
+新增原生 Minecraft 容器界面，上方连续滚动物品条、金色固定指针，下方一个投入格及玩家物品栏。手持对空气右键或右键落地祭品打开；地面放置及有效14格黑曜石门召唤的既有优先级保留。每次确认消耗投入格整组物品和固定1000点神秘之能，产出默认实例的物品1件。客户端按渲染时间平滑减速约5.5秒，服务端负责估价、随机、扣费、最终发奖。价值高于投入整组总值时播放原版升级+水晶音，低于时播放低音+迪吉里杜低沉音，相等为短钟音；1000能量不折算到物品价值。沿用原生音效，没有修改此前Boss出场音频。
+
+实现：offering/OfferingMenus、OfferingMenu、OfferingValues、OfferingEscrow、OfferingLotteryConfig；client/OfferingLotteryScreen；network/OfferingRollPacket。注册菜单与屏幕、添加中英文文案，网络协议5升6，联机两端需一致。面板320×314，低GUI高度按比例适配，鼠标坐标与裁剪同步转换；真实客户端验证按钮鼠标点击及GUI缩放3的小窗口完整显示。
+
+自动奖池遍历服务端注册表，包含当前世界启用的非空气物品类型；不按投入档位屏蔽物品，每个候选都有正概率。根据品质、工具/护甲属性、食物、公共材料标签、原版矿物锚值和六轮有界配方推导自动估价，不能解析的动态配方保留属性估价。数量/实际耐久/附魔影响投入总值；自定义名称、任意NBT大小和容器内容不额外计价。奖池是物品类型，不枚举所有NBT变体/附魔组合。配置世界 serverconfig/sourceofmystery-offering-server.toml 的 valueOverrides 可指定其他模组单件估值，数据包全服同步/重载时失效重建。快照按服务器缓存，不逐帧扫描。权重公式及玩家操作在 docs/OFFERING_LOTTERY.md。
+
+每位玩家使用独立投入格，不共享方块库存。空格、能量不足、失效方块/超距、重复点击均不会产生额外扣费；已付款的奖品先写玩家persistentData，再播放滚动。未付费关闭退回投入；已付款关闭立即发同一个奖品，不能通过关界面重抽。满背包掉落并设置玩家拾取归属；登录/重生恢复未结算投入/奖励，Clone在神秘之能数据复制后清除旧实体托管数据。客户端只发原生菜单按钮请求，不能指定价值或结果。
+
+验证 build/offering-lottery-validation.log：build、shaderCheckJar、runGameTestServer 成功，6项必需GameTest全部通过。新增抽奖测试覆盖全部启用类型入池、低/高投入每个候选均正概率、提高投入提高期望价值、数量估价、空格/999能量不扣、恰好扣1000和整组、重复点击、提前关闭/定时完成各发1次、玩家隔离、玩家数据/Clone恢复、满背包实物掉落、方块消失菜单失效。原有4项实体/门框/法杖/祭品放置挖掘回归继续通过。
+
+真实生产Forge客户端：tools/outsider/run_oculus_smoke.py --offering-lottery --label lottery-shaders-final；--offering-lottery --vanilla --label lottery-vanilla-final。原生C2S方块交互、Shift投入、菜单按钮、服务端发奖和PlaySoundEvent确认两种声音均通过，并验证 lotterycompat 独立命名空间、无兼容代码的普通/史诗测试物品进入奖池且概率为正。普通渲染路线另验证手持空中右键打开、999能量的原生请求被拒且保留投入。最初光影测试因测试固定种子导致两轮相同提示token、第二次音效被去重而失败；仅修正隔离测试的不同轮次种子，保留失败日志，不将其描述为生产崩溃。
+
+最后追加小窗口自适应后 build/offering-lottery-responsive-build.log 成功；最终真实光影客户端 --offering-lottery --label lottery-responsive-shaders 再次完整通过，包含鼠标点击抽取、两种音效、手持开界面、能量不足及GUI缩放3完整显示。图像已人工查看，GL无错误。正式包全部条目与最终测试包内同名条目一致，测试类/lotterycompat资源未进入正式包。主预览 build/offering-lottery-smoke/lottery-responsive-shaders/screenshots/01-ready.png；03-win.png（4投入→17奖品）、04-loss.png（2359296投入→17488暗源之甲）、05-insufficient.png（小窗口999能量保留圆石）。这只是自动系统估值下的盈亏，不能据品质颜色判断。
+
+tools/offering/verify_lottery_release.py --install 已检查旧包到新包仅改动预期的9个既有条目（注册/交互/语言），新增抽奖类；168项既有网格、贴图、动作、音频以及其他原有类逐字节保持。正式包35,729,047字节，SHA256 b6e0a932a64c2dae2932bce20124d0d50c66eee53d03007f01a5c4e98b242d26，已安装 F:\AAAAmc\versions\1.20.1-Forge_47.4.20\mods\sourceofmystery-1.0.0.jar，源与安装哈希一致，重启游戏生效。备份 build/release-backups/sourceofmystery-before-offering-lottery-89d8ac5df82f8aeea8eb92c31131b497eacef2bbb0eaea8a224ec4b9fa32ebde.jar；审计/安装记录 build/offering-lottery-release-checks.json。未提交git，未覆盖既有 chat_history.md 或此前未提交成果。
+
+## 秘源附魔台、整合包稀有度兼容修复和幸运抽奖（2026-11-05）
+
+用户新增类附魔台，合成要求为 MSM / DED / OOO，其中M秘源锭、S下界之星、D钻石块、E附魔台、O黑曜石。用户明确选择“自动计价，可配置”。新增 mystery_enchanter 方块、BlockEntity、GeoItem、菜单、屏幕、创造页和工作台配方。外观按此前明确的外观优先偏好，使用 Blockbench 建模/UV/纹理规范；会话无Blockbench MCP，直接制作GeckoLib原生文件并告知用户。tools/enchanter/generate_enchanter_model.py 可复现黑曜石阶梯底座、秘源银色框架、钻石四角、镂空托架、真实立体下界之星，96Cube、504四边面、512atlas+glow、8px/模型单位，静态、无BE server ticker。art/mystery_enchanter下为可编辑geo及预算说明（art受已有忽略规则影响）。手持/物品栏/落地方块共用模型，钻石级镐采集掉自身1件。
+
+enchanter/EnchanterRules 按 Forge 完整附魔注册表索引，含模组、宝藏和非随机附魔；保留作者canEnchant、isAllowedOnBooks、互斥和原生等级限制，最大255。右侧搜索名称/ID，选择等级、附魔、单条退魔和全退魔。每次单格1件，Shift堆叠会分1件；普通书变附魔书，全退魔回普通书，诅咒可移除；不耗XP/青金石/书架。费用默认1000×稀有度权重系数×等级平方差，退魔100×系数×当前级；全退魔求和。系数10/rarity.weight截断到1..16。配置 serverconfig/sourceofmystery-enchanter-server.toml。未知附魔NBT在单条操作中保留，只有全退魔才删除；名称、耐久、自定义NBT不改。EnchanterEscrow用玩家根persistentData保存单人物品，闭界面/断线/Clone恢复；满背包掉落并设置归属。所有选择、费用、资格和修改由服务端执行。重复附魔同一级、冲突、无可退条目、能量不足不收费。协议升7。
+
+用户实测祭品右键崩溃，附件 d91730ee-e47a-4876-b506-ea59cfa4a1c8/已粘贴的文本.txt 及实际 F:\AAAAmc\versions\Integrated MC\crash-reports\crash-2026-11-05_15.17.30-server.txt 指向 OfferingValues.base:75 的 IncompatibleClassChangeError。根因是穷尽switch假设Rarity只有四项；Forge Rarity实现IExtensibleEnum，整合包新增枚举导致编译器default抛ICCE。已改可扩展if判断和保底估值；物品/配方/默认实例钩子对RuntimeException及LinkageError有隔离，不吞OOM等VM错误，不移除这些物品。新增真实第五种Rarity和恶意属性/default钩子GameTest，7项测试先通过。用户已回复“已退出游戏”以释放内存做完整隔离测试，未自行结束用户进程。
+
+实际主实例现在是 F:\AAAAmc\versions\Integrated MC（Forge47.4.28），原1.20.1-Forge_47.4.20也保留。tools/offering/run_integrated_compat.py 复制config/kubejs/resourcepacks，310个模组JAR只读硬链接到项目build，使用独立离线用户和全空世界，不读启动器账户，不修改用户存档。首次仅稀有度热修复真实整合包开界面、投入扩展稀有物、抽奖通过：22,251候选、33种Rarity、186扩展稀有物，最小概率2.40406740868549E-10，扣1000。记录 build/offering-integrated-compat/rarity-hotfix/compatibility.json；纯热修复归档在 build/offering-rarity-hotfix，后续最终综合测试复用同隔离目录和warm cache，launch.log会被最终运行替换。
+
+用户追加“好东西几率提升10%”与“幸运buff影响”。已向用户明确为相对提升10%，好物定义为奖品实际默认实例价值严格大于整组投入总值。候选Entry估值含默认NBT/附魔，先算原权重，再分好物/其他组重分配，让好物总概率×1.10，组内相对权重保留。幸运系数 max(.1,min(100,1+玩家Attributes.LUCK×.10))，包括原版幸运/霉运和模组装备幸运；幸运I再×1.10。概率接近1时保留其他候选的正概率，不造出奖池中不存在的更贵物品。配置 goodRewardChanceMultiplier=1.10、luckBonusPerPoint=.10；菜单同步服务端系数，界面显示“幸运+10%”“好物+10%”。每次1000点费用、按价值盈亏播放两类声音保持。
+
+build/enchanter-luck-validation2.log：build/shaderCheckJar/runGameTestServer成功，10项全部通过，包含附魔差价、重入、冲突、NBT保留、未知标签、诅咒、书转换、精确配方、放置采掘、扩展稀有度及原有所有回归。真实原版LUCK/UNLUCK效果概率测试：基线0.3923462645938458，+10%后0.4315808910532344，幸运I后0.47473898015855726，霉运0.38842280194791495；测试极高/极低幸运后每个候选仍正概率。首轮资源构建发现手工mineable标签与generated重复，已合并到generated并更新ModBlockTagsProvider，未设置忽略重复掩盖错误。
+
+最终独立客户端 --enchanter --vanilla --label enchanter-verified 通过，build/enchanter-client-build.log构建测试包。真实鼠标搜索、选择外部命名空间enchantcompat的宝藏且不可发现附魔、满级、附魔45000点、退魔1500点、自定义NBT/耐久保留，以及原生幸运I的抽奖UI和一次开奖均通过。enchanter-verification.json记录40类附魔。六张截图已查看，02-table-close.png为模型，03-enchantment-menu.png为界面，05-lucky-offering.png同时显示两项+10%。初次enchanter-final测试因测试场景高空传送未清fallDistance导致测试玩家摔死、流程超时，已只修测试场景清fallDistance并关闭隔离世界摔落伤害，重新成功，未修改正式世界的伤害规则。
+
+最终完整整合包运行 python tools/offering/run_integrated_compat.py --mode enchanter --artifact build/reobfShaderCheckJar/output.jar --label rarity-hotfix，16:12:28返回 ENCHANTER_SMOKE_OK，正常退出。环境为310个原模组JAR（本模组替换测试版），所有原配置/脚本/资源包的隔离拷贝；读取218类附魔（含1种enchantcompat测试类型，正式包不含该类型）、奖池22,252物品（含2种lotterycompat测试物品）。实际鼠标搜索、选择外部附魔、升三级、支付45000附魔、支付1500退魔并保留NBT、切到祭品界面携带原生幸运I、显示“幸运+10%/好物+10%”、支付1000抽奖和最终发奖全部通过。enchanter-verification.json及launch.log、六张截图在 build/offering-integrated-compat/rarity-hotfix；已查看完整整合包界面及幸运界面。正式包不含测试类/测试附魔/测试物品，所以不能向用户把218描述为正式包新增附魔数量。
+
+tools/enchanter/verify_enchanter_release.py --install 已确认：18个既有条目为预期注册、费用、稀有度/概率、界面、标签变化；此前168项模型、材质、动画、音频保持逐字节一致，其余既有类未改；工作台配方为精确指定材料；新模型源资产与正式JAR一致；正式JAR每个条目与真实测试JAR相同，所有测试资源/类均未打入正式JAR。审计和安装记录 build/enchanter-luck-release-checks.json。
+
+已同时安装 F:\AAAAmc\versions\Integrated MC\mods\sourceofmystery-1.0.0.jar 和 F:\AAAAmc\versions\1.20.1-Forge_47.4.20\mods\sourceofmystery-1.0.0.jar，两者及 build/libs 正式包哈希完全一致：35,989,142字节，SHA256 0620b93e0d9893a290380bb21cb0f1bcd2ff6f2f70ae71e18c869954a9b558ab。旧b6e0...包保存在 build/release-backups/sourceofmystery-before-enchanter-and-luck-b6e0a932a64c2dae2932bce20124d0d50c66eee53d03007f01a5c4e98b242d26.jar。用户已退出游戏，下一次启动生效；没有修改真实世界存档及配置，没有关闭用户进程，没有提交git，也没有覆盖既有chat_history.md修改。主外观预览 build/enchanter-smoke/enchanter-verified/screenshots/02-table-close.png，完整整合包幸运预览 build/offering-integrated-compat/rarity-hotfix/screenshots/05-lucky-offering.png。
+
+
+## 神威天佑神环挂载与文字方向修复（2026-11-05，当前已安装）
+
+用户要求修复神环固定在世界一侧、应作为胸甲模型外置装饰的问题，并明确“神”字为上下颠倒。根因是 RenderPlayerEvent.Post 已离开 LivingEntityRenderer 的身体朝向、缩放、模型坐标翻转等父矩阵；旧实现再叠 body 骨骼无法恢复整套变换，且旧注释错误地把模型正Y写为朝上。DivineBlessingHaloRenderer 已改为真正 RenderLayer，在父模型矩阵内挂接 HumanoidModel.body。ClientModEvents 用 EntityRenderersEvent.AddLayers 给正常/纤细玩家与盔甲架各注册一次，移除旧全局Post事件监听。背部局部偏移Y=.35、Z=.45，保持四层旋转、中心发光和装备材质判断。V=0对应模型-Y，背后阅读的U反向，修正上下颠倒和后视镜像；原五张神环贴图逐字节保留。删除第一人称相机全局跳过，背包纸娃娃可显示。
+
+build/divine-halo-build.log 的 build/shaderCheckJar 成功；补充测试场景后 build/divine-halo-client-build.log 测试包重建成功。真实普通客户端 tools/outsider/run_oculus_smoke.py --divine-halo --vanilla --label halo-vanilla 与光影客户端 --divine-halo --label halo-shaders 均返回DIVINE_HALO_OK并正常退出，后者日志确认ComplementaryReimagined_r5.9.3已启用。测试使用真正PlayerRenderer输出顶点，验证正常/纤细/盔甲架注册一次、身体转90度后神环跟转、保留调用方平移、图像上缘高于下缘、后视左右方向、潜行躯干倾斜、卸下胸甲和穿其他胸甲隐藏。最终测试包额外实际渲染本地玩家，确认第一人称相机时纸娃娃装饰不被误隐藏。各六张实际截图已查看；普通第一轮侧面转后机位被测试盔甲架挡住，已仅移动测试盔甲架，最终光影截图03/04/05清楚展示转后背面/潜行/卸甲。正式代码未因测试场景调整而变化。
+
+完整310 JAR整合包隔离复测 tools/offering/run_integrated_compat.py --mode halo --artifact build/reobfShaderCheckJar/output.jar --label divine-halo 已启动。用户随后明确“测试通过，不用在再测试了”，因此按要求停止此隔离Java进程PID42048；没有启动新测试。日志截至16:42:56.686仍为普通运行记录，无新crash-reports或hs_err_pid文件；脚本因子进程被外部中止，抛出Full-pack test failed断言。用户随后报告该窗口“崩溃”，已核对其发来的debug.log/latest.log正是本隔离实例并说明人为停止原因。不得把这次整合包神环复测记成通过，也不得将脚本中止断言当作Minecraft崩溃根因；状态记录build/offering-integrated-compat/divine-halo/test-cancelled.json。已有整合包网络请求、资源缺失、JEI加载耗时错误日志存在，但中止前没有神环渲染崩溃证据。
+
+发布审计 tools/divine/verify_halo_release.py --install 已完成，build/divine-halo-release-checks.json证明对上一版0620b93e...只有ClientModEvents.class与DivineBlessingHaloRenderer.class两条变化，其余正式包条目包括270项assets完全一致；正式类与真实测试包一致，测试类未入正式包。两实例F:\AAAAmc\versions\Integrated MC\mods\sourceofmystery-1.0.0.jar与F:\AAAAmc\versions\1.20.1-Forge_47.4.20\mods\sourceofmystery-1.0.0.jar均已安装，35,989,271字节，SHA256 657c999f209b7b23c94408b362a70d92858575d6686277f5623243a65069ecc1。备份build/release-backups/sourceofmystery-before-halo-0620b93e0d9893a290380bb21cb0f1bcd2ff6f2f70ae71e18c869954a9b558ab.jar。未改用户真实存档和配置，未提交git，保留chat_history.md和之前功能改动。重启真实实例加载新JAR。
+
+
+## 神秘之能自然恢复改为每10秒1%（2026-11-05，当前已安装）
+
+用户明确要求“每10s恢复当前玩家神秘之能上限的1%”。MysteryEnergyEvents 将自然恢复从每20tick触发改为每200tick触发（正常20TPS为10秒），仅服务端END阶段执行，恢复时读取玩家当时的上限。MysteryEnergy.regenerate 原有小数累计、上限封顶、不提高上限以及服务端同步保持。例：上限10000，每10秒恢复100；小于1点的结果保留到之后的恢复周期，不直接舍弃。每日回满机制及其每秒跨日检查保持原状。
+
+MysteryConfig 新命名ENERGY_REGEN_FRACTION，旧公共Java字段ENERGY_REGEN_PER_SECOND作为同一ConfigValue的Deprecated别名保留；TOML旧键energy.regenerationPerSecond保留兼容，值仍为0.01，但注释明确实际每10秒生效。两个真实实例配置均同步此说明和值0.01，其余配置未改，配置原文件分别备份在build/release-backups/Integrated MC-common-before-energy-regen.toml与1.20.1-Forge_47.4.20-common-before-energy-regen.toml。
+
+遵守用户此前“不再测试”的要求，本轮只执行Gradle assemble离线编译打包/重混淆，build/energy-regeneration-build.log记录BUILD SUCCESSFUL；没有启动客户端、服务器GameTest或完整整合包。tools/energy/release_regeneration.py完成发布包逐条比对、配置更新及双实例安装。相对上一版神环包只变更MysteryConfig/MysteryEnergy/MysteryEnergyEvents三类，以及配置源文件插入行导致重编译的两个内部类；两个内部类经javap -p -c -s确认运行字节码/API完全相同。其余所有正式包条目（包括神环修复、Boss、祭品、抽奖、附魔台及全部资产）逐字节一致。初次发布审计因新增行号引起两个内部类变化而中止在写入前，补充确认内部类字节码不变后才安装，没有跳过白名单验证。
+
+当前build/libs与两真实实例mods/sourceofmystery-1.0.0.jar哈希一致：35,989,446字节，SHA256 1d07c7ff6a55987d1a65920f60c3beb9eec6c6738acab840d575e6a3d3f12661。旧657c999f...包备份build/release-backups/sourceofmystery-before-energy-regen-657c999f209b7b23c94408b362a70d92858575d6686277f5623243a65069ecc1.jar。完整安装记录build/energy-regeneration-release.json。重启游戏加载新逻辑；不能宣称本轮实机测试通过。未提交git，未覆盖chat_history.md修改。
+
+
+## 神威天佑升级GeckoLib战神混沌胸甲、太极及贴甲流光（2026-11-05，当前已安装）
+
+用户要求将穿戴模型升级GeckoLib，风格为战神铠甲、混沌纹理，偶尔黑白神光贴甲流动。过程中先要求“不要一体，就胸甲”，随后明确最新口径：“虽然只是胸甲物品，但是穿戴效果允许有胸铠、护肩、臂铠和腰甲连成一体的穿戴外观，腰甲随腿部活动。黑白神光会短暂贴着现有甲面流过”。最新口径优先，最终采用完整穿戴外观，但只保留原胸甲物品/槽位。用户另指定中心菱形改太极，已替换为带金属圆框的黑白双鱼，不能回退成菱形。应用blockbench-use/modeling/texturing技能的预算、UV和导出规范；继承外观优先偏好，本会话没有Blockbench MCP连接，已说明通过本地程序生成原生资源与可编辑源文件，没有假称用Blockbench工具导出。
+
+新增DivineBlessingChestplateItem extends MysteryChestplateItem implements GeoItem，原注册ID不变，原材质DIVINE_BLESSING、+200生命及4d22fa12-dc4f-45ea-a2dd-2c94cb7defdb UUID、无限耐久、各效果处理器全部保留。只在客户端惰性创建GeoArmorRenderer，原物品图标、配方、神环挂载代码和资产原样保留。Geo模型158个Cube、6骨骼、943四边面/1886三角形；根骨armorBody/armorRightArm/armorLeftArm/armorRightLeg/armorLeftLeg，taiji_emblem子骨挂到armorBody。肩臂随手臂，腰甲分别随左右腿，渲染器对胸甲槽启用腿骨可见性，避免原生胸甲槽隐藏腿骨后腰甲消失。没有新增头盔/护腿/鞋子物品，也没有骨骼物理或服务端ticker。
+
+战甲为黑色混沌涡纹、银色包边、旧金嵌线，分层胸背铠、护肩、臂铠、腰甲；太极黑白图案原创程序绘制，16段真实厚度金属边框。单512基础图、两张512流纹，不依赖PBR。基础UV固定8像素/模型单位，太极图案有意16像素/单位；全部943面UV比例/边界检查。黑白神光用同一已摆姿盔甲网格重绘、专用可平铺UV移动，13.6秒周期中约3秒短暂出现，连续partialTick时间与平滑淡入淡出，不同玩家UUID错开相位。黑层普通半透明暗影、白层eyes发光；没有漂浮粒子。太极透明圆形面片单独排除流光重绘，try/finally恢复骨骼可见性，避免滚动流纹填充圆图的透明方形角、遮挡双鱼。
+
+tools/divine/generate_divine_armor.py重建运行资源与art/divine_blessing_armor/的bbmodel、贴图、parts.json、asset-plan.json。bbmodel为标准Bedrock逐面UV可编辑源，组树与骨骼一致；该art目录受现有Git忽略规则影响。tools/divine/preview_divine_armor.py直接从同几何和UV离线生成正/背/侧/神光/方格UV/摆腿六张CPU静态预览，均已查看。静态图不是游戏截图，也不是动作播放验收；用户可见的旧纯胸甲/菱形预览已被同路径最新模型覆盖。最终图art/divine_blessing_armor/preview_front.png与preview_flow.png均为1200×1200。说明docs/DIVINE_BLESSING_ARMOR.md含接口来源链接与验证边界。
+
+build/divine-armor-final-build.log记录最终assemble成功；仅编译、打包、重混淆与静态美术检查，尊重用户“不再测试”，没有启动游戏客户端、服务器GameTest或整合包。不能宣称实际穿戴/步态/光影已实机通过，运行时帧率未知。tools/divine/release_divine_armor.py --install发布比对：相对上一1d07c7ff...正式包，只有ModItems.class这一既有条目改变，新增6个装备/渲染类与7项美术资源，其余既有条目及270项assets逐字节一致。确认之前神环、Boss、祭品、附魔台、抽奖和神秘之能每10秒恢复1%逻辑保持。
+
+已安装两真实实例F:\AAAAmc\versions\Integrated MC\mods\sourceofmystery-1.0.0.jar与F:\AAAAmc\versions\1.20.1-Forge_47.4.20\mods\sourceofmystery-1.0.0.jar，与build/libs正式包完全一致：36,277,772字节，SHA256 7b7a70bdee9d6f3a949949edd41eb76e570ab3031e681f6da6e8e0dd0382d2ed。备份build/release-backups/sourceofmystery-before-gecko-armor-1d07c7ff6a55987d1a65920f60c3beb9eec6c6738acab840d575e6a3d3f12661.jar。完整安装记录build/divine-armor-release-checks.json。重启游戏生效，旧胸甲不需重新获取。未提交git，保留chat_history.md等既有工作改动，未修改真实游戏存档与配置。
+
+
+## 神威天佑肩部穿模修正（2026-11-05，当前已安装）
+
+用户提供真实穿戴截图C:\Users\ADMINI~1\AppData\Local\Temp\0168e982-7180-478e-adc5-d49fdb02469e.png，俯视可见护肩内侧露出皮肤肩部。核对旧模型：斜护肩内侧下沉，上臂内衬仅到Y23.3；本机Minecraft PlayerModel.createMesh袖层外扩0.25，原生肩顶在同一臂骨参考系可到Y24.25。之前无玩家身体的空甲预览不能观察这种穿模，不应因此前编译或预览成功就判定实际穿戴合格。
+
+只调整generate_divine_armor.py中左右bicep_liner：中心X从±6.1改为±6，Y从20.4改为20.9；尺寸4.15×5.8×4.35改为5×7.1×5，顶部24.45包住肩顶和外层，表面取现有混沌金属材质0。仍挂原左右手臂骨骼，所有其他部件、太极、肩甲造型、腰甲、流光和装备能力保持，模型仍158Cube、6骨骼、943面。源bbmodel、parts、asset-plan与静态预览同步更新。
+
+新增tools/divine/inspect_shoulder_fit.py离线几何覆盖检查，原生参照已通过本机映射依赖的javap核对（build/player-model-arm-fit-api.txt）。普通/纤细左右臂各3750肩部表面点，旧版未覆盖1196/1358/1196/1358点，修正后全部0；5种共同手臂刚性姿态包围检查通过，最小余量0.2模型单位。报告build/divine-shoulder-fit.json含模型源文件SHA防止复用旧结果。这是离线几何证据，不能当作实际Minecraft/MMD皮肤运行通过。预览器加入真实尺寸白色原生袖层示意，俯视preview_shoulder_before.png复现两边白色肩块，preview_shoulder_after.png显示混沌肩套完整覆盖，均已查看；这些是CPU模型预览而非用户游戏截图。此前用户要求不再启动游戏测试，本轮没有启动客户端、整合包或GameTest。
+
+build/divine-shoulder-final-build.log记录最终assemble/重混淆成功。tools/divine/release_shoulder_fit.py --install审计：正式包相对7b7a70...仅assets/sourceofmystery/geo/armor/divine_blessing.geo.json一项变化，逐骨骼排除左右bicep_liner后整个模型JSON完全相同，所有其他正式包条目（所有类、全部纹理/声音、神环、10秒1%恢复等）逐字节一致。两实例mods中的正式包与build/libs一致：36,277,780字节，SHA256 3fd5ed68092364d959315c0e04f8c540fbce746844522548fa25eee90da7672a。安装使用同目录.updating临时文件后os.replace原子替换，没有原地覆写打开的ZIP句柄，也没有结束用户游戏进程。两实例均安装成功，无pending文件。
+
+备份build/release-backups/sourceofmystery-before-shoulder-fit-7b7a70bdee9d6f3a949949edd41eb76e570ab3031e681f6da6e8e0dd0382d2ed.jar，安装记录build/divine-shoulder-release-checks.json。说明docs/DIVINE_BLESSING_ARMOR.md已补肩部修复和证据边界。重启游戏加载修正；未提交git，保留chat_history.md等原工作改动，未改真实存档与配置。
+
+
+## 神威天佑首次穿戴登神 CG、用户王座灰白比例版（2026-11-05，当前已安装）
+
+首次穿戴服务端单独通知穿戴者，其他人摄像头不调用。CG 玩家使用原版普通/纤细 PlayerModel 与本人皮肤、原有装备和附加渲染层；MMD 身体替换层跳过。真实玩家停留原地，客户端在高空舞台绘制宇宙地球、白色五阶、悬浮原神威天佑模型、王座。原始要求基础上按用户“史诗/荣誉/神圣感”延长至64.7秒：前4秒加速升空，环绕与近景、天阶揭示、拾级而上、对视触甲、强神光授甲、观察自身、凝视王座3秒，然后恢复。八组原创程序音效与宇宙合唱/钟鸣，授甲触发真实持久成就sourceofmystery:ascend_divinity及彩虹提示「登神」。
+
+地球使用NASA官方Blue Marble 2048×1024原图（RGBA转换保留RGB），来源https://svs.gsfc.nasa.gov/2915/ ，附运行资源CREDITS。最初自制217 Cube王座已被用户否定，不得继续使用旧预览或运行generate_divine_throne.py覆盖新模型。现使用用户神秘之源素材/王座.zip中的madmaggie_throne_01_static_LOD0.obj.glb，SHA256 54d6aa4e2b458b9f2905e66677ffb417346336de95b7ac931eb5207b9266c925。原1713三角面/5139顶点、UV、原贴图字节保留，以GeoObjectRenderer/GeckoLib baked GeoQuad渲染。源压缩包没有许可文件，不称原创。
+
+用户最新强调“椅子比人大太多”及“只能灰白色”，最终尺寸由高4.65米改为宽1.65×高2.30×深1.50米，高度约玩家1.28倍，收短座深/底座；非等比缩放对法线作逆转置。动态材质所有像素R=G=B：白框架、中灰座面靠背和深灰雕刻阴影，移除金与蓝染色。王座位置移到舞台Z=-7.7，距离玩家终点3.9米，最终机位朝向及头部俯仰同步适配。导入工具tools/divine/import_throne.py；源与报告art/divine_cinematic/imported_throne/。最终同框截图build/divine-cg-smoke/gray-throne-final/screenshots/10-throne.png。
+
+持久首次标记divine_blessing_first_equip_v1，结束恢复摄像头类型/原视线/GUI/重力；真实坐标不变，动画期间禁止伤害和交互。Esc可跳过；OP2穿戴时/somdivinecg可重看。网络协议升为8，联机两端必须一致。原门框召唤仪式仅增加与该CG互斥守卫，原Boss导演/动作/物理/音效未变。异常重登恢复收据、会话超时/死亡/换维度/退出清理均实现，尚未逐项运行异常路径实测。
+
+build/divine-cg-gray-throne-build.log离线assemble/重混淆成功。真实隔离客户端build/divine-cg-smoke/gray-throne-final/完整正常速度播放（seek_diagnostics=false），首次触发、真实坐标不变、摄像头/视线/GUI/重力恢复、第二次穿戴不重播、真实成就授予检查通过；10关键镜头及恢复截图，3829个渲染帧，中位16.8094ms，P95 17.8756ms，最大129.6666ms。环境Forge47.4.20+GeckoLib4.8.4+Embeddium+Oculus关闭光影；未进真实存档，未跑完整约310模组整合包，不能据此宣称全部饰品/MMD/光影均已运行通过。早期黑屏失败及旧椅子诊断保留，不当作当前验收。
+
+最终游戏录制预览art/divine_cinematic/divine-ascension-gray-throne-preview.mp4，1280×800、60fps编码、约64.7秒，配完整原创音轨；全部视频帧/音频解码检查通过。记录build/divine-cg-preview-mux.log与streams.txt。编码60fps不等于无卡顿，实际帧时间以上述报告为准。
+
+发布工具tools/divine/release_cinematic.py --install以肩部修正3fd5ed68...正式包审计，既有盔甲/神环/Boss/音频/能量10秒1%/抽奖/附魔台资产逐字节保留，语言及声音旧键、旧Mixin映射保留，只有CG接入点/注册、网络、材质重载与仪式互斥等预期已有类变化；测试和录像类不进入正式包。正式包与实际测试包的生产条目逐字节一致。双实例安装成功，无pending，原子替换并备份旧包，没有终止用户其他游戏或修改真实存档配置。
+
+正式包SHA256：305aa53ace0ef89b0eaeead6b140de966370f868a1fabb0910024c908ee9f242，40583693字节。两目标：F:\AAAAmc\versions\Integrated MC\mods\sourceofmystery-1.0.0.jar、F:\AAAAmc\versions\1.20.1-Forge_47.4.20\mods\sourceofmystery-1.0.0.jar。完整审计安装记录build/divine-cg-release-checks.json，备份build/release-backups/sourceofmystery-before-divine-cg-3fd5ed68092364d959315c0e04f8c540fbce746844522548fa25eee90da7672a.jar。重启游戏生效；以前已有胸甲但尚无此首次标记的玩家，下次穿戴会触发，可用OP命令重看。说明docs/DIVINE_ASCENSION_CINEMATIC.md。未提交Git，保留chat_history.md等其他已有工作。
+
+
+## 登神地表至轨道连续升空、后续测试静音（2026-11-05，最新已安装）
+
+用户指出旧升空在高空后黑场直接进入宇宙，缺少地球过渡，另给出视频参考https://www.bilibili.com/video/BV1NZxv6rEwJ/，要求后续模组类似宇宙CG可学习。浏览器实际读到标题《轨道炮作者最新武器——SS-06 Gravitia》，但播放器截图/控制多次超时，元数据API返回HTTP412；未逐帧完整观看，不得称已复刻或凭标题编造镜头。链接与后续审美方向已保存在docs/DIVINE_ASCENSION_CINEMATIC.md。用户随后明确“下次测试不要开声音”：两个隔离启动器run_oculus_smoke.py及run_integrated_compat.py默认写soundCategory_master:0.0；不改真实游戏实例音量，不自动播放预览声音，之后其他测试启动方式也应落实静音。
+
+升空改为8秒，总CG68.7秒；真实所在地摄像头先加速抬升并俯瞰地形，2.35秒起穿过双层流动云带，3.6秒云中衔接本地球体场景，持续拉远同一NASA地球、显出弧形地平线/蓝色大气薄边/渐现星空，最后转向玩家，8秒位置/视线/FOV与环绕机位连续。删除旧进入宇宙的黑场；云中仍有坐标衔接，没有把真实Minecraft世界弯成球。其后登阶、触甲、授甲、观察与王座定格保持，时间整体顺延4秒。八组原创音效与完整音轨同步68.7秒。王座继续宽1.65高2.30深1.50米，仅中性灰白，模型及材质相关类与305aa53a...版逐字节一致。
+
+实现补充：地球用线性采样避免近景硬像素；单位球几何缓存，消除大气逐顶点临时Vec3分配；启动镜头前预载纹理与王座动态材质。新增仅客户端DivineMouseInputMixin，在原生MouseHandler消费鼠标增量之后、转动玩家之前阻止CG期间转向，避免结束恢复间隙被鼠标改变；最终停止再次恢复视线。网络仍协议8。原甲/神环/Boss全部音画、神秘之能每10秒恢复1%、抽奖、附魔台逻辑保持。
+
+失败证据保留：earth-ascent-final在完整播放后因视线恢复断言失败；earth-ascent-polished功能通过但1.456秒单帧峰值，过渡截图明显迟到；earth-ascent-release在开头镜头迟到断言失败。发现录像器初始化发生在CG开始后，测试夹具改为穿戴前准备PBO/外部编码器；比较视线使用真正动画开始时的收据，角度按wrapDegrees比较，非提前一个服务端请求周期的快照。最终仍保留升空各关键镜头不能迟到超过0.5秒的检查，没有放宽为不检查。
+
+最终build/divine-cg-ascent-silent-final-build.log assemble成功；真实隔离客户端build/divine-cg-smoke/earth-ascent-silent-final完整正常速度、静音播放通过，报告seek_diagnostics=false、test_client_master_volume=0，首次触发/真实坐标不变/相机GUI视线重力恢复/第二次不重播/登神真实授予/机位连续全部通过。14个关键镜头及恢复截图；地球弧面4.913秒、拉远6.407秒、轨道7.808秒，无关键过渡镜头跳过。4020帧，中位16.7026ms，P95 18.6122ms，最大814.8904ms，仍有个别停顿，不能宣称全程无卡顿或把60fps编码当实际帧率。仅Forge+GeckoLib+Embeddium+Oculus关闭光影，未跑完整整合包/多玩家/实际所有饰品MMD和异常重登路径，边界同CG说明。隔离测试世界为有草地表面的测试地图，未使用用户存档。
+
+已导出完整预览art/divine_cinematic/divine-ascension-earth-ascent-preview.mp4（68.7秒、1280x800、60fps编码，保留原创音轨），前10秒art/divine_cinematic/divine-earth-ascent-first-10s.mp4。完整预览所有视频帧与音频解码通过，报告build/divine-cg-ascent-preview-checks.json；旧gray-throne-preview.mp4为历史64.7秒版，不能当最新版。未自动播放任何预览声音。
+
+最新正式包SHA256 c5f6a2b6a8e1ee19e4073e30f9a4d4217d2f9b3b18b43933fa494a60d5e13bf3，40713261字节，已原子安装到Integrated MC与1.20.1-Forge_47.4.20两实例mods，无pending。build/divine-cg-release-checks.json验证所有生产条目与实际测试包相同，旧资产/语言键/声音键/Mixin映射完整保留，测试类未入正式包；额外检查原灰白小王座完整保留。原肩修3fd5ed68...及上个305aa53a...正式包都有备份。重启加载；已经触发过首次标记者，穿戴胸甲用OP2命令/somdivinecg重看。未提交Git，未回退其他窗口成果，保留chat_history.md等既有改动。
+
+
+## 2026-11-06：武器模型被拒绝，停止本窗口武器工作
+
+用户明确拒绝本批武器模型，并表示交给其他模型。本窗口停止武器建模、修改和发布；当前草稿不得作为验收成品。接手说明见 `docs/WEAPON_MODEL_HANDOFF.md`。四件胸甲和五把剑的工作目录改动尚未发布，草稿未删除、未全局回退。两处正式游戏实例 JAR 已重新核对，SHA256 仍为 `c5f6a2b6a8e1ee19e4073e30f9a4d4217d2f9b3b18b43933fa494a60d5e13bf3`。构建与隔离渲染检查不能替代用户外观验收。
+
+
+## 2026-11-06：胸甲验收授权撤回，全部装备草稿停止交付
+
+用户最新明确：胸甲也不允许验收，后续由用户指挥一件件完成。此前“胸甲模型允许交付”的授权已撤回。本批四件胸甲及五把剑全部为未通过草稿，停止打包、安装和自主重设计；等待用户指定单件任务。撤回前仅做了只读检查，尚未开始拆分、构建或安装，正式游戏实例没有因本批装备草稿发生更新。旧草稿保留供查阅，不得视为批准成品。
+
+
+## 2026-11-06：神威天佑周身卫星 GeckoLib 候选版，待用户看外观
+
+用户单独指挥升级神威天佑卫星。已实现黑白三维星芒与五元素球面模型，16 tick 位移渐隐、稳定3 tick后24 tick渐显；仅改变可见度，原服务端伤害、能量、冷却与返回保持。新位置包同步本人及追踪玩家，协议9。旧神威天佑环绕尘埃和飞行拖尾停用，原命中反馈保留，暗源与龙甲粒子保持。说明 docs/DIVINE_SATELLITES.md，模型与预览 art/divine_satellites/。
+
+先前五把剑和四件胸甲仍未通过，不能直接发布 build/libs。tools/divine/prepare_satellites_candidate.py 从原正式包仅覆盖卫星白名单，生成 build/divine-satellites/sourceofmystery-1.0.0.jar，SHA256 af6ec5bce34525bd1ba6969574ed6702a49faaad3d6de9a4545be483cb5010c8，41451678字节。其他底包条目逐字节保持，被拒装备不在本候选中，神威天佑甲体/背环/CG保持。测试包生产条目与候选一致。
+
+最终离线构建 build/divine-satellites-shader-fix-build.log 成功。真实隔离客户端 vanilla-final、shader-final 均静音通过：渐隐alpha0.4375，移动0，停下1；完全隐藏期间目标生命1800->1600，真实攻击位置接收、脱甲清理通过。光影为Oculus+ComplementaryReimagined_r5.9.3，首轮黑星被发光通道染白，改用保色透明通道，最终截图人工核对。日志有测试模板遗留GeckoLib示例/lotterycompat映射和Oculus/Embeddium提示，不是零ERROR。未测完整整合包或真实双客户端联机。核对报告 build/divine-satellites/review-verification.json。
+
+preview-idle.png、preview-fading.png、preview-hidden.png、preview-attack.png及preview-shader系列均为真实客户端截图原图。状态 PENDING_USER，尚未安装。两正式实例已实际核对仍为 c5f6a2b6a8e1ee19e4073e30f9a4d4217d2f9b3b18b43933fa494a60d5e13bf3。按用户逐件指挥和先预览的约定，功能检查通过不代表模型外观已验收。
+
+
+## 2026-11-06：球体版被拒绝，外环改为五元素古文字透明贴图模型
+
+用户明确不允许通过球体版，指定五个元素对应的古代文字（象形字）及颜色，模型是贴图。当前外环已改为木绿、金黄、水蓝、火红、土橙五个原创古字形透明贴图面，参考港中文汉语多功能字库甲骨/金文字形特征作艺术化重绘，不宣称某件文物或同一时代字体的逐笔复制。每张512×512，模型0.62米正方形、2个有效三角面。朝向各自观察者，保持字形正面向上；移除球体几何，新候选包审计禁止divine_satellite_orb条目。内环星光资产与服务端攻击相关类均与被拒球体版逐字节保持，淡入淡出与隐身攻击继续工作。
+
+外环生成器 tools/divine/generate_satellite_glyphs.py；generate_satellites.py默认入口也路由到新生成器，旧球面辅助函数不再调用。SVG笔画、字形总览、glyph模型源及预览在 art/divine_satellites/；球体旧包、源模型、贴图与记录已复制归档 rejected-spheres/ 并标记REJECTED_BY_USER。不要把旧preview-idle.png、旧球体测试记录或上一候选af6ec5bc...视作新版或已验收。
+
+最终候选 build/divine-satellites/sourceofmystery-1.0.0.jar，SHA256 d6cae511313189d13abf980f4c2ebf4ee7704c3ecc3d03a28cfa37575c2510bd，40929405字节。只覆盖允许的卫星类和资源，排除被拒绝的五把剑与四件胸甲，原神威天佑甲体/背环/CG及其他底包条目保留。离线构建 build/divine-satellite-glyphs-build.log 成功。真实静音隔离客户端 glyphs-vanilla 与 glyphs-shader（Oculus+ComplementaryReimagined_r5.9.3）均通过，含新增的相反视角截图；已人工检查字形正向、颜色和透明背景，未见球体。移动alpha0，停下1，渐隐中0.4375；隐藏期间真实目标生命1800->1600；脱甲清理通过。模型外观由用户验收，仍PENDING_USER，未安装。原正式两实例核对仍c5f6a2b6...。
+
+核对 build/divine-satellites/review-verification.json；新预览路径为 glyph-preview-idle.png、glyph-preview-opposite.png、glyph-preview-hidden.png、glyph-preview-attack.png 与 glyph-preview-shader-*，字形总览 glyphs-overview.png。当前说明 docs/DIVINE_SATELLITES.md。未测完整整合包、真实双客户端联机，测试模板旧映射与Embeddium/Oculus提示仍在，不称零ERROR。
+
+
+## 2026-11-06：最新指令——外环恢复原粒子，内环黑白模型保留
+
+用户在提出缩小古字后又指令“外环五个卫星回退为以前的粒子效果”。缩小25%的方案随外环模型方案一起失效。当前外环已恢复原五色粒子、出击/环绕/返回拖尾，按原逻辑移动时仍显示；内环黑白GeckoLib星芒及渐隐渐显保持。删除外环模型绘制和位置包，原SatelliteAttackHandler/ModNetwork源码及生产类恢复，协议8，额外同步取消。ArmorParticlePattern只省略内环旧粒子，外环原发射路径恢复，防止出击时同时留在身边。
+
+构建 build/divine-outer-particles-build.log 成功；outer-particles真实静音客户端通过：恰好5颗待命粒子、忙碌位31时0颗待命、实际目标生命1900->1600、内环alpha移动0/停下1、脱甲清理。人工查看实机图确认只有五色粒子与黑白星芒，无字形/球体。服务器攻击、网络、原客户端粒子处理与服务端广播类已和底包逐字节核对。未重跑此版开启光影或完整整合包。
+
+候选SHA256 d73ce1d5d75b31b8cf6313155922c4f93747ec406931b8e171da552adf303f37，40732572字节；仍未安装，实际正式两实例均保持c5f6a2b6a8e1ee19e4073e30f9a4d4217d2f9b3b18b43933fa494a60d5e13bf3。候选仍从原正式包按允许条目覆盖，不含被拒武器/胸甲。新审计 build/divine-satellites/review-verification.json，说明 docs/DIVINE_SATELLITES.md，新预览 outer-particles-preview-idle.png、opposite/moving/attack。旧字形历史与源码在reverted-outer-glyphs/，默认生成器已只生成内环星芒，不再生成外环模型。
+
+
+## 2026-11-06：用户批准实装，并要求同步 GitHub 当前进度
+
+已将内环黑白星芒模型、外环原五色粒子版本原子安装到Integrated MC和1.20.1-Forge_47.4.20，两目标SHA256均d73ce1d5d75b31b8cf6313155922c4f93747ec406931b8e171da552adf303f37，40732572字节，升级前c5f6a2b6...包已校验备份。安装收据build/divine-satellites/installation.json，无pending。用户已批准本版本实装，之前“待用户、未安装”的记录是历史状态。
+
+为使GitHub主源码默认构建与实装内容一致，被拒绝的五把剑、四件胸甲模型及活动Java接线/资源已归档到drafts/equipment_gecko，原武器类、四件胸甲注册、数据生成器和旧贴图/物品模型恢复；未改神威天佑。外环古文字模型和工具归档drafts/divine_satellites。全部草稿源、可编辑bbmodel与生成器保留，不属于Gradle源集，不会在默认构建中再次启用。chat_history.md等既有进度保留。
+
+仅清理编译类/资源输出缓存后离线assemble shaderCheckJar成功（build/github-progress-source-build.log），重建生产包与已安装包所有条目名称及内容逐字节一致，新增0、缺失0、变化0，审计build/github-progress-source-equivalence.json；整JAR哈希可因ZIP元数据不同而变化。未另开游戏或重跑完整整合包。当前总进度docs/PROJECT_PROGRESS.md，公开验证摘要docs/releases/2026-11-06-inner-star-satellites.json。GitHub目标origin main（kkskkkcc/SourceOfMystery-1.0），以最终推送收据为准。

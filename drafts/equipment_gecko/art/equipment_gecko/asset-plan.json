@@ -1,0 +1,121 @@
+{
+  "user_direction": "fresh designs by equipment name and progression rank; no inherited pixel-art motifs",
+  "preference": "appearance first",
+  "target": "Java 1.20.1 Forge / GeckoLib 4.8.4, desktop; 1-8 visible wearers",
+  "shading": "opaque/cutout painted metal, cloth and emissive inlays; no PBR dependency",
+  "render_passes": "1 base + 1 masked emissive, excluding native enchantment glint",
+  "rig": "worn armor follows native torso, arms, and independent leg-bound tassets; rigid weapons follow native hand swing",
+  "budget_cubes_per_model": 180,
+  "texel_density": 8,
+  "assets": [
+    {
+      "id": "mystery",
+      "cubes": 70,
+      "bones": 5,
+      "quad_faces": 420,
+      "triangles": 840,
+      "texture": 512,
+      "density_px_per_model_unit": 8,
+      "uv_density_verified": true,
+      "theme": "mineral reliquary, recessed cyan ore, tempered teal steel",
+      "runtime": "F:\\神秘之源1.0\\MCmodfind\\src\\main\\resources\\assets\\sourceofmystery\\geo\\armor\\mystery.geo.json"
+    },
+    {
+      "id": "mystery_sword",
+      "cubes": 22,
+      "bones": 1,
+      "quad_faces": 132,
+      "triangles": 264,
+      "texture": 1024,
+      "density_px_per_model_unit": 8,
+      "uv_density_verified": true,
+      "theme": "mineral reliquary, recessed cyan ore, tempered teal steel",
+      "runtime": "F:\\神秘之源1.0\\MCmodfind\\src\\main\\resources\\assets\\sourceofmystery\\geo\\item\\mystery_sword.geo.json"
+    },
+    {
+      "id": "spirit_source",
+      "cubes": 75,
+      "bones": 5,
+      "quad_faces": 450,
+      "triangles": 900,
+      "texture": 512,
+      "density_px_per_model_unit": 8,
+      "uv_density_verified": true,
+      "theme": "living emerald, ivory leaf plates, branching vines",
+      "runtime": "F:\\神秘之源1.0\\MCmodfind\\src\\main\\resources\\assets\\sourceofmystery\\geo\\armor\\spirit_source.geo.json"
+    },
+    {
+      "id": "spirit_source_sword",
+      "cubes": 26,
+      "bones": 1,
+      "quad_faces": 156,
+      "triangles": 312,
+      "texture": 1024,
+      "density_px_per_model_unit": 8,
+      "uv_density_verified": true,
+      "theme": "living emerald, ivory leaf plates, branching vines",
+      "runtime": "F:\\神秘之源1.0\\MCmodfind\\src\\main\\resources\\assets\\sourceofmystery\\geo\\item\\spirit_source_sword.geo.json"
+    },
+    {
+      "id": "dark_source",
+      "cubes": 81,
+      "bones": 5,
+      "quad_faces": 486,
+      "triangles": 972,
+      "texture": 512,
+      "density_px_per_model_unit": 8,
+      "uv_density_verified": true,
+      "theme": "ink-black void armor, amethyst eye, broken star edges",
+      "runtime": "F:\\神秘之源1.0\\MCmodfind\\src\\main\\resources\\assets\\sourceofmystery\\geo\\armor\\dark_source.geo.json"
+    },
+    {
+      "id": "dark_source_sword",
+      "cubes": 28,
+      "bones": 1,
+      "quad_faces": 168,
+      "triangles": 336,
+      "texture": 1024,
+      "density_px_per_model_unit": 8,
+      "uv_density_verified": true,
+      "theme": "ink-black void armor, amethyst eye, broken star edges",
+      "runtime": "F:\\神秘之源1.0\\MCmodfind\\src\\main\\resources\\assets\\sourceofmystery\\geo\\item\\dark_source_sword.geo.json"
+    },
+    {
+      "id": "origin_dragon",
+      "cubes": 82,
+      "bones": 5,
+      "quad_faces": 492,
+      "triangles": 984,
+      "texture": 512,
+      "density_px_per_model_unit": 8,
+      "uv_density_verified": true,
+      "theme": "primeval dragon scales, bronze horns, amber ember heart",
+      "runtime": "F:\\神秘之源1.0\\MCmodfind\\src\\main\\resources\\assets\\sourceofmystery\\geo\\armor\\origin_dragon.geo.json"
+    },
+    {
+      "id": "origin_dragon_sword",
+      "cubes": 37,
+      "bones": 1,
+      "quad_faces": 222,
+      "triangles": 444,
+      "texture": 1024,
+      "density_px_per_model_unit": 8,
+      "uv_density_verified": true,
+      "theme": "primeval dragon scales, bronze horns, amber ember heart",
+      "runtime": "F:\\神秘之源1.0\\MCmodfind\\src\\main\\resources\\assets\\sourceofmystery\\geo\\item\\origin_dragon_sword.geo.json"
+    },
+    {
+      "id": "divine_punishment_sword",
+      "cubes": 49,
+      "bones": 1,
+      "quad_faces": 294,
+      "triangles": 588,
+      "texture": 1024,
+      "density_px_per_model_unit": 8,
+      "uv_density_verified": true,
+      "theme": "divine judgement, black-white blades and platinum lightning",
+      "runtime": "F:\\神秘之源1.0\\MCmodfind\\src\\main\\resources\\assets\\sourceofmystery\\geo\\item\\divine_punishment_sword.geo.json"
+    }
+  ],
+  "excluded": "all divine_blessing armor, halo and CG; existing high-detail dimension_breaker_staff retained"
+}

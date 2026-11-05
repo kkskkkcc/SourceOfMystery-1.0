@@ -50,9 +50,11 @@ public final class OfferingPortalRitual {
     private static final Map<UUID,Active> ACTIVE=new HashMap<>();
     private OfferingPortalRitual(){}
 
+    public static boolean active(Player player){return ACTIVE.containsKey(player.getUUID());}
+
     public static boolean tryStart(Level level,BlockPos clicked,Player player,InteractionHand hand,ItemStack stack){
         if(!(level instanceof ServerLevel server)||!(player instanceof ServerPlayer owner))return false;
-        if(ACTIVE.containsKey(owner.getUUID()))return false;
+        if(ACTIVE.containsKey(owner.getUUID()) || com.sourceofmystery.cinematic.DivineCinematic.active(owner))return false;
         Frame frame=findFrame(server,clicked);if(frame==null)return false;
         if(ACTIVE.values().stream().anyMatch(a->a.level()==server&&a.frame.blocks().contains(clicked)))return false;
         OutsiderEntity boss=new OutsiderEntity(ModEntities.OUTSIDER.get(),server);

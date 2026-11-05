@@ -1,0 +1,16 @@
+Earth texture: NASA Blue Marble - A Seamless Image Mosaic of the Earth (WMS), ID 2915.
+Credit: NASA/Goddard Space Flight Center Scientific Visualization Studio.
+Blue Marble data: Reto Stockli (NASA/GSFC) and NASA's Earth Observatory.
+Source page: https://svs.gsfc.nasa.gov/2915/
+Source image: https://svs.gsfc.nasa.gov/vis/a000000/a002900/a002915/bluemarble-2048.png
+Usage: https://svs.gsfc.nasa.gov/help/ (public domain unless otherwise noted).
+Runtime earth.png is the original 2048x1024 image converted to RGBA PNG, with no painted geography.
+No NASA logo or claim of NASA endorsement is included.
+
+Space, stone, metal, mandala and white textures: original procedural Source of Mystery assets.
+All eight divine_cg sound cues and the harmonic procession: original procedural Source of Mystery audio.
+
+Throne: user-supplied madmaggie_throne_01_static_LOD0.obj.glb from the local Wangzuo ZIP.
+Original source albedo and UVs retained; runtime material uses neutral gray/white only.
+Runtime size: 1.65 m wide, 2.30 m high, 1.50 m deep; smooth normals transformed with inverse transpose.
+The source archive did not include a license file; authorship is not claimed by Source of Mystery.

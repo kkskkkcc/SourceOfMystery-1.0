@@ -37,6 +37,13 @@ public class ModRecipeProvider extends RecipeProvider {
                 .save(output);
 
         // 守护祭坛：原版工作台合成
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC,ModItems.MYSTERY_ENCHANTER.get())
+                .pattern("MSM").pattern("DED").pattern("OOO")
+                .define('M',ModItems.MYSTERY_INGOT.get()).define('S',Items.NETHER_STAR)
+                .define('D',Items.DIAMOND_BLOCK).define('E',Items.ENCHANTING_TABLE).define('O',Items.OBSIDIAN)
+                .unlockedBy("has_mystery_ingot",has(ModItems.MYSTERY_INGOT.get())).save(output);
+
+        // 守护祭坛：原版工作台合成
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, ModItems.GUARDIAN_ALTAR.get())
                 .pattern("MLM")
                 .pattern("DED")

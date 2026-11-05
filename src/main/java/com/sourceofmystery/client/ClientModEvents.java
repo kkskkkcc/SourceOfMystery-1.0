@@ -7,11 +7,16 @@ import com.sourceofmystery.guardian.GuardianAltarRenderer;
 import com.sourceofmystery.hud.MysteryEnergyOverlay;
 import com.sourceofmystery.particle.ModParticles;
 import net.minecraft.client.renderer.entity.WitherSkullRenderer;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.model.EntityModel;
+import net.minecraft.client.model.HumanoidModel;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -20,6 +25,13 @@ import net.minecraftforge.fml.common.Mod;
  */
 @Mod.EventBusSubscriber(modid = SourceOfMystery.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientModEvents {
+    @SubscribeEvent public static void divineMaterials(net.minecraftforge.client.event.RegisterClientReloadListenersEvent event){
+        event.registerReloadListener((net.minecraft.server.packs.resources.ResourceManagerReloadListener)manager->DivineThroneMaterial.invalidate());
+    }
+    @SubscribeEvent public static void setupMenus(net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent event) {
+        event.enqueueWork(()->net.minecraft.client.gui.screens.MenuScreens.register(com.sourceofmystery.offering.OfferingMenus.LOTTERY.get(),OfferingLotteryScreen::new));
+        event.enqueueWork(()->net.minecraft.client.gui.screens.MenuScreens.register(com.sourceofmystery.enchanter.EnchanterMenus.ENCHANTER.get(),MysteryEnchanterScreen::new));
+    }
 
     @SubscribeEvent
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -41,13 +53,25 @@ public class ClientModEvents {
         event.registerEntityRenderer(ModEntities.OUTSIDER.get(), OutsiderRenderer::new);
         event.registerEntityRenderer(ModEntities.OUTSIDER_SPELL.get(), OutsiderSpellRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.GUARDIAN_ALTAR.get(), GuardianAltarRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.DARK_DIMENSIONAL_OFFERING.get(), DarkDimensionalOfferingRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.MYSTERY_ENCHANTER.get(),MysteryEnchanterRenderer::new);
 
-        // 手动注册神威天佑光环的监听器。
-        // 之前用 @Mod.EventBusSubscriber 注解时，因为泛型擦除问题 listener 没注册上
-        // （[Halo] CLASS LOADED 出现但 onRenderPlayer 一次都没调），
-        // 现在直接 register 类的所有 @SubscribeEvent 方法，绝对可靠。
-        MinecraftForge.EVENT_BUS.register(DivineBlessingHaloRenderer.class);
-        SourceOfMystery.LOGGER.info("[Halo] ClientModEvents registered renderer via MinecraftForge.EVENT_BUS");
+    }
+
+    @SubscribeEvent
+    public static void addArmorDecorations(EntityRenderersEvent.AddLayers event) {
+        for (String skin : event.getSkins()) {
+            PlayerRenderer renderer = event.getSkin(skin);
+            addHalo(renderer);
+        }
+        addHalo(event.getRenderer(EntityType.ARMOR_STAND));
+    }
+
+    private static <T extends LivingEntity, M extends EntityModel<T>>
+    void addHalo(LivingEntityRenderer<T, M> renderer) {
+        if (renderer != null && renderer.getModel() instanceof HumanoidModel<?>) {
+            renderer.addLayer(new DivineBlessingHaloRenderer<>(renderer));
+        }
     }
 
     @SubscribeEvent

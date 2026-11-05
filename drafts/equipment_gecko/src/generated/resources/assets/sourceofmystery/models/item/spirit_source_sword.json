@@ -1,0 +1,6 @@
+{
+  "parent": "sourceofmystery:item/equipment_sword_display",
+  "textures": {
+    "particle": "sourceofmystery:item/spirit_source_sword"
+  }
+}

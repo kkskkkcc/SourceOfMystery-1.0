@@ -18,6 +18,7 @@ public class ModItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, SourceOfMystery.MOD_ID);
 
     public static final RegistryObject<Item> DIMENSION_BREAKER_STAFF = ITEMS.register("dimension_breaker_staff", DimensionBreakerStaffItem::new);
+    public static final RegistryObject<Item> MYSTERY_ENCHANTER = ITEMS.register("mystery_enchanter",com.sourceofmystery.enchanter.MysteryEnchanterItem::new);
 
     // 秘源锭
     public static final RegistryObject<Item> MYSTERY_INGOT = ITEMS.register("mystery_ingot",
@@ -117,7 +118,5 @@ public class ModItems {
 
     // 神威天佑: 300 护甲 + 生命加成200 + 飞行 + 全免疫 + 伤害抵消 + 耐久无限
     public static final RegistryObject<Item> DIVINE_BLESSING_CHESTPLATE = ITEMS.register("divine_blessing_chestplate",
-            () -> new MysteryChestplateItem(MysteryArmorMaterial.DIVINE_BLESSING,
-                    new Item.Properties().rarity(Rarity.EPIC), true,
-                    UUID.fromString("4d22fa12-dc4f-45ea-a2dd-2c94cb7defdb"), 200.0));
+            () -> new DivineBlessingChestplateItem(new Item.Properties().rarity(Rarity.EPIC)));
 }

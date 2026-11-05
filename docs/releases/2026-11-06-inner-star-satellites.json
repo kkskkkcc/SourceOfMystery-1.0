@@ -1,0 +1,45 @@
+{
+  "date": "2026-11-06",
+  "status": "INSTALLED_USER_AUTHORIZED",
+  "package_sha256": "d73ce1d5d75b31b8cf6313155922c4f93747ec406931b8e171da552adf303f37",
+  "package_bytes": 40732572,
+  "previous_sha256": "c5f6a2b6a8e1ee19e4073e30f9a4d4217d2f9b3b18b43933fa494a60d5e13bf3",
+  "installed_instances": [
+    "Integrated MC",
+    "1.20.1-Forge_47.4.20"
+  ],
+  "outer_visual": "original_five_color_particles",
+  "inner_visual": "two_black_white_geckolib_stars",
+  "network_protocol": 8,
+  "native_client_checks": {
+    "during_fade_alpha": 0.4375,
+    "hidden_target_health_before": 1900.0,
+    "hidden_target_health_after": 1600.0,
+    "moving_alpha": 0.0,
+    "stopped_alpha": 1.0,
+    "real_forge_server_and_client": true,
+    "normal_speed_real_movement": true,
+    "server_satellites_attack_while_inner_models_hidden": true,
+    "legacy_busy_mask_received": true,
+    "exactly_five_outer_particles_restored": true,
+    "busy_satellites_skip_idle_particles": true,
+    "unequip_clears_visual_state": true,
+    "test_master_volume": 0.0,
+    "inner_geckolib_models": 2,
+    "outer_visual": "original_five_color_particles",
+    "opposite_camera_angle_captured": true
+  },
+  "source_rebuild": {
+    "all_production_entry_names_equal": true,
+    "all_production_entries_byte_identical": true,
+    "rebuilt_jar_sha256": "aa3ab8d90b7235e7c9e5565ae612180845b8f88031d9d588d41506cdce21c3f4",
+    "approved_jar_sha256": "d73ce1d5d75b31b8cf6313155922c4f93747ec406931b8e171da552adf303f37",
+    "added_entries": [],
+    "removed_entries": [],
+    "changed_entries": []
+  },
+  "full_modpack_retested": false,
+  "shaders_retested_for_this_revision": false,
+  "real_two_client_multiplayer_retested": false,
+  "drafts_are_not_build_inputs": true
+}

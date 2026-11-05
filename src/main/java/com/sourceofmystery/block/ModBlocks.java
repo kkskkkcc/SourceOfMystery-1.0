@@ -22,4 +22,9 @@ public class ModBlocks {
     // 守护祭坛：手持下界之星右键激活，展开 3x3 区块的守护结界
     public static final RegistryObject<Block> GUARDIAN_ALTAR = BLOCKS.register("guardian_altar",
             GuardianAltarBlock::new);
+
+    public static final RegistryObject<Block> DARK_DIMENSIONAL_OFFERING = BLOCKS.register("dark_dimensional_offering",
+            DarkDimensionalOfferingBlock::new);
+    public static final RegistryObject<Block> MYSTERY_ENCHANTER = BLOCKS.register("mystery_enchanter",
+            com.sourceofmystery.enchanter.MysteryEnchanterBlock::new);
 }

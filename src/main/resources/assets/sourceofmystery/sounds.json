@@ -1307,5 +1307,77 @@
         "attenuation_distance": 64
       }
     ]
+  },
+  "divine_cg.ascent": {
+    "subtitle": "subtitles.sourceofmystery.divine_cg.ascent",
+    "sounds": [
+      {
+        "name": "sourceofmystery:divine_cg/ascent",
+        "stream": false
+      }
+    ]
+  },
+  "divine_cg.cosmos": {
+    "subtitle": "subtitles.sourceofmystery.divine_cg.cosmos",
+    "sounds": [
+      {
+        "name": "sourceofmystery:divine_cg/cosmos",
+        "stream": true
+      }
+    ]
+  },
+  "divine_cg.stairs": {
+    "subtitle": "subtitles.sourceofmystery.divine_cg.stairs",
+    "sounds": [
+      {
+        "name": "sourceofmystery:divine_cg/stairs",
+        "stream": false
+      }
+    ]
+  },
+  "divine_cg.step": {
+    "subtitle": "subtitles.sourceofmystery.divine_cg.step",
+    "sounds": [
+      {
+        "name": "sourceofmystery:divine_cg/step",
+        "stream": false
+      }
+    ]
+  },
+  "divine_cg.touch": {
+    "subtitle": "subtitles.sourceofmystery.divine_cg.touch",
+    "sounds": [
+      {
+        "name": "sourceofmystery:divine_cg/touch",
+        "stream": false
+      }
+    ]
+  },
+  "divine_cg.bestowal": {
+    "subtitle": "subtitles.sourceofmystery.divine_cg.bestowal",
+    "sounds": [
+      {
+        "name": "sourceofmystery:divine_cg/bestowal",
+        "stream": false
+      }
+    ]
+  },
+  "divine_cg.armor": {
+    "subtitle": "subtitles.sourceofmystery.divine_cg.armor",
+    "sounds": [
+      {
+        "name": "sourceofmystery:divine_cg/armor",
+        "stream": false
+      }
+    ]
+  },
+  "divine_cg.throne": {
+    "subtitle": "subtitles.sourceofmystery.divine_cg.throne",
+    "sounds": [
+      {
+        "name": "sourceofmystery:divine_cg/throne",
+        "stream": false
+      }
+    ]
   }
 }

@@ -21,11 +21,12 @@ public class MysteryEnergy {
     private static final String LAST_REFRESH_DAY_KEY = "sourceofmystery_last_refresh_day";
     private static final String REGEN_FRACTION_KEY = "energy_regeneration_fraction";
 
+    /** One natural regeneration pulse; the server tick handler calls this every 10 seconds. */
     public static void regenerate(Player player) {
         CompoundTag data = getPlayerData(player);
         long maximum = getEnergyMax(player), energy = getEnergy(player);
         if (energy >= maximum) { data.remove(REGEN_FRACTION_KEY); return; }
-        double rate = MysteryConfig.ENERGY_REGEN_PER_SECOND.get();
+        double rate = MysteryConfig.ENERGY_REGEN_FRACTION.get();
         if (rate <= 0) return;
         double exact = maximum * rate + data.getDouble(REGEN_FRACTION_KEY);
         long amount = Math.min(maximum - energy, (long) Math.floor(exact));

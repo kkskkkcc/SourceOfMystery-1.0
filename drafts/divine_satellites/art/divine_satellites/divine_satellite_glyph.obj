@@ -1,0 +1,11 @@
+# Transparent, camera-facing glyph card; units meters
+v -0.2325 -0.2325 0
+v 0.2325 -0.2325 0
+v 0.2325 0.2325 0
+v -0.2325 0.2325 0
+vt 0 0
+vt 1 0
+vt 1 1
+vt 0 1
+f 1/1 2/2 3/3
+f 1/1 3/3 4/4

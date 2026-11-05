@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "MSM",
+    "DED",
+    "OOO"
+  ],
+  "key": {
+    "M": {
+      "item": "sourceofmystery:mystery_ingot"
+    },
+    "S": {
+      "item": "minecraft:nether_star"
+    },
+    "D": {
+      "item": "minecraft:diamond_block"
+    },
+    "E": {
+      "item": "minecraft:enchanting_table"
+    },
+    "O": {
+      "item": "minecraft:obsidian"
+    }
+  },
+  "result": {
+    "item": "sourceofmystery:mystery_enchanter"
+  },
+  "show_notification": true
+}

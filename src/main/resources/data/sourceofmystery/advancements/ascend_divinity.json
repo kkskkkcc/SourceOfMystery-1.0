@@ -1,0 +1,13 @@
+{
+  "parent": "sourceofmystery:root",
+  "display": {
+    "icon": {"item": "sourceofmystery:divine_blessing_chestplate"},
+    "title": {"text": "登", "color": "light_purple", "bold": true, "extra": [{"text": "神", "color": "gold", "bold": true}]},
+    "description": {"translate": "advancements.sourceofmystery.ascend_divinity.description"},
+    "frame": "challenge",
+    "show_toast": false,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "criteria": {"attunement": {"trigger": "minecraft:impossible"}}
+}

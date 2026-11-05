@@ -72,3 +72,10 @@ desktop.ini
 # ---- 数据生成运行目录 / 缓存 ----
 run-data/
 src/generated/resources/.cache/
+
+# Python execution caches
+__pycache__/
+*.py[cod]
+
+# Runtime asset attribution belongs with the distributed textures.
+!src/main/resources/**/CREDITS.txt

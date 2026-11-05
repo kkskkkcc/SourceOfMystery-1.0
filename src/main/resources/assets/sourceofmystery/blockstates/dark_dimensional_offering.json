@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "sourceofmystery:block/dark_dimensional_offering"
+    },
+    "facing=south": {
+      "model": "sourceofmystery:block/dark_dimensional_offering"
+    },
+    "facing=east": {
+      "model": "sourceofmystery:block/dark_dimensional_offering"
+    },
+    "facing=west": {
+      "model": "sourceofmystery:block/dark_dimensional_offering"
+    }
+  }
+}

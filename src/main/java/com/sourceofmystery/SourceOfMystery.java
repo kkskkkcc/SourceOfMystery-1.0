@@ -30,6 +30,8 @@ public class SourceOfMystery {
         ModItems.ITEMS.register(modEventBus);
         ModBlocks.BLOCKS.register(modEventBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
+        com.sourceofmystery.offering.OfferingMenus.MENUS.register(modEventBus);
+        com.sourceofmystery.enchanter.EnchanterMenus.MENUS.register(modEventBus);
         ModCreativeTabs.CREATIVE_TABS.register(modEventBus);
         ModEntities.ENTITIES.register(modEventBus);
         ModRecipes.TYPES.register(modEventBus);
@@ -37,6 +39,7 @@ public class SourceOfMystery {
         ModLootModifiers.SERIALIZERS.register(modEventBus);
         ModSounds.SOUNDS.register(modEventBus);
         com.sourceofmystery.staff.StaffSounds.SOUNDS.register(modEventBus);
+        com.sourceofmystery.cinematic.DivineCGSounds.SOUNDS.register(modEventBus);
         ModParticles.PARTICLES.register(modEventBus);
         modEventBus.addListener(ModEntities::registerAttributes);
         modEventBus.addListener(this::commonSetup);
@@ -44,6 +47,8 @@ public class SourceOfMystery {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, MysteryConfig.COMMON_SPEC);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, MysteryConfig.CLIENT_SPEC);
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, com.sourceofmystery.staff.StaffConfig.SPEC,"sourceofmystery-staff-server.toml");
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, com.sourceofmystery.offering.OfferingLotteryConfig.SPEC,"sourceofmystery-offering-server.toml");
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, com.sourceofmystery.enchanter.EnchanterConfig.SPEC,"sourceofmystery-enchanter-server.toml");
     }
 
     private void commonSetup(final FMLCommonSetupEvent event) {
