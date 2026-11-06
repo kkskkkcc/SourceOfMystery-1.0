@@ -20,8 +20,9 @@
 | 祭品抽奖 | 投入物品估价、1000 神秘之能费用、结果音效、好物概率相对提升和幸运影响；见 `OFFERING_LOTTERY.md` |
 | 神秘附魔台 | 配方、可配置能量计费、运行时附魔注册表索引与退魔；见 `MYSTERY_ENCHANTER.md` |
 | 神秘之能 | 每 10 秒恢复当前玩家上限的 1% |
-| 神威天佑 | GeckoLib 胸甲、肩部贴合与神环修复；见 `DIVINE_BLESSING_ARMOR.md` |
-| 登神 CG | 首次穿戴、成就、地表到宇宙升空、NASA 地球与灰白王座；见 `DIVINE_ASCENSION_CINEMATIC.md` |
+| 神威天佑 | v3 白玉金纹胸甲与立体物品模型；见 `DIVINE_BLESSING_ARMOR.md` |
+| 装备与武器 v3 | 五件胸甲、五把剑改为 GeckoLib 模型；见 `GEAR_MODELS_V3.md` |
+| 登神 CG | 首次穿戴、成就、地表到宇宙升空、NASA 地球与灰白王座；v3 改为关键帧人物动作、运镜与 GeckoLib 天阶；见 `DIVINE_ASCENSION_CINEMATIC.md` |
 | 周身卫星 | 本次实装为内环星芒模型、外环原粒子；见 `DIVINE_SATELLITES.md` |
 
 ## 验证依据与边界
@@ -34,7 +35,7 @@
 
 ## 未通过与撤回的设计
 
-- 五把剑、四件胸甲的新 GeckoLib 草稿均被用户拒绝，已移入 `drafts/equipment_gecko/`，不再接入注册、渲染或生成资源。
+- 五把剑、四件胸甲的早期 GeckoLib 草稿被用户拒绝，保存在 `drafts/equipment_gecko/`。v3 为重新设计，未使用这些草稿。
 - 外环球体、古文字贴图及缩小版本已撤回；古文字源文件保存在 `drafts/divine_satellites/`。
 - `drafts/` 不属于任何 Gradle source set。归档仅用于接手和记录，不能视为验收成品；后续由用户逐件指挥重新设计。
 

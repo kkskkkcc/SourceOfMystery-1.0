@@ -95,8 +95,13 @@ public final class DivineCGDirector {
             Vec3 direction=horizontal.scale(Mth.cos(pitch)).add(0,-Mth.sin(pitch),0);
             position(pos,pos.add(direction));
         } else {
-            var shot=real<DivineCGTimeline.ORBIT_START?DivineCGTimeline.ascentShot(real):DivineCGTimeline.shot(t);
-            position(origin.add(shot.eye()),origin.add(shot.look()));
+            var sample=real>=DivineCGTimeline.ORBIT_START?DivineCGTrack.camera(t):null;
+            if(sample!=null){
+                var v=sample.values;position(origin.add(v[1],v[2],v[3]),origin.add(v[4],v[5],v[6]));
+            } else {
+                var shot=real<DivineCGTimeline.ORBIT_START?DivineCGTimeline.ascentShot(real):DivineCGTimeline.shot(t);
+                position(origin.add(shot.eye()),origin.add(shot.look()));
+            }
         }
         if(mc.getCameraEntity()!=camera)mc.setCameraEntity(camera);
         if(t>=4)cue("cosmos",.58f);if(t>=10)cue("stairs",.7f);
@@ -129,7 +134,7 @@ public final class DivineCGDirector {
     @SubscribeEvent public static void overlay(RenderGuiOverlayEvent.Pre e){if(running)e.setCanceled(true);}
     @SubscribeEvent public static void name(RenderNameTagEvent e){if(running)e.setResult(Event.Result.DENY);}
     @SubscribeEvent(priority=EventPriority.HIGHEST) public static void player(RenderPlayerEvent.Pre e){if(running&&e.getEntity()==Minecraft.getInstance().player)e.setCanceled(true);}
-    @SubscribeEvent public static void fov(ViewportEvent.ComputeFov e){if(running&&!returned){float real=seconds(),t=DivineCGTimeline.storyTime(real);e.setFOV(real<DivineCGTimeline.SPACE_START?DivineCGTimeline.mix((float)e.getFOV(),80,DivineCGTimeline.ramp(real,0,DivineCGTimeline.SPACE_START)):real<DivineCGTimeline.ORBIT_START?DivineCGTimeline.ascentShot(real).fov():DivineCGTimeline.shot(t).fov());}}
+    @SubscribeEvent public static void fov(ViewportEvent.ComputeFov e){if(running&&!returned){float real=seconds(),t=DivineCGTimeline.storyTime(real);var sample=real>=DivineCGTimeline.ORBIT_START?DivineCGTrack.camera(t):null;e.setFOV(real<DivineCGTimeline.SPACE_START?DivineCGTimeline.mix((float)e.getFOV(),80,DivineCGTimeline.ramp(real,0,DivineCGTimeline.SPACE_START)):real<DivineCGTimeline.ORBIT_START?DivineCGTimeline.ascentShot(real).fov():sample!=null?sample.values[7]:DivineCGTimeline.shot(t).fov());}}
     @SubscribeEvent public static void fog(ViewportEvent.ComputeFogColor e){if(running&&seconds()>=DivineCGTimeline.SPACE_START&&!returned){e.setRed(0);e.setGreen(0);e.setBlue(0);}}
     @SubscribeEvent public static void fogRange(ViewportEvent.RenderFog e){if(running&&seconds()>=DivineCGTimeline.SPACE_START&&!returned){e.setNearPlaneDistance(500);e.setFarPlaneDistance(4096);e.setCanceled(true);}}
     @SubscribeEvent public static void gui(RenderGuiEvent.Post e){

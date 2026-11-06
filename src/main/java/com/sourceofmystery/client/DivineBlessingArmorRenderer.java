@@ -14,6 +14,7 @@ import software.bernie.geckolib.cache.object.BakedGeoModel;
 import software.bernie.geckolib.model.GeoModel;
 import software.bernie.geckolib.renderer.GeoArmorRenderer;
 import software.bernie.geckolib.renderer.layer.GeoRenderLayer;
+import software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer;
 
 /** War-god plate armor; all surface effects use exactly the armor's posed geometry. */
 public final class DivineBlessingArmorRenderer extends GeoArmorRenderer<DivineBlessingChestplateItem> {
@@ -30,6 +31,7 @@ public final class DivineBlessingArmorRenderer extends GeoArmorRenderer<DivineBl
             @Override public ResourceLocation getAnimationResource(DivineBlessingChestplateItem item) { return ANIMATION; }
         });
         addRenderLayer(new GloryLayer(this));
+        addRenderLayer(new AutoGlowingGeoLayer<>(this));
     }
 
     private static ResourceLocation resource(String path) {

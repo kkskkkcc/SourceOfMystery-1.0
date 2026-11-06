@@ -23,22 +23,24 @@ public class ModItemModelProvider extends ItemModelProvider {
         List.of(ModItems.MYSTERY_INGOT, ModItems.HEAVENLY_DAO_FRAGMENT, ModItems.DRAGON_SOUL,
                         ModItems.WOOD_SOURCE, ModItems.GOLD_SOURCE, ModItems.WATER_SOURCE,
                         ModItems.FIRE_SOURCE, ModItems.EARTH_SOURCE,
-                        ModItems.MYSTERY_SOURCE_ORE,
-                        ModItems.MYSTERY_CHESTPLATE, ModItems.SPIRIT_SOURCE_CHESTPLATE, ModItems.DARK_SOURCE_CHESTPLATE,
-                        ModItems.ORIGIN_DRAGON_CHESTPLATE, ModItems.DIVINE_BLESSING_CHESTPLATE)
+                        ModItems.MYSTERY_SOURCE_ORE)
                 .forEach(item -> basicItem(item.get()));
 
-        // 剑使用 handheld 父模型，手持时像原版剑一样斜握
+        // Gear uses the shared GeckoLib display parents.
+        List.of(ModItems.MYSTERY_CHESTPLATE, ModItems.SPIRIT_SOURCE_CHESTPLATE, ModItems.DARK_SOURCE_CHESTPLATE,
+                        ModItems.ORIGIN_DRAGON_CHESTPLATE, ModItems.DIVINE_BLESSING_CHESTPLATE)
+                .forEach(item -> gear(item, "gear_chestplate_display"));
         List.of(ModItems.MYSTERY_SWORD, ModItems.SPIRIT_SOURCE_SWORD, ModItems.DARK_SOURCE_SWORD,
                         ModItems.ORIGIN_DRAGON_SWORD, ModItems.DIVINE_PUNISHMENT_SWORD)
-                .forEach(this::handheld);
+                .forEach(item -> gear(item, "gear_sword_display"));
 
         // 祭坛在物品栏里直接显示方块模型
         withExistingParent("mystery_altar", modLoc("block/mystery_altar"));
     }
 
-    private void handheld(RegistryObject<Item> item) {
+    private void gear(RegistryObject<Item> item, String displayParent) {
         String name = ForgeRegistries.ITEMS.getKey(item.get()).getPath();
-        withExistingParent(name, mcLoc("item/handheld")).texture("layer0", modLoc("item/" + name));
+        // The flat icon remains the break-particle texture.
+        withExistingParent(name, modLoc("item/" + displayParent)).texture("particle", modLoc("item/" + name));
     }
 }

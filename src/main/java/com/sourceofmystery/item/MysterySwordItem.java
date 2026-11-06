@@ -1,5 +1,13 @@
 package com.sourceofmystery.item;
 
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import software.bernie.geckolib.animatable.GeoItem;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.util.GeckoLibUtil;
+
+import java.util.function.Consumer;
+
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.LivingEntity;
@@ -12,10 +20,26 @@ import net.minecraft.world.item.Tier;
 /**
  * 神秘系列剑的基类：无限耐久，子类通过 {@link #onHit} 实现命中特效。
  */
-public class MysterySwordItem extends SwordItem {
+public class MysterySwordItem extends SwordItem implements GeoItem {
+
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     public MysterySwordItem(Tier tier, int attackDamageBonus, float attackSpeedBonus, Rarity rarity) {
         super(tier, attackDamageBonus, attackSpeedBonus, new Item.Properties().rarity(rarity));
+    }
+
+    @Override
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+        consumer.accept(com.sourceofmystery.client.gear.GearClient.sword(this));
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return cache;
     }
 
     @Override

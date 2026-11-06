@@ -2,6 +2,12 @@ package com.sourceofmystery.item;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import software.bernie.geckolib.animatable.GeoItem;
+import software.bernie.geckolib.core.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.core.animation.AnimatableManager;
+import software.bernie.geckolib.util.GeckoLibUtil;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -12,6 +18,7 @@ import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nullable;
 import java.util.UUID;
+import java.util.function.Consumer;
 
 /**
  * 神秘系列胸甲。
@@ -21,7 +28,9 @@ import java.util.UUID;
  * </ul>
  * 其余套装效果见 {@link ChestplateEffectHandler}。
  */
-public class MysteryChestplateItem extends ArmorItem {
+public class MysteryChestplateItem extends ArmorItem implements GeoItem {
+
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     private final boolean unbreakable;
     @Nullable
@@ -37,6 +46,24 @@ public class MysteryChestplateItem extends ArmorItem {
         this.unbreakable = unbreakable;
         this.healthModifier = healthModifierId == null || healthBonus <= 0 ? null
                 : new AttributeModifier(healthModifierId, "Chestplate health bonus", healthBonus, AttributeModifier.Operation.ADDITION);
+    }
+
+    public String getArmorId() {
+        return new ResourceLocation(getMaterial().getName()).getPath();
+    }
+
+    @Override
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
+        consumer.accept(com.sourceofmystery.client.gear.GearClient.chestplate(this));
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return cache;
     }
 
     @Override

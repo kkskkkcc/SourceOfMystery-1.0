@@ -48,6 +48,12 @@ minecraft {
                 args '--username', 'StaffCheck', '--width', '1280', '--height', '720'
                 mods { sourceofmystery { source sourceSets.gameTest } }
             }
+            if (project.hasProperty('gearCheck')) {
+                workingDirectory project.file('build/gear-client-check')
+                property 'sourceofmystery.gearCheck', 'true'
+                args '--username', 'GearCheck', '--width', '1280', '--height', '720'
+                mods { sourceofmystery { source sourceSets.gameTest } }
+            }
             if (project.hasProperty('ritualCheck')) {
                 workingDirectory project.file('build/ritual-client-check')
                 property 'sourceofmystery.ritualCheck', 'true'

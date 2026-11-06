@@ -1,6 +1,6 @@
 {
-  "parent": "item/generated",
+  "parent": "sourceofmystery:item/gear_chestplate_display",
   "textures": {
-    "layer0": "sourceofmystery:item/divine_blessing_chestplate"
+    "particle": "sourceofmystery:item/divine_blessing_chestplate"
   }
 }

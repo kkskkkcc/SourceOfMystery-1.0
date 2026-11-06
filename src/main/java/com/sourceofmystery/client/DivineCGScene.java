@@ -21,7 +21,7 @@ import java.util.*;
 /** A client-only stage: no chunks, blocks, entities or world time are changed. */
 final class DivineCGScene extends RenderType {
     private static ResourceLocation texture(String name){return new ResourceLocation("sourceofmystery","textures/cinematic/divine/"+name+".png");}
-    private static final ResourceLocation SPACE=texture("space"),EARTH=texture("earth"),STONE=texture("chaos_stone"),METAL=texture("metal"),WHITE=texture("white"),HALO=texture("mandala");
+    private static final ResourceLocation SPACE=texture("space"),EARTH=texture("earth"),WHITE=texture("white"),HALO=texture("mandala");
     private static final RenderType SKY=RenderType.create("som_divine_cosmos",DefaultVertexFormat.NEW_ENTITY,VertexFormat.Mode.QUADS,262144,false,false,
             CompositeState.builder().setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
                     .setTextureState(new TextureStateShard(SPACE,true,false)).setTransparencyState(NO_TRANSPARENCY)
@@ -36,16 +36,17 @@ final class DivineCGScene extends RenderType {
     private final DivineCGPlayer player=new DivineCGPlayer();
     private ArmorStand mannequin;
     private HumanoidModel<net.minecraft.world.entity.LivingEntity> armorPose;
-    private final DivineCGMesh architecture=new DivineCGMesh();
+    private DivineCGStage stage;
     private static final Map<Long,float[]> SPHERES=new HashMap<>();
     private DivineCGThrone throne;
     private DivineCGScene(String n,VertexFormat f,VertexFormat.Mode m,int size,boolean cr,boolean sorted,Runnable a,Runnable b){super(n,f,m,size,cr,sorted,a,b);}
     DivineCGScene(){this("som_divine_scene",DefaultVertexFormat.NEW_ENTITY,VertexFormat.Mode.QUADS,256,false,false,()->{},()->{});}
-    void clear(){mannequin=null;armorPose=null;throne=null;}
+    void clear(){mannequin=null;armorPose=null;throne=null;stage=null;}
     void prepare(){
+        DivineCGTrack.load();
         // Upload before starting the camera clock, rather than at the cloud exit.
         var textures=Minecraft.getInstance().getTextureManager();
-        for(var resource:new ResourceLocation[]{SPACE,EARTH,STONE,METAL,WHITE,HALO,texture("ascent_clouds")})textures.bindForSetup(resource);
+        for(var resource:new ResourceLocation[]{SPACE,EARTH,WHITE,HALO,texture("ascent_clouds"),texture("stage"),texture("stage_glowmask")})textures.bindForSetup(resource);
         textures.bindForSetup(DivineThroneMaterial.texture());
         sphereGeometry(48,24);sphereGeometry(96,48);
     }
@@ -63,7 +64,8 @@ final class DivineCGScene extends RenderType {
             b.endBatch();
             sphere(p,b.getBuffer(RenderType.entityTranslucent(WHITE)),earth,93.4f,96,48,.17f,.48f,1,.4f,false,cam.subtract(origin));
             b.endBatch();
-            stage(p,architecture,time);architecture.draw(b);
+            if(stage==null)stage=new DivineCGStage();
+            stage.render(p,b,time,DivineCGDirector.seconds());
             if(time>10.1f){
                 if(throne==null)throne=new DivineCGThrone();
                 float reveal=DivineCGTimeline.ramp(time,10.1f,11.6f);
@@ -72,8 +74,10 @@ final class DivineCGScene extends RenderType {
             }
             sanctumLight(p,b,time);
             if(time<DivineCGTimeline.EQUIP)floatingArmor(p,b,time,armor);
-            p.pushPose();var pos=DivineCGTimeline.player(time);p.translate(pos.x,pos.y,pos.z);
-            player.render(p,b,Math.min(time,32),e.getPartialTick(),armor);p.popPose();
+            p.pushPose();var body=DivineCGTrack.body(time);
+            if(body!=null){var v=body.values;p.translate(v[1],v[2],v[3]);p.mulPose(Axis.YP.rotationDegrees(v[4]));}
+            else {var pos=DivineCGTimeline.player(time);p.translate(pos.x,pos.y,pos.z);}
+            player.render(p,b,time,e.getPartialTick(),armor);p.popPose();
             godlight(p,b,time);
             b.endBatch();
         } finally {p.popPose();}
@@ -98,33 +102,6 @@ final class DivineCGScene extends RenderType {
             quad(p,glow,-s,-s,s,s,0,1,.92f,.74f,.34f*open);p.popPose();
         }
         b.endBatch();
-    }
-    private void stage(PoseStack p,MultiBufferSource b,float t){
-        var stone=b.getBuffer(RenderType.entityCutoutNoCull(STONE));
-        // Small arrival dais remains under the player while the stairway resolves.
-        box(p,stone,-2.5f,-.34f,3.25f,2.5f,-.04f,5.8f,.62f,.66f,.74f);
-        var metal=b.getBuffer(RenderType.entityCutoutNoCull(METAL));
-        box(p,metal,-2.55f,-.08f,3.2f,2.55f,0,5.85f,.72f,.63f,.4f);
-        for(int i=0;i<5;i++){
-            float open=DivineCGTimeline.ramp(t,10+i*.21f,10.8f+i*.21f);if(open<.001)continue;
-            float top=(i+1)*.36f-(1-open)*1.2f,back=2.65f-i*1.4f,front=back+1.4f;
-            float half=2.4f-i*.06f;
-            box(p,stone,-half,top-.36f,back,half,top,front,.66f,.69f,.78f);
-            box(p,metal,-half-.035f,top-.045f,front-.10f,half+.035f,top+.008f,front,.8f,.70f,.46f);
-            box(p,metal,-half,top-.14f,back,-half+.065f,top+.012f,front,.48f,.51f,.60f);
-            box(p,metal,half-.065f,top-.14f,back,half,top+.012f,front,.48f,.51f,.60f);
-        }
-        float reveal=DivineCGTimeline.ramp(t,10.1f,11.6f);if(reveal<.001)return;
-        p.pushPose();p.translate(0,-(1-reveal)*1.3,0);
-        box(p,stone,-3.25f,1.44f,-10.8f,3.25f,1.8f,-2.95f,.85f,.87f,.95f);
-        box(p,metal,-3.3f,1.68f,-10.85f,3.3f,1.76f,-2.92f,.70f,.65f,.48f);
-        p.popPose();
-        // A warm low-intensity floor inlay leads the eye toward the waiting armor.
-        var glow=b.getBuffer(RenderType.entityTranslucentEmissive(WHITE));
-        for(int i=0;i<5;i++){
-            float y=(i+1)*.36f+.014f,z=3.98f-i*1.4f;
-            box(p,glow,-.14f,y,z-.25f,.14f,y+.008f,z-.18f,.9f,.82f,.55f,.7f);
-        }
     }
     private void floatingArmor(PoseStack p,MultiBufferSource.BufferSource b,float t,ItemStack armor){
         var mc=Minecraft.getInstance();
@@ -192,15 +169,6 @@ final class DivineCGScene extends RenderType {
             }
             return mesh;
         });
-    }
-    private static void box(PoseStack p,VertexConsumer v,float x,float y,float z,float X,float Y,float Z,float r,float g,float b){box(p,v,x,y,z,X,Y,Z,r,g,b,1);}
-    private static void box(PoseStack p,VertexConsumer v,float x,float y,float z,float X,float Y,float Z,float r,float g,float b,float a){
-        face(p,v,new float[][]{{x,y,z},{x,Y,z},{X,Y,z},{X,y,z}},r*.85f,g*.85f,b*.85f,a,0,0,-1);
-        face(p,v,new float[][]{{X,y,Z},{X,Y,Z},{x,Y,Z},{x,y,Z}},r,g,b,a,0,0,1);
-        face(p,v,new float[][]{{x,y,Z},{x,Y,Z},{x,Y,z},{x,y,z}},r*.8f,g*.8f,b*.8f,a,-1,0,0);
-        face(p,v,new float[][]{{X,y,z},{X,Y,z},{X,Y,Z},{X,y,Z}},r*.9f,g*.9f,b*.9f,a,1,0,0);
-        face(p,v,new float[][]{{x,Y,z},{x,Y,Z},{X,Y,Z},{X,Y,z}},r,g,b,a,0,1,0);
-        face(p,v,new float[][]{{x,y,Z},{x,y,z},{X,y,z},{X,y,Z}},r*.65f,g*.65f,b*.65f,a,0,-1,0);
     }
     private static void face(PoseStack p,VertexConsumer v,float[][] points,float r,float g,float b,float a,float nx,float ny,float nz){
         for(int i=0;i<4;i++)vertex(p,v,points[i][0],points[i][1],points[i][2],i<2?0:1,i==0||i==3?1:0,r,g,b,a,nx,ny,nz);

@@ -72,32 +72,39 @@ final class DivineCGPlayer {
             original.leftArmPose=leftPose;original.rightArmPose=rightPose;
         }
     }
+    private static void rotation(ModelPart part,float[] values,int offset){part.xRot=values[offset];part.yRot=values[offset+1];part.zRot=values[offset+2];}
     private void pose(float t,AbstractClientPlayer p){
         for(var part:parts(model)){part.resetPose();part.xScale=part.yScale=part.zScale=1;part.skipDraw=false;part.visible=true;}
         model.young=model.riding=model.crouching=false;model.attackTime=0;
-        float motion=DivineCGTimeline.walkAmount(t),cycle=(t-12)*Mth.TWO_PI/2.1666667f;
-        float breath=Mth.sin(Math.min(t,32)*1.65f);
-        model.body.y=.055f*breath;model.body.xRot=.018f*breath+.035f*motion;
-        model.rightLeg.xRot=Mth.cos(cycle)*.44f*motion;model.leftLeg.xRot=-model.rightLeg.xRot;
-        model.rightLeg.y-=Math.max(0,Mth.sin(cycle))*.65f*motion;
-        model.leftLeg.y-=Math.max(0,-Mth.sin(cycle))*.65f*motion;
-        // Rigid vanilla legs have no knee; compensate the arc so a stance foot
-        // reaches the step rather than letting both feet hover during the stride.
-        model.rightLeg.y+=12*(1-Mth.cos(model.rightLeg.xRot));
-        model.leftLeg.y+=12*(1-Mth.cos(model.leftLeg.xRot));
-        model.rightArm.xRot=-.35f*model.rightLeg.xRot;model.leftArm.xRot=-model.rightArm.xRot;
-        model.rightArm.zRot=.045f+.012f*breath;model.leftArm.zRot=-model.rightArm.zRot;
-        model.head.xRot=DivineCGTimeline.headPitch(t);model.head.yRot=DivineCGTimeline.headYaw(t);
-        float touch=DivineCGTimeline.ramp(t,21,22.3f)*(1-DivineCGTimeline.ramp(t,24.2f,25.3f));
-        float inspect=DivineCGTimeline.ramp(t,25.8f,26.7f)*(1-DivineCGTimeline.ramp(t,29,31.5f));
-        model.rightArm.xRot=DivineCGTimeline.mix(model.rightArm.xRot,-1.36f+.035f*Mth.sin(t*2),touch);
-        model.leftArm.xRot=DivineCGTimeline.mix(model.leftArm.xRot,-1.36f-.035f*Mth.sin(t*2),touch);
-        model.rightArm.yRot=-.13f*touch;model.leftArm.yRot=.13f*touch;
-        model.rightArm.zRot=DivineCGTimeline.mix(model.rightArm.zRot,.16f,touch);
-        model.leftArm.zRot=DivineCGTimeline.mix(model.leftArm.zRot,-.16f,touch);
-        model.rightArm.xRot=DivineCGTimeline.mix(model.rightArm.xRot,-.85f,inspect);
-        model.leftArm.xRot=DivineCGTimeline.mix(model.leftArm.xRot,-.62f,inspect);
-        model.rightArm.zRot+=.28f*inspect;model.leftArm.zRot-=.33f*inspect;
+        var sample=DivineCGTrack.body(t);
+        if(sample!=null){
+            var v=sample.values;
+            rotation(model.head,v,5);rotation(model.body,v,8);rotation(model.rightArm,v,11);rotation(model.leftArm,v,14);rotation(model.rightLeg,v,17);rotation(model.leftLeg,v,20);
+        } else {
+            float motion=DivineCGTimeline.walkAmount(t),cycle=(t-12)*Mth.TWO_PI/2.1666667f;
+            float breath=Mth.sin(Math.min(t,32)*1.65f);
+            model.body.y=.055f*breath;model.body.xRot=.018f*breath+.035f*motion;
+            model.rightLeg.xRot=Mth.cos(cycle)*.44f*motion;model.leftLeg.xRot=-model.rightLeg.xRot;
+            model.rightLeg.y-=Math.max(0,Mth.sin(cycle))*.65f*motion;
+            model.leftLeg.y-=Math.max(0,-Mth.sin(cycle))*.65f*motion;
+            // Rigid vanilla legs have no knee; compensate the arc so a stance foot
+            // reaches the step rather than letting both feet hover during the stride.
+            model.rightLeg.y+=12*(1-Mth.cos(model.rightLeg.xRot));
+            model.leftLeg.y+=12*(1-Mth.cos(model.leftLeg.xRot));
+            model.rightArm.xRot=-.35f*model.rightLeg.xRot;model.leftArm.xRot=-model.rightArm.xRot;
+            model.rightArm.zRot=.045f+.012f*breath;model.leftArm.zRot=-model.rightArm.zRot;
+            model.head.xRot=DivineCGTimeline.headPitch(t);model.head.yRot=DivineCGTimeline.headYaw(t);
+            float touch=DivineCGTimeline.ramp(t,21,22.3f)*(1-DivineCGTimeline.ramp(t,24.2f,25.3f));
+            float inspect=DivineCGTimeline.ramp(t,25.8f,26.7f)*(1-DivineCGTimeline.ramp(t,29,31.5f));
+            model.rightArm.xRot=DivineCGTimeline.mix(model.rightArm.xRot,-1.36f+.035f*Mth.sin(t*2),touch);
+            model.leftArm.xRot=DivineCGTimeline.mix(model.leftArm.xRot,-1.36f-.035f*Mth.sin(t*2),touch);
+            model.rightArm.yRot=-.13f*touch;model.leftArm.yRot=.13f*touch;
+            model.rightArm.zRot=DivineCGTimeline.mix(model.rightArm.zRot,.16f,touch);
+            model.leftArm.zRot=DivineCGTimeline.mix(model.leftArm.zRot,-.16f,touch);
+            model.rightArm.xRot=DivineCGTimeline.mix(model.rightArm.xRot,-.85f,inspect);
+            model.leftArm.xRot=DivineCGTimeline.mix(model.leftArm.xRot,-.62f,inspect);
+            model.rightArm.zRot+=.28f*inspect;model.leftArm.zRot-=.33f*inspect;
+        }
         model.hat.copyFrom(model.head);model.jacket.copyFrom(model.body);model.rightSleeve.copyFrom(model.rightArm);model.leftSleeve.copyFrom(model.leftArm);
         model.rightPants.copyFrom(model.rightLeg);model.leftPants.copyFrom(model.leftLeg);
         model.hat.visible=p.isModelPartShown(PlayerModelPart.HAT);model.jacket.visible=p.isModelPartShown(PlayerModelPart.JACKET);

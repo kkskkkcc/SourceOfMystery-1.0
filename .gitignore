@@ -79,3 +79,4 @@ __pycache__/
 
 # Runtime asset attribution belongs with the distributed textures.
 !src/main/resources/**/CREDITS.txt
+tools/gear/out/

@@ -1,6 +1,6 @@
 {
-  "parent": "minecraft:item/handheld",
+  "parent": "sourceofmystery:item/gear_sword_display",
   "textures": {
-    "layer0": "sourceofmystery:item/origin_dragon_sword"
+    "particle": "sourceofmystery:item/origin_dragon_sword"
   }
 }
