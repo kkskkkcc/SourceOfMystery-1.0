@@ -121,6 +121,14 @@ public class OutsiderRenderer extends EntityRenderer<OutsiderEntity> {
             return;
         }
         poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - bodyYaw));
+        float flinch=entity.flinchAmount(partialTick);
+        if(flinch>0){
+            double pivot=entity.getBbHeight()*OutsiderEntity.FLINCH_PIVOT;
+            poseStack.translate(0,pivot,0);
+            // The mesh faces local -Z; positive X rotation tilts its top backward.
+            poseStack.mulPose(Axis.XP.rotationDegrees(OutsiderEntity.FLINCH_LEAN*flinch));
+            poseStack.translate(0,-pivot,0);
+        }
         poseStack.scale(MODEL_SCALE, MODEL_SCALE, MODEL_SCALE);
 
         Matrix4f matrix = poseStack.last().pose();
@@ -153,7 +161,7 @@ public class OutsiderRenderer extends EntityRenderer<OutsiderEntity> {
         }
         if(crossing)renderCrossingSeam(poseStack,bufferSource,age);
         if(!entity.isOfferingIntro()||introSeconds>=20)OutsiderRitualRenderer.renderBackHalo(poseStack,bufferSource,data.world[1],age,entity.isOfferingIntro()?Mth.clamp((introSeconds-20)/1.4f,0,1):1);
-        if(entity.isOfferingIntro()&&introSeconds>17)introEyes(poseStack,bufferSource,age);
+        if((entity.isOfferingIntro()&&introSeconds>17)||(!entity.isOfferingIntro()&&entity.secondPhase()))introEyes(poseStack,bufferSource,age);
         if (entity.isOfferingIntro() && introSeconds >= OfferingPortalRitual.EMERGE_END_TICK / 20.0f
                 && introSeconds < OfferingPortalRitual.GLANCE_END_TICK / 20.0f) {
             // A compact violet sigil at the second wrist sells the caster's

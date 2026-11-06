@@ -54,6 +54,12 @@ minecraft {
                 args '--username', 'GearCheck', '--width', '1280', '--height', '720'
                 mods { sourceofmystery { source sourceSets.gameTest } }
             }
+            if (project.hasProperty('outsiderCheck')) {
+                workingDirectory project.file('build/outsider-client-check')
+                property 'sourceofmystery.outsiderCheck', 'true'
+                args '--username', 'OutsiderCheck', '--width', '1280', '--height', '720'
+                mods { sourceofmystery { source sourceSets.gameTest } }
+            }
             if (project.hasProperty('ritualCheck')) {
                 workingDirectory project.file('build/ritual-client-check')
                 property 'sourceofmystery.ritualCheck', 'true'

@@ -22,6 +22,7 @@
 | 神秘之能 | 每 10 秒恢复当前玩家上限的 1% |
 | 神威天佑 | v3 白玉金纹胸甲与立体物品模型；见 `DIVINE_BLESSING_ARMOR.md` |
 | 装备与武器 v3 | 五件胸甲、五把剑改为 GeckoLib 模型；见 `GEAR_MODELS_V3.md` |
+| 域外魔导师 v2 | 受击反应、环绕走位、闪现、招式选择、弹幕与落柱预警、第二阶段；见 `OUTSIDER_COMBAT.md` |
 | 登神 CG | 首次穿戴、成就、地表到宇宙升空、NASA 地球与灰白王座；v3 改为关键帧人物动作、运镜与 GeckoLib 天阶；见 `DIVINE_ASCENSION_CINEMATIC.md` |
 | 周身卫星 | 本次实装为内环星芒模型、外环原粒子；见 `DIVINE_SATELLITES.md` |
 
