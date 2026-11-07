@@ -1317,12 +1317,21 @@
       }
     ]
   },
-  "divine_cg.cosmos": {
-    "subtitle": "subtitles.sourceofmystery.divine_cg.cosmos",
+  "divine_cg.void": {
+    "subtitle": "subtitles.sourceofmystery.divine_cg.void",
     "sounds": [
       {
-        "name": "sourceofmystery:divine_cg/cosmos",
+        "name": "sourceofmystery:divine_cg/void",
         "stream": true
+      }
+    ]
+  },
+  "divine_cg.call": {
+    "subtitle": "subtitles.sourceofmystery.divine_cg.call",
+    "sounds": [
+      {
+        "name": "sourceofmystery:divine_cg/call",
+        "stream": false
       }
     ]
   },
@@ -1340,6 +1349,24 @@
     "sounds": [
       {
         "name": "sourceofmystery:divine_cg/step",
+        "stream": false
+      }
+    ]
+  },
+  "divine_cg.approach": {
+    "subtitle": "subtitles.sourceofmystery.divine_cg.approach",
+    "sounds": [
+      {
+        "name": "sourceofmystery:divine_cg/approach",
+        "stream": true
+      }
+    ]
+  },
+  "divine_cg.heart": {
+    "subtitle": "subtitles.sourceofmystery.divine_cg.heart",
+    "sounds": [
+      {
+        "name": "sourceofmystery:divine_cg/heart",
         "stream": false
       }
     ]
@@ -1368,6 +1395,15 @@
       {
         "name": "sourceofmystery:divine_cg/armor",
         "stream": false
+      }
+    ]
+  },
+  "divine_cg.divinity": {
+    "subtitle": "subtitles.sourceofmystery.divine_cg.divinity",
+    "sounds": [
+      {
+        "name": "sourceofmystery:divine_cg/divinity",
+        "stream": true
       }
     ]
   },

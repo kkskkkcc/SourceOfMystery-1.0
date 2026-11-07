@@ -317,8 +317,20 @@ def body_frames():
     return out
 
 
+def cues():
+    """Sound cues in story time: [t, sound, volume]. The ascent cue starts with the CG itself."""
+    out = [[4.0, 'void', .55], [8.2, 'call', .7], [10.0, 'stairs', .75], [12.0, 'approach', .6]]
+    out += [[round(12 + i * STEP, 4), 'step', .7] for i in range(5)]
+    out += [[17.42, 'step', .62], [17.96, 'step', .55]]
+    out += [[18.8, 'heart', .8], [22.05, 'touch', .75], [24.1, 'bestowal', 1.0], [25.0, 'armor', .7],
+            [25.5, 'divinity', .6]]
+    out += [[round(29.5 + .7 * k, 4), 'step', .55] for k in range(3)]
+    out += [[31.6, 'step', .45], [32.05, 'step', .45], [32.5, 'throne', .8]]
+    return sorted(out, key=lambda c: c[0])
+
+
 def build():
-    return {'version': 1, 'rate': RATE, 'start': START, 'end': END, 'parts': list(PARTS),
+    return {'version': 1, 'rate': RATE, 'start': START, 'end': END, 'parts': list(PARTS), 'cues': cues(),
             'body_columns': ['t', 'x', 'y', 'z', 'yaw'] + [f'{p}.{a}' for p in PARTS for a in 'xyz'],
             'camera_columns': ['t', 'eye.x', 'eye.y', 'eye.z', 'look.x', 'look.y', 'look.z', 'fov'],
             'body': body_frames(), 'camera': camera_frames()}

@@ -69,3 +69,24 @@ python tools/divine/author_ascension.py --preview
 ```
 
 `author_ascension.py` 定义动作与镜头，`preview_ascension.py` 生成离线透视预览拼图（`tools/gear/out/ascension_sheet.png`，不是游戏截图）。实机截图由 `gradlew runClient -PgearCheck` 在静音隔离世界中录制。
+
+## v4：音效重做（2026-11-07）
+
+全部音效按"玩家走近神甲并成神"的主线重新合成，均为原创程序音频。和声从 D 小调开始，在授甲时转为 D 大调。
+
+| 剧情时间（秒） | 音效 | 内容 |
+| --- | --- | --- |
+| 0 | `ascent` 升入天外 | 渐强风声与低频上扬，进入太空时风声骤停，一声高音钟鸣 |
+| 4 | `void` 寰宇寂静 | 低沉合唱长音与零星星光钟声 |
+| 8.2 | `call` 神甲召唤 | 神甲首次出现时的三音钟声动机与远处人声 |
+| 10 | `stairs` 天阶凝结 | 上行水晶琶音与石质低鸣 |
+| 12–32 | `step` 踏上天阶 | 每一步对应一次脚步：登阶五步、平台两步、走向王座三步、转身两步 |
+| 12 | `approach` 趋近神甲 | 随登阶逐渐增强的合唱：Dm、B♭、Gm，触甲前停在 A 和弦 |
+| 18.8 | `heart` 心跳 | 手按胸口时的心跳，逐渐加快 |
+| 22.05 | `touch` 触及神甲 | 玻璃般的钟声，随后吸气式渐强直到授甲 |
+| 24.1 | `bestowal` 神光降临 | D 大调合唱绽放、低频下沉、钟声与亮音 |
+| 25 | `armor` 神甲合身 | 甲片逐片扣合的金属声与共鸣 |
+| 25.5 | `divinity` 登神 | 持续的大调圣咏与缓慢钟声 |
+| 32.5 | `throne` 端坐王座 | 低沉终止和弦与最后一声钟鸣 |
+
+音效触发时间写在 `cinematic/divine_ascension.json` 的 `cues` 中，由 `tools/divine/author_ascension.py` 生成；缺少该数据时使用代码中的默认时间。音频由 `tools/divine/generate_cg_audio.py` 生成，需要 Python 3、NumPy、SciPy 和 ffmpeg（优先使用 PATH 中的 ffmpeg）。脚本同时写入 `sounds.json`、中英文字幕，并在 `art/divine_cinematic/divine-first-equip-soundtrack.wav` 输出完整预览混音。`generate_cinematic_assets.py` 现在只生成纹理。人物动作、运镜和舞台保持 v3。

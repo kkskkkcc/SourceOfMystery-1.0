@@ -1,8 +1,8 @@
 # 神威天佑 GeckoLib 穿戴外观
 
-## v3 重新设计（2026-11-06）
+## v4 轻甲（2026-11-07）
 
-v3 取代下文 v1 的黑铁设计。新外观为白玉金纹天将甲：胸前为太极日轮护心镜（12道日芒、八卦纹），背部有日轮，护肩为三层甲片加羽冠，腿侧为鳞甲腿裙，183个Cube。物品栏、手持、掉落和展示框中显示同一立体模型。生成脚本为 `tools/gear/divine_blessing.py`，说明见 [GEAR_MODELS_V3.md](GEAR_MODELS_V3.md)。黑白流光、太极骨骼与属性保持不变，并新增发光遮罩。下文旧生成器 `tools/divine/generate_divine_armor.py` 不再使用，运行会覆盖 v3 资源。
+v4 取代 v3 的白玉金纹设计和下文 v1 的黑铁设计。新外观为黑白轻甲：黑色绗缝软甲内衬，白色珐琅薄甲片，银色包边，少量金色点缀；胸前两片胸甲之间是太极护心镜。生成脚本为 `tools/gear/divine_blessing.py`，说明见 [GEAR_MODELS.md](GEAR_MODELS.md)。骨骼名称（含 `taiji_emblem`）、黑白流光、发光遮罩与属性保持不变。下文旧生成器 `tools/divine/generate_divine_armor.py` 不再使用，运行会覆盖当前资源。
 
 ## v1 记录
 

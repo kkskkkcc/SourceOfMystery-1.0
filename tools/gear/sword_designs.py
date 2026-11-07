@@ -24,14 +24,14 @@ def wrap(material, count, width=.14, style='inlay', slope=.12):
 
 
 def spirit_source_sword():
-    register('ss_jade', 'plate', rgb('6CC596'), shade=rgb('1F6B4A'), light=rgb('D8FBE6'), vein=18, gloss=26)
-    register('ss_edge', 'plate', rgb('E9F3DF'), shade=rgb('9DB59A'), light=rgb('FFFFFF'), vein=4)
-    register('ss_wood', 'bone', rgb('7A5636'), shade=rgb('35210F'), light=rgb('B88B5E'))
-    register('ss_vine', 'plate', rgb('4E9A55'), shade=rgb('1C4D25'), light=rgb('9AD99A'), vein=6)
-    register('ss_ivory', 'plate', rgb('EEE8D2'), shade=rgb('A9A288'), light=rgb('FFFFF6'), vein=5)
-    register('ss_gem', 'gem', rgb('8CFFB6'), shade=rgb('1A8A4B'), light=rgb('F0FFF4'), facets=4)
+    register('ss_jade', 'plate', rgb('D5DBE3'), shade=rgb('7C8794'), light=rgb('F7FAFD'), vein=3, gloss=30)
+    register('ss_edge', 'metal', rgb('E4EAF1'), shade=rgb('7D8896'), light=rgb('FFFFFF'), rim_light=60)
+    register('ss_wood', 'cloth', rgb('2C3E5C'), shade=rgb('0F1726'), weave=2.4)
+    register('ss_vine', 'lacquer', rgb('2F6FC8'), shade=rgb('123067'), gloss=30)
+    register('ss_ivory', 'metal', rgb('BFC8D3'), shade=rgb('5E6875'), light=rgb('F4F8FC'))
+    register('ss_gem', 'gem', rgb('6CC0FF'), shade=rgb('14508E'), light=rgb('EAF7FF'), facets=4)
     register('gold', 'metal', rgb('C9A566'), shade=rgb('6E5126'), light=rgb('F5E2B0'))
-    green = (150, 255, 185)
+    green = (110, 190, 255)
     m, r = sword_model('spirit_source_sword')
 
     def midrib(i, n):
@@ -60,20 +60,20 @@ def spirit_source_sword():
 
 
 def dark_source_sword():
-    register('ds_obsidian', 'lacquer', rgb('211A2E'), shade=rgb('08060D'), gloss=34, rim_light=26)
-    register('ds_edge', 'metal', rgb('6E6480'), shade=rgb('241F2E'), light=rgb('B9AECB'))
-    register('ds_bone', 'bone', rgb('3A3540'), shade=rgb('121015'), light=rgb('6C6575'))
-    register('ds_iron', 'metal', rgb('4A4552'), shade=rgb('17141B'), light=rgb('8D8698'))
+    register('ds_obsidian', 'lacquer', rgb('1D1925'), shade=rgb('07060A'), gloss=36, rim_light=26)
+    register('ds_edge', 'metal', rgb('8B6BC2'), shade=rgb('35214F'), light=rgb('D2BEF5'), rim_light=50)
+    register('ds_bone', 'lacquer', rgb('241D30'), shade=rgb('0A080F'), gloss=26)
+    register('ds_iron', 'metal', rgb('4A3466'), shade=rgb('170F22'), light=rgb('9C82C4'))
     register('ds_void', 'gem', rgb('C27BFF'), shade=rgb('4A1478'), light=rgb('F6E6FF'), facets=5)
     register('gold', 'metal', rgb('C9A566'), shade=rgb('6E5126'), light=rgb('F5E2B0'))
     violet = (200, 120, 255)
     m, r = sword_model('dark_source_sword')
-    blade(m, r, 2.3, 23, 3.6, .75, 'ds_obsidian', 'ds_edge', tip=4.0, segments=7,
+    blade(m, r, 2.3, 23, 3.1, .65, 'ds_obsidian', 'ds_edge', tip=4.0, segments=7,
           profile=[1.0, .86, 1.02, .84, .98, .8, .9], edge_w=.34,
           fuller=lambda i, n: [veins(violet, 30 + i, 2, .05), glow_line(violet, .07, ((.5, 1), (.5, 0)), .7)])
     for i in range(5):
         for s in (-1, 1):
-            m.box(f'hook_{i}_{s}', r, (s * 1.95, 4.4 + i * 3.4, 0), (.9, .6, .45), 'ds_edge', rotation=(0, 0, s * -35))
+            m.box(f'hook_{i}_{s}', r, (s * 1.7, 4.4 + i * 3.4, 0), (.9, .6, .45), 'ds_edge', rotation=(0, 0, s * -35))
     eyes = [[(.26, .36), (.37, .36), (.35, .5), (.28, .5)], [(.63, .36), (.74, .36), (.72, .5), (.65, .5)]]
     m.box('skull', r, (0, 1.4, 0), (2.8, 2.4, 1.9), 'ds_bone', trim=('ds_iron', .08),
           decals={f: [{'kind': 'polys', 'style': 'paint', 'color': (10, 6, 14),
@@ -95,15 +95,16 @@ def dark_source_sword():
 
 
 def origin_dragon_sword():
-    register('od_bone', 'bone', rgb('E6DCC8'), shade=rgb('8A7C66'), light=rgb('FFFBF1'))
-    register('od_edge', 'metal', rgb('CBB9E6'), shade=rgb('5E4D7A'), light=rgb('F7F0FF'), rim_light=60)
-    register('od_scale', 'scale', rgb('3B2A52'), shade=rgb('140C1E'), light=rgb('7B5CA8'))
-    register('od_hide', 'plate', rgb('2C2038'), shade=rgb('0E0914'), light=rgb('5B4675'), vein=8)
-    register('od_eye', 'gem', rgb('F07BFF'), shade=rgb('7A1A8A'), light=rgb('FFE8FF'), facets=3)
-    register('gold', 'metal', rgb('C9A566'), shade=rgb('6E5126'), light=rgb('F5E2B0'))
-    pink = (240, 130, 255)
+    """始源龙剑 v4: dark bronze blade with ember edges, dragon-head guard in orange scale."""
+    register('od_bone', 'metal', rgb('3A2A20'), shade=rgb('140D08'), light=rgb('7A5638'))
+    register('od_edge', 'metal', rgb('FF9442'), shade=rgb('A8400C'), light=rgb('FFD29A'), rim_light=60)
+    register('od_scale', 'scale', rgb('DC5E16'), shade=rgb('6E2408'), light=rgb('FF9A48'))
+    register('od_hide', 'plate', rgb('E2661A'), shade=rgb('8C300A'), light=rgb('FF9446'), vein=4)
+    register('od_eye', 'gem', rgb('FFB24C'), shade=rgb('B0420E'), light=rgb('FFF2CC'), facets=3)
+    register('gold', 'metal', rgb('C4904F'), shade=rgb('5E3B1C'), light=rgb('F5D6A2'))
+    pink = (255, 150, 60)
     m, r = sword_model('origin_dragon_sword')
-    blade(m, r, 3.2, 24, 3.4, .8, 'od_bone', 'od_edge', tip=4.4, segments=6, taper=.18, edge_w=.36,
+    blade(m, r, 3.2, 24, 3.0, .7, 'od_bone', 'od_edge', tip=4.4, segments=6, taper=.18, edge_w=.36,
           fuller=lambda i, n: [glow_line(pink, .08, ((.5, 1), (.5, 0)), .75),
                                {'kind': 'runes', 'style': 'engrave', 'seed': 50 + i, 'count': 2, 'width': .05}])
     for z, f in ((-1, 'north'), (1, 'south')):
@@ -137,41 +138,38 @@ def origin_dragon_sword():
 
 
 def divine_punishment_sword():
-    register('dp_jade', 'plate', rgb('EFEAE0'), shade=rgb('9AA3AD'), light=rgb('FFFDF8'), vein=9, gloss=20)
-    register('dp_edge', 'metal', rgb('E9EEF2'), shade=rgb('8C97A2'), light=rgb('FFFFFF'), rim_light=60)
-    register('gold', 'metal', rgb('D9B468'), shade=rgb('86601F'), light=rgb('FFF1BC'), rim_light=55, bevel=.08)
-    register('dp_ink', 'lacquer', rgb('1A1D25'), shade=rgb('07080B'), gloss=30, rim_light=22, rim_dark=20)
-    register('dp_sun', 'gem', rgb('FFF4D2'), shade=rgb('D9A44A'), light=rgb('FFFFFF'), facets=4)
-    thunder = (205, 230, 255)
-    sun = (255, 238, 196)
+    """神威天罚 v4: slender white blade, black fuller, silver edges, taiji guard."""
+    register('dp_white', 'plate', rgb('F2F1EC'), shade=rgb('A3A8B0'), light=rgb('FFFFFF'), vein=3, gloss=24)
+    register('dp_edge', 'metal', rgb('DDE2E8'), shade=rgb('7B828C'), light=rgb('FFFFFF'), rim_light=60)
+    register('dp_silver', 'metal', rgb('C6CBD2'), shade=rgb('6A707A'), light=rgb('F4F6FA'), rim_light=50)
+    register('dp_black', 'lacquer', rgb('1B1C21'), shade=rgb('07080A'), gloss=34)
+    register('dp_gold', 'metal', rgb('D6B46C'), shade=rgb('80602A'), light=rgb('FFF0C2'))
+    register('dp_pearl', 'gem', rgb('F4F6FF'), shade=rgb('9AA2B5'), light=rgb('FFFFFF'), facets=4)
+    white = (236, 242, 255)
 
     def fuller(i, n):
-        zig = [(.5 + (.16 if k % 2 else -.16), k / 4) for k in range(5)]
-        return [{'kind': 'lines', 'style': 'inlay', 'material': 'gold', 'width': .16, 'paths': [[(.5, 0), (.5, 1)]]},
-                {'kind': 'lines', 'style': 'inlay', 'material': 'gold', 'width': .07, 'paths': [zig],
-                 'glow': thunder, 'glow_alpha': 1, 'tint': .95}]
+        return [{'kind': 'lines', 'style': 'inlay', 'material': 'dp_black', 'width': .3, 'paths': [[(.5, 0), (.5, 1)]]},
+                {'kind': 'lines', 'style': 'inlay', 'material': 'dp_black', 'width': .07, 'paths': [[(.5, 0), (.5, 1)]],
+                 'glow': white, 'glow_alpha': .9, 'tint': .9}]
     m, r = sword_model('divine_punishment_sword')
-    blade(m, r, 2.6, 26, 4.2, .8, 'dp_jade', 'dp_edge', tip=4.8, segments=7, taper=.14, edge_w=.38, fuller=fuller)
-    m.ring('guard_ring', r, (0, 1.7, 0), 1.55, 16, .4, 1.1, 'gold', bevel=.05)
-    for face, z in (('north', -.36), ('south', .36)):
-        m.box(f'guard_face_{face}', r, (0, 1.7, z), (2.9, 2.9, .12), 'dp_ink',
-              hide=tuple(f for f in ALL if f != face), density=96, bevel=0, ao=False,
-              decals={face: [{'kind': 'rays', 'style': 'inlay', 'material': 'gold', 'count': 24, 'r0': .32,
-                              'r1': .46, 'width': .02, 'glow': sun, 'glow_alpha': .5, 'tint': .2},
-                             {'kind': 'taiji', 'style': 'taiji', 'r': .6}]})
+    blade(m, r, 2.4, 25, 3.0, .6, 'dp_white', 'dp_edge', tip=4.4, segments=7, taper=.18, edge_w=.32, fuller=fuller)
+    # Taiji guard: a slim silver ring with a black-white face on both sides.
+    m.ring('guard_ring', r, (0, 1.6, 0), 1.15, 16, .28, .8, 'dp_silver', bevel=.04)
+    for face, z in (('north', -.26), ('south', .26)):
+        m.box(f'guard_face_{face}', r, (0, 1.6, z), (2.1, 2.1, .1), 'dp_black',
+              hide=tuple(f for f in ALL if f != face), density=110, bevel=0, ao=False,
+              decals={face: [{'kind': 'trigrams', 'style': 'inlay', 'material': 'dp_silver', 'r': .43, 'width': .025},
+                             {'kind': 'taiji', 'style': 'taiji', 'r': .58}]})
     for s in (-1, 1):
-        for k, (ang, ln, w) in enumerate(((8, 4.6, 1.2), (34, 3.8, 1.0), (60, 2.8, .8))):
-            m.box(f'wing_{s}_{k}', r, (s * (1.4 + ln / 2), 1.2, 0), (ln, w, .5), 'gold' if k != 1 else 'dp_jade',
-                  rotation=(0, 0, s * ang), pivot=(s * 1.4, 1.2, 0), bevel=.07,
-                  trim=('gold', .08) if k == 1 else None,
-                  decals={f: [{'kind': 'lines', 'style': 'inlay', 'material': 'gold', 'width': .1,
-                               'paths': [[(.08, .5), (.92, .5)]], 'glow': sun, 'glow_alpha': .8}]
-                          for f in ('north', 'south')} if k == 0 else None)
-    m.box('grip', r, (0, -2.8, 0), (1.2, 6.6, 1.2), 'dp_ink', decals=wrap('gold', 7, .1))
-    m.box('grip_collar', r, (0, .1, 0), (1.7, .6, 1.7), 'gold')
-    m.ring('pommel_ring', r, (0, -7.0, 0), .85, 12, .3, .55, 'gold', bevel=.05)
-    m.box('pommel_gem', r, (0, -7.0, 0), (.9, .9, .9), 'dp_sun', rotation=(0, 0, 45), glow_face=True)
-    m.box('pommel_cap', r, (0, -6.0, 0), (1.5, .5, 1.5), 'gold')
+        # Thin swept quillons: white blade-like arms with silver tips.
+        m.box(f'quillon_{s}', r, (s * 2.65, 1.3, 0), (2.9, .5, .45), 'dp_white', trim=('dp_silver', .1), bevel=.05)
+        m.box(f'quillon_tip_{s}', r, (s * 4.3, 1.3, 0), (.62, .62, .5), 'dp_silver', rotation=(0, 0, 45))
+    m.box('ricasso', r, (0, 2.9, 0), (1.5, .7, .7), 'dp_black', trim=('dp_silver', .1))
+    m.box('grip', r, (0, -2.7, 0), (1.05, 6.2, 1.05), 'dp_black', decals=wrap('dp_silver', 8, .08))
+    m.box('grip_collar', r, (0, .25, 0), (1.45, .5, 1.45), 'dp_silver')
+    m.box('pommel_cap', r, (0, -5.95, 0), (1.35, .45, 1.35), 'dp_silver')
+    m.box('pommel', r, (0, -6.75, 0), (1.0, 1.0, 1.0), 'dp_pearl', rotation=(0, 0, 45), glow_face=True)
+    m.box('pommel_gold', r, (0, -7.55, 0), (.5, .5, .5), 'dp_gold', rotation=(0, 45, 0))
     return m
 
 

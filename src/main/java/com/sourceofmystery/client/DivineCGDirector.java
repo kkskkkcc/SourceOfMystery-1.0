@@ -104,17 +104,22 @@ public final class DivineCGDirector {
             }
         }
         if(mc.getCameraEntity()!=camera)mc.setCameraEntity(camera);
-        if(t>=4)cue("cosmos",.58f);if(t>=10)cue("stairs",.7f);
-        for(int i=0;i<5;i++)if(t>=12.76f+i*1.0833333f)cue("step"+i,"step",.74f);
-        if(t>=17.9f)cue("step5","step",.65f);
-        if(t>=22.05f)cue("touch",.65f);if(t>=24.15f)cue("bestowal",1);
-        if(t>=25.0f)cue("armor",.65f);if(t>=29.5f)cue("throne",.8f);
+        var authored=DivineCGTrack.cues();
+        if(!authored.isEmpty()){
+            for(int i=0;i<authored.size();i++){var c=authored.get(i);if(t>=c.time())cue("cue"+i,c.sound(),c.volume());}
+        } else {
+            // Fallback when the authored track is missing.
+            if(t>=10)cue("stairs",.7f);
+            for(int i=0;i<5;i++)if(t>=12f+i*1.0833333f)cue("step"+i,"step",.7f);
+            if(t>=22.05f)cue("touch",.75f);if(t>=24.1f)cue("bestowal",1);
+            if(t>=25.0f)cue("armor",.7f);if(t>=32.5f)cue("throne",.8f);
+        }
         if(t>=DivineCGTimeline.EQUIP)achievement();
     }
     private static void achievement(){if(!achievementShown){achievementShown=true;Minecraft.getInstance().getToasts().addToast(new DivineAscensionToast());}}
     private static void cue(String name,float volume){cue(name,name,volume);}
     private static void cue(String key,String name,float volume){
-        if(!cues.add(key))return;
+        if(!cues.add(key)||DivineCGSounds.event(name)==null)return;
         var s=new SimpleSoundInstance(DivineCGSounds.event(name).getLocation(),net.minecraft.sounds.SoundSource.PLAYERS,volume,1,RandomSource.create(),false,0,SoundInstance.Attenuation.NONE,0,0,0,true);
         sounds.add(s);Minecraft.getInstance().getSoundManager().play(s);
     }

@@ -280,13 +280,17 @@
   "item.sourceofmystery.mystery_enchanter": "秘源附魔台",
   "offering.sourceofmystery.luck": "幸运 %s",
   "offering.sourceofmystery.boost": "好物 %s",
+  "advancements.sourceofmystery.ascend_divinity.description": "首次穿戴神威天佑，在寰宇之上接受神光，凝望无主的王座。",
   "subtitles.sourceofmystery.divine_cg.ascent": "升入天外",
-  "subtitles.sourceofmystery.divine_cg.cosmos": "寰宇低鸣",
+  "subtitles.sourceofmystery.divine_cg.void": "寰宇寂静",
+  "subtitles.sourceofmystery.divine_cg.call": "神甲召唤",
   "subtitles.sourceofmystery.divine_cg.stairs": "天阶凝结",
   "subtitles.sourceofmystery.divine_cg.step": "踏上天阶",
+  "subtitles.sourceofmystery.divine_cg.approach": "趋近神甲",
+  "subtitles.sourceofmystery.divine_cg.heart": "心跳",
   "subtitles.sourceofmystery.divine_cg.touch": "触及神甲",
   "subtitles.sourceofmystery.divine_cg.bestowal": "神光降临",
   "subtitles.sourceofmystery.divine_cg.armor": "神甲合身",
-  "subtitles.sourceofmystery.divine_cg.throne": "凝视王座",
-  "advancements.sourceofmystery.ascend_divinity.description": "首次穿戴神威天佑，在寰宇之上接受神光，凝望无主的王座。"
+  "subtitles.sourceofmystery.divine_cg.divinity": "登神",
+  "subtitles.sourceofmystery.divine_cg.throne": "端坐王座"
 }
