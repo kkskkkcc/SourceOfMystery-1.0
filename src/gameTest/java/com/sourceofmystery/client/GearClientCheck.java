@@ -10,6 +10,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.*;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.*;
@@ -102,6 +103,21 @@ public final class GearClientCheck {
                 if(ticks==base+30)mc.options.setCameraType(CameraType.THIRD_PERSON_BACK);
                 if(ticks==base+50)capture(String.format("%02d-worn-back-%d.png",4+set*2,set));
             }
+            // Side view of the grip: armor stands share the humanoid hand transform.
+            if(ticks==415){mc.options.setCameraType(CameraType.FIRST_PERSON);server(p->{
+                var level=p.serverLevel();p.setItemInHand(InteractionHand.MAIN_HAND,ItemStack.EMPTY);
+                float[] raise={0,-40,-90};
+                for(int i=0;i<3;i++){
+                    var stand=new ArmorStand(level,-1+i*1.5,200,-6.5);stand.setShowArms(true);stand.setNoBasePlate(true);
+                    stand.setYRot(270);stand.setYBodyRot(270);stand.setYHeadRot(270);
+                    stand.setRightArmPose(new Rotations(raise[i],0,0));stand.addTag("grip_check");
+                    stand.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(SWORDS.get(4).get()));level.addFreshEntity(stand);
+                }
+                p.teleportTo(level,.5,200,-3.4,180,18);});}
+            if(ticks==435)capture("14-grip-side.png");
+            if(ticks==437)server(p->p.teleportTo(p.serverLevel(),.95,200,-5.3,180,32));
+            if(ticks==446)capture("15-grip-close.png");
+            if(ticks==448)server(p->p.serverLevel().getEntities(net.minecraft.world.entity.EntityType.ARMOR_STAND,e->e.getTags().contains("grip_check")).forEach(e->e.discard()));
             if(ticks==450){mc.options.setCameraType(CameraType.FIRST_PERSON);server(p->{p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(SWORDS.get(4).get()));
                 p.setItemInHand(InteractionHand.OFF_HAND,new ItemStack(SWORDS.get(4).get()));});}
             if(ticks==475)capture("11-first-person-divine-sword.png");

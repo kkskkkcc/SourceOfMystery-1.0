@@ -58,6 +58,8 @@ python tools/gear/swords.py
 | `preview.py`、`sheet.py` | 离线预览与对比图 |
 | `bb_import.js`、`review.js` | 通过 Blockbench MCP 导入审阅，可保存为 `.bbmodel` |
 
+剑柄由 `kit.lengthen_hilt` 统一加长 2.8 像素，使握把填满手掌并露出剑首。第三人称手持变换把握把中点（几何 y = -4）放在手掌中心，剑身向前上方倾斜 25 度。
+
 每个可见面都有独立 UV 区域，按实际尺寸绘制，因此贴图不重复平铺。设计脚本中的旋转按几何空间右手系书写，`forge3d.Model.box` 会换算为 GeckoLib 文件格式。
 
 ## 验证
@@ -68,4 +70,4 @@ python tools/gear/swords.py
 gradlew runClient -PgearCheck
 ```
 
-截图输出到 `build/gear-client-check/screenshots/`，覆盖物品栏、物品展示框、掉落物、第一人称手持、四件胸甲的第三人称前后视角，以及完整的登神 CG 与神威天佑穿戴效果。
+截图输出到 `build/gear-client-check/screenshots/`，覆盖物品栏、物品展示框、掉落物、第一人称手持、四件胸甲的第三人称前后视角、盔甲架手持剑的侧视与近景（`14-grip-side.png`、`15-grip-close.png`），以及完整的登神 CG 与神威天佑穿戴效果。

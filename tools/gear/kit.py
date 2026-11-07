@@ -138,5 +138,31 @@ def blade(m, bone, base_y, length, width, thick, material, edge, tip=3.0, segmen
               rotation=(0, 0, s * angle), bevel=.03, grad='x')
 
 
+# Extra grip length (geo px) so the handle fills a fist with the pommel showing below it.
+HILT_EXTRA = 2.8
+# Geo y of the middle of the lengthened grip: the point the hand closes on (gear_sword_display.json).
+HOLD_Y = -4.0
+
+
+def lengthen_hilt(m, extra=HILT_EXTRA):
+    """Stretch the part named 'grip' downward by extra px; parts below its top follow."""
+    grip_part = next(p for p in m.parts if p.name == 'grip')
+    top = grip_part.center[1] + grip_part.size[1] / 2
+    bottom = top - grip_part.size[1]
+    k = (top - bottom + extra) / (top - bottom)
+
+    def move(y):
+        return y if y >= top else top - (top - y) * k if y >= bottom else y - extra
+    for p in m.parts:
+        if p is grip_part:
+            p.size = (p.size[0], p.size[1] + extra, p.size[2])
+            p.center = (p.center[0], p.center[1] - extra / 2, p.center[2])
+            continue
+        p.center = (p.center[0], move(p.center[1]), p.center[2])
+        if p.pivot:
+            p.pivot = (p.pivot[0], move(p.pivot[1]), p.pivot[2])
+    return top - (top - bottom + extra) / 2
+
+
 def grip(m, bone, length, radius, wrap, decals=None):
     return m.box('grip', bone, (0, -length / 2 + .2, 0), (radius, length, radius), wrap, decals=decals)

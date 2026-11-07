@@ -13,7 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from forge3d import ASSETS, ROOT  # noqa: E402
-from kit import blade, sword_model  # noqa: E402
+from kit import blade, lengthen_hilt, sword_model  # noqa: E402
 from paint import register, rgb  # noqa: E402
 
 
@@ -56,10 +56,11 @@ DESIGNS = {'mystery_sword': mystery_sword, **HIGHER}
 
 def export(name):
     m = DESIGNS[name]()
+    hold = lengthen_hilt(m)
     info = m.export(ASSETS / f'geo/item/{name}.geo.json', ASSETS / f'textures/gear/{name}.png',
                     ASSETS / f'textures/gear/{name}_glowmask.png', seed=zlib.crc32(name.encode()) & 0xFFFF,
                     manifest_path=ROOT / f'tools/gear/out/{name}.parts.json')
-    print(name, info)
+    print(name, f'hold y {hold:.2f}', info)
 
 
 if __name__ == '__main__':

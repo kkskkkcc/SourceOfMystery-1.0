@@ -90,3 +90,23 @@ python tools/divine/author_ascension.py --preview
 | 32.5 | `throne` 端坐王座 | 低沉终止和弦与最后一声钟鸣 |
 
 音效触发时间写在 `cinematic/divine_ascension.json` 的 `cues` 中，由 `tools/divine/author_ascension.py` 生成；缺少该数据时使用代码中的默认时间。音频由 `tools/divine/generate_cg_audio.py` 生成，需要 Python 3、NumPy、SciPy 和 ffmpeg（优先使用 PATH 中的 ffmpeg）。脚本同时写入 `sounds.json`、中英文字幕，并在 `art/divine_cinematic/divine-first-equip-soundtrack.wav` 输出完整预览混音。`generate_cinematic_assets.py` 现在只生成纹理。人物动作、运镜和舞台保持 v3。
+
+## v5：接触贴合（2026-11-08）
+
+人物与舞台、神甲、王座的接触按实际几何求解，不再凭估计取值。
+
+- **手持物**：CG 中不渲染玩家手中的物品，仪式全程空手进行。
+- **躯干**：躯干绕髋部转动，头和双臂随之移动，前倾或后仰时腰部与肩部不再出现缝隙。
+- **登阶**：支撑脚始终踩在台阶上，迈步脚抬腿越过台阶边缘，不再穿入台阶。轨道新增 `rightLeg.lift`、`leftLeg.lift` 两列，表示腿部上收的像素量。
+- **触甲**：站位后移，双手恰好贴上悬浮神甲胸前，不再插入其中。手按胸口改为右手先抬向神甲，因为直臂无法触到自己胸口而不穿模。
+- **察看护手**：先抬臂再横移，手臂不再穿过胸口。
+- **王座**：先退到座前，双手抬上扶手，再坐上座面；大腿水平贴合座面，后背和后脑贴住靠背，双手落在扶手上。
+
+`tools/divine/cg_body.py` 复现游戏内的人物运动学，并提供盒体碰撞和王座网格射线检测。`author_ascension.py` 在生成轨道前用它求解站位、抬臂角度、座位和扶手姿势。检查报告：
+
+```text
+python tools/divine/cg_contacts.py
+```
+
+报告中负值表示穿入。当前结果：脚不穿入台阶，双手与神甲、后背与靠背、手臂与扶手的间隙均为 0–4 毫米；手臂与躯干的重叠不超过 1.7 厘米，只位于原版模型的肩关节处。
+

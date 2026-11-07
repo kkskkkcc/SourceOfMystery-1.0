@@ -23,7 +23,10 @@ final class DivineCGTrack {
             var parts=root.getAsJsonArray("parts");
             if(parts.size()!=PARTS.length)throw new IllegalArgumentException("Invalid parts");
             for(int i=0;i<PARTS.length;i++)if(!PARTS[i].equals(parts.get(i).getAsString()))throw new IllegalArgumentException("Invalid part order");
-            var parsedBody=new Frames(root.getAsJsonArray("body"),5+PARTS.length*3);
+            // Optional trailing columns (leg lifts) follow the 5 root and 18 rotation columns.
+            int bodyWidth=root.has("body_columns")?root.getAsJsonArray("body_columns").size():5+PARTS.length*3;
+            if(bodyWidth<5+PARTS.length*3)throw new IllegalArgumentException("Invalid body columns");
+            var parsedBody=new Frames(root.getAsJsonArray("body"),bodyWidth);
             var parsedCamera=new Frames(root.getAsJsonArray("camera"),8);
             var parsedCues=new java.util.ArrayList<Cue>();
             if(root.has("cues"))for(var element:root.getAsJsonArray("cues")){
