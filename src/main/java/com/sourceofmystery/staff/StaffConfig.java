@@ -12,6 +12,10 @@ public final class StaffConfig {
     public static ForgeConfigSpec.IntValue SPLIT_LENGTH, SPLIT_WIDTH, SPLIT_TOP, LIFT_DEPTH, LIFT_HEIGHT;
     public static ForgeConfigSpec.IntValue TIME_STOP_TICKS, TIME_STOP_COOLDOWN, PORTAL_TICKS;
     public static ForgeConfigSpec.DoubleValue SPLIT_DAMAGE;
+    public static ForgeConfigSpec.IntValue DOMAIN_DURATION;
+    public static ForgeConfigSpec.IntValue WEATHER_DURATION,TORNADO_DURATION,TORNADO_BLOCKS_PER_SECOND;
+    public static ForgeConfigSpec.LongValue TORNADO_COST;
+    public static ForgeConfigSpec.BooleanValue TORNADO_TERRAIN;
     public static final ForgeConfigSpec SPEC;
 
     static {
@@ -36,6 +40,12 @@ public final class StaffConfig {
         TIME_STOP_TICKS = builder.defineInRange("timeStopTicks", 240, 1, 2400);
         TIME_STOP_COOLDOWN = builder.comment("时间恢复后的冷却时间，单位 tick").defineInRange("timeStopCooldownTicks", 60, 0, 72000);
         PORTAL_TICKS = builder.defineInRange("portalTicks", 200, 1, 72000);
+        DOMAIN_DURATION = builder.comment("领域持续时间；斩杀开场CG固定200tick").defineInRange("domainDurationTicks",6000,200,72000);
+        WEATHER_DURATION=builder.comment("晴天/雨天/雷暴持续时间").defineInRange("weatherDurationTicks",12000,200,720000);
+        TORNADO_DURATION=builder.defineInRange("tornadoDurationTicks",6000,200,72000);
+        TORNADO_COST=builder.defineInRange("tornadoEnergyCost",5000L,0L,Long.MAX_VALUE);
+        TORNADO_TERRAIN=builder.comment("允许龙卷风卷走标签中的松散方块，遵守mobGriefing及BreakEvent").define("tornadoTerrainDamage",true);
+        TORNADO_BLOCKS_PER_SECOND=builder.defineInRange("tornadoBlocksPerSecond",20,0,100);
         for (StaffSpell spell : StaffSpell.values()) {
             builder.push(spell.id());
             var cost = builder.comment("成功释放消耗的神秘之能")

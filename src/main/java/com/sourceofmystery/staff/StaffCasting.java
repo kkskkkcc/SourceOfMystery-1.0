@@ -26,9 +26,14 @@ import java.util.*;
 public final class StaffCasting {
     private static final class Cast {
         final ServerLevel level;final InteractionHand hand;final ItemStack stack;final StaffSpell spell;
-        OutsiderSpell sky;Vec3 impact;
+        OutsiderSpell sky;
+        final net.minecraft.resources.ResourceLocation environment;
+        final DomainType domain;
+        final WeatherType weather;final long cost;
         Cast(ServerLevel level,InteractionHand hand,ItemStack stack,StaffSpell spell) {
             this.level=level;this.hand=hand;this.stack=stack;this.spell=spell;
+            this.environment=StaffEnvironment.selected(stack);this.domain=DomainType.selected(stack);
+            this.weather=WeatherType.selected(stack);this.cost=spell.cost(stack);
         }
     }
     private static final Map<UUID, Cast> CASTS = new HashMap<>();
@@ -38,20 +43,21 @@ public final class StaffCasting {
         if (!(player instanceof ServerPlayer server) || TimeStop.frozen(player)) return false;
         StaffSpell spell = StaffSpell.selected(stack);
         if (spell == StaffSpell.TIME_STOP && !TimeStop.canCast(server)) return fail(player,"time_cooldown");
-        if (MysteryEnergy.getEnergy(player) < spell.cost()) return fail(player,"energy");
+        if (MysteryEnergy.getEnergy(player) < spell.cost(stack)) return fail(player,"energy");
         CASTS.put(player.getUUID(),new Cast(server.serverLevel(),hand,stack,spell));
         var staff=(DimensionBreakerStaffItem)stack.getItem();
         staff.triggerAnim(player,GeoItem.getOrAssignId(stack,server.serverLevel()),"staff",animation(spell));
         if (spell.castTicks() == 0) return finish(player,stack);
         send(server.serverLevel(),new StaffEffectPacket(StaffEffectPacket.CHARGE,player.getUUID(),player.position(),
-                target(server),spell.castTicks(),spell.ordinal()));
+                spell==StaffSpell.ENVIRONMENT_SHIFT?player.position():target(server),spell.castTicks(),spell.ordinal(),
+                spell==StaffSpell.ENVIRONMENT_SHIFT?new int[]{EnvironmentPalette.of(StaffEnvironment.selected(stack)).ordinal()}:spell==StaffSpell.DOMAIN_EXPANSION?new int[]{DomainType.selected(stack).ordinal()}:new int[0]));
         return true;
     }
 
     private static String animation(StaffSpell spell) {
         return switch(spell) {
             case ANNIHILATION->"charge"; case EARTH_SPLIT->"cleave"; case EARTH_LIFT->"uplift";
-            case SPACE_RIFT->"rift"; case TIME_STOP->"time_stop";
+            case SPACE_RIFT->"rift"; case TIME_STOP->"time_stop"; case ENVIRONMENT_SHIFT->"environment"; case DOMAIN_EXPANSION->"domain";case WEATHER_CONTROL->"weather";
         };
     }
 
@@ -60,7 +66,6 @@ public final class StaffCasting {
         if (cast==null || cast.stack!=stack || !player.isAlive() || TimeStop.frozen(player)) {player.stopUsingItem();return;}
         int skyLead=(int)((OutsiderRitual.ORB_START-OutsiderRitual.SKY_START)*20);
         if(cast.spell==StaffSpell.ANNIHILATION&&cast.sky==null&&remaining<=skyLead) {
-            cast.impact=target((ServerPlayer)player);
             cast.sky=OutsiderSpell.spawn(cast.level,player,OutsiderSpell.SKY_SEAL,skyOrigin(player),Vec3.ZERO);
         }
     }
@@ -70,7 +75,7 @@ public final class StaffCasting {
         if (cast==null || cast.stack!=stack || player.level()!=cast.level || !player.isAlive()) return false;
         stopVisual(player,cast.level);
         if(cast.spell==StaffSpell.ANNIHILATION)stopAnimation(player,cast);
-        if (MysteryEnergy.getEnergy(player)<cast.spell.cost()) {discardSky(cast);return fail(player,"energy");}
+        if (MysteryEnergy.getEnergy(player)<cast.cost) {discardSky(cast);return fail(player,"energy");}
         var server=(ServerPlayer)player;
         boolean success=switch(cast.spell) {
             case ANNIHILATION->meteor(server,cast);
@@ -78,9 +83,12 @@ public final class StaffCasting {
             case EARTH_LIFT->StaffTerrain.lift(server);
             case TIME_STOP->TimeStop.start(server);
             case SPACE_RIFT->StaffPortals.open(server);
+            case ENVIRONMENT_SHIFT->StaffEnvironment.start(server,cast.environment);
+            case DOMAIN_EXPANSION->StaffDomains.start(server,cast.domain);
+            case WEATHER_CONTROL->StaffWeather.start(server,cast.weather);
         };
         if (!success) {discardSky(cast);return false;}
-        if (cast.spell.cost()>0) MysteryEnergy.consumeEnergy(player,cast.spell.cost());
+        if (cast.cost>0) MysteryEnergy.consumeEnergy(player,cast.cost);
         StaffSounds.play(cast.level,player.position(),cast.spell,"release");
         return true;
     }
@@ -89,11 +97,14 @@ public final class StaffCasting {
         return new Vec3(player.getX(),Math.max(OutsiderRitual.SKY_HEIGHT,player.getY()+60),player.getZ());
     }
     private static boolean meteor(ServerPlayer player,Cast cast) {
-        ServerLevel level=player.serverLevel(); Vec3 impact=cast.impact==null?target(player):cast.impact;
+        var selection=MeteorTargeting.forCast(player);
+        if(!selection.pick().valid())return fail(player,"meteor_no_target");
+        ServerLevel level=player.serverLevel(); Vec3 impact=selection.pick().point();
         Vec3 sky=cast.sky==null?skyOrigin(player):cast.sky.position();
         OutsiderSpell meteor=OutsiderSpell.spawn(level,player,OutsiderSpell.METEOR,sky,Vec3.ZERO);
         if (meteor.isRemoved()) return false;
-        meteor.setTimedImpact(impact,OutsiderRitual.FALL_TICKS);
+        if(selection.locked())meteor.setTrackedImpact(selection.pick().entity(),OutsiderRitual.FALL_TICKS);
+        else meteor.setTimedImpact(impact,OutsiderRitual.FALL_TICKS);
         if(cast.sky==null)OutsiderSpell.spawn(level,player,OutsiderSpell.SKY_SEAL,sky,Vec3.ZERO);
         return true;
     }

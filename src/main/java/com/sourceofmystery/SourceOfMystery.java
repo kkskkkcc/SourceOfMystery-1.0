@@ -41,6 +41,7 @@ public class SourceOfMystery {
         com.sourceofmystery.staff.StaffSounds.SOUNDS.register(modEventBus);
         com.sourceofmystery.cinematic.DivineCGSounds.SOUNDS.register(modEventBus);
         ModParticles.PARTICLES.register(modEventBus);
+        com.sourceofmystery.staff.DomainEffects.EFFECTS.register(modEventBus);
         modEventBus.addListener(ModEntities::registerAttributes);
         modEventBus.addListener(this::commonSetup);
 

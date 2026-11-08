@@ -6,6 +6,11 @@ import com.sourceofmystery.client.staff.StaffItemExtensions;
 import com.sourceofmystery.staff.StaffCasting;
 import com.sourceofmystery.staff.StaffConfig;
 import com.sourceofmystery.staff.StaffSpell;
+import com.sourceofmystery.staff.StaffEnvironment;
+import com.sourceofmystery.staff.StaffDomains;
+import com.sourceofmystery.staff.DomainType;
+import com.sourceofmystery.staff.WeatherType;
+import com.sourceofmystery.staff.StaffWeather;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -53,6 +58,15 @@ public final class DimensionBreakerStaffItem extends Item implements GeoItem {
         text.add(Component.translatable("tooltip.sourceofmystery.dimension_breaker_staff.lore").withStyle(ChatFormatting.GOLD));
         text.add(Component.translatable("tooltip.sourceofmystery.dimension_breaker_staff.dream").withStyle(ChatFormatting.GRAY));
         text.add(StaffSpell.selected(stack).title().copy().withStyle(ChatFormatting.WHITE));
+        if(StaffSpell.selected(stack)==StaffSpell.ENVIRONMENT_SHIFT) {
+            text.add(Component.translatable("tooltip.sourceofmystery.staff.environment",StaffEnvironment.title(StaffEnvironment.selected(stack))).withStyle(ChatFormatting.AQUA));
+            text.add(Component.translatable("tooltip.sourceofmystery.staff.environment_hint").withStyle(ChatFormatting.GRAY));
+        }
+        if(StaffSpell.selected(stack)==StaffSpell.DOMAIN_EXPANSION){
+            text.add(DomainType.selected(stack).title().copy().withStyle(ChatFormatting.LIGHT_PURPLE));
+            text.add(Component.translatable("tooltip.sourceofmystery.staff.domain_hint").withStyle(ChatFormatting.GRAY));
+        }
+        if(StaffSpell.selected(stack)==StaffSpell.WEATHER_CONTROL){text.add(WeatherType.selected(stack).title().copy().withStyle(ChatFormatting.AQUA));text.add(Component.translatable("tooltip.sourceofmystery.staff.weather_hint").withStyle(ChatFormatting.GRAY));}
     }
 
     @Override public Multimap<Attribute, AttributeModifier> getAttributeModifiers(EquipmentSlot slot, ItemStack stack) {
@@ -66,7 +80,27 @@ public final class DimensionBreakerStaffItem extends Item implements GeoItem {
 
     @Override public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
-        if(level.isClientSide&&com.sourceofmystery.client.ClientEnergyCache.energy<StaffSpell.selected(stack).cost())
+        if(StaffSpell.selected(stack)==StaffSpell.WEATHER_CONTROL&&player.isShiftKeyDown()){
+            if(player instanceof net.minecraft.server.level.ServerPlayer server)StaffWeather.cycle(server,stack);
+            return InteractionResultHolder.sidedSuccess(stack,level.isClientSide);
+        }
+        if(StaffSpell.selected(stack)==StaffSpell.WEATHER_CONTROL&&WeatherType.selected(stack)==WeatherType.TORNADO){
+            if(player instanceof net.minecraft.server.level.ServerPlayer server&&StaffWeather.active(server)){StaffWeather.stop(server);return InteractionResultHolder.success(stack);}
+            if(level.isClientSide&&com.sourceofmystery.client.WeatherVisuals.localStorm()!=null)return InteractionResultHolder.consume(stack);
+        }
+        if(StaffSpell.selected(stack)==StaffSpell.ENVIRONMENT_SHIFT && player.isShiftKeyDown()) {
+            if(player instanceof net.minecraft.server.level.ServerPlayer server)StaffEnvironment.cycle(server,stack);
+            return InteractionResultHolder.sidedSuccess(stack,level.isClientSide);
+        }
+        if(StaffSpell.selected(stack)==StaffSpell.DOMAIN_EXPANSION&&player.isShiftKeyDown()){
+            if(player instanceof net.minecraft.server.level.ServerPlayer server)StaffDomains.cycle(server,stack);
+            return InteractionResultHolder.sidedSuccess(stack,level.isClientSide);
+        }
+        if(player instanceof net.minecraft.server.level.ServerPlayer server&&StaffDomains.active(server)){
+            StaffDomains.stop(server);return InteractionResultHolder.success(stack);
+        }
+        if(level.isClientSide&&com.sourceofmystery.client.DomainVisuals.localField()!=null)return InteractionResultHolder.consume(stack);
+        if(level.isClientSide&&com.sourceofmystery.client.ClientEnergyCache.energy<StaffSpell.selected(stack).cost(stack))
             return InteractionResultHolder.fail(stack);
         if (!level.isClientSide && !StaffCasting.begin(player, hand, stack)) return InteractionResultHolder.fail(stack);
         if (StaffSpell.selected(stack).castTicks() > 0) player.startUsingItem(hand);
@@ -91,6 +125,8 @@ public final class DimensionBreakerStaffItem extends Item implements GeoItem {
         if (!level.isClientSide && entity instanceof Player player) StaffCasting.tick(player, stack, remaining);
     }
     @Override public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
+        if(level.isClientSide&&StaffSpell.selected(stack)==StaffSpell.DOMAIN_EXPANSION)com.sourceofmystery.client.DomainVisuals.castFinished();
+        if(level.isClientSide&&StaffSpell.selected(stack)==StaffSpell.WEATHER_CONTROL)com.sourceofmystery.client.WeatherVisuals.castFinished();
         if (!level.isClientSide && entity instanceof Player player) StaffCasting.finish(player, stack);
         return stack;
     }
@@ -102,7 +138,7 @@ public final class DimensionBreakerStaffItem extends Item implements GeoItem {
         var controller = new AnimationController<>(this, "staff", 4,
                 state -> state.setAndContinue(RawAnimation.begin().thenLoop("staff.idle")));
         controller.triggerableAnim("charge", RawAnimation.begin().thenLoop("staff.charge"));
-        for (String name : List.of("cleave", "uplift", "rift", "time_stop"))
+        for (String name : List.of("cleave", "uplift", "rift", "time_stop", "environment", "domain", "weather"))
             controller.triggerableAnim(name, RawAnimation.begin().thenPlay("staff." + name));
         controllers.add(controller);
     }

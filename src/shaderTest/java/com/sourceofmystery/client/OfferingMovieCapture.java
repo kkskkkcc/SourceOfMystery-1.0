@@ -16,7 +16,7 @@ final class OfferingMovieCapture {
     private record Frame(int index,byte[] bytes){}
     private static final Frame END=new Frame(-1,null);
     private final int[] pbo=new int[3],pending={-1,-1,-1};
-    private final int width,height,size;
+    private final int width,height,size,totalFrames;
     private int cursor,lastIndex=-1;
     private final ArrayBlockingQueue<byte[]> pool=new ArrayBlockingQueue<>(7);
     private final ArrayBlockingQueue<Frame> queue=new ArrayBlockingQueue<>(4);
@@ -24,7 +24,9 @@ final class OfferingMovieCapture {
     private final Thread worker;
     private volatile Throwable failure;
 
-    OfferingMovieCapture()throws IOException{
+    OfferingMovieCapture()throws IOException{this(FRAMES,System.getProperty("sourceofmystery.offeringFfmpeg"),"capture-silent.mp4");}
+    OfferingMovieCapture(int frames,String ffmpeg,String filename)throws IOException{
+        totalFrames=frames;
         var mc=Minecraft.getInstance();var target=mc.getMainRenderTarget();
         width=target.width;height=target.height;size=width*height*4;
         for(int i=0;i<7;i++)pool.add(new byte[size]);
@@ -35,17 +37,17 @@ final class OfferingMovieCapture {
         }
         GL15.glBindBuffer(GL21.GL_PIXEL_PACK_BUFFER,binding);
         Path directory=mc.gameDirectory.toPath();
-        encoder=new ProcessBuilder(System.getProperty("sourceofmystery.offeringFfmpeg"),
+        encoder=new ProcessBuilder(ffmpeg,
                 "-hide_banner","-loglevel","error","-y","-f","rawvideo","-pix_fmt","rgba",
                 "-video_size",width+"x"+height,"-framerate","60","-i","pipe:0",
                 "-vf","vflip","-an","-c:v","h264_nvenc","-preset","p4","-cq","19",
                 "-b:v","0","-pix_fmt","yuv420p","-movflags","+faststart",
-                directory.resolve("capture-silent.mp4").toString())
+                directory.resolve(filename).toString())
                 .redirectError(directory.resolve("encoder.log").toFile()).start();
         worker=new Thread(this::encode,"Offering NVENC capture");worker.setDaemon(true);worker.start();
     }
     void capture(float seconds){
-        int index=Math.min(FRAMES-1,(int)(seconds*60));if(index<=lastIndex)return;lastIndex=index;
+        int index=Math.min(totalFrames-1,(int)(seconds*60));if(index<=lastIndex)return;lastIndex=index;
         if(failure!=null)throw new IllegalStateException("Video encoder failed",failure);
         int pack=GL11.glGetInteger(GL21.GL_PIXEL_PACK_BUFFER_BINDING);
         int read=GL11.glGetInteger(GL30.GL_READ_FRAMEBUFFER_BINDING);
@@ -77,7 +79,7 @@ final class OfferingMovieCapture {
                 while(next<=frame.index){out.write(frame.bytes);next++;}
                 if(last!=null)pool.put(last.bytes);last=frame;
             }
-            if(last!=null)while(next<FRAMES){out.write(last.bytes);next++;}
+            if(last!=null)while(next<totalFrames){out.write(last.bytes);next++;}
         }catch(Throwable error){failure=error;}
     }
     void finish(){

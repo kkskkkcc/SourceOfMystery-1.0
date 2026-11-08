@@ -23,7 +23,10 @@
     "EntityRenderTimeMixin",
     "ItemInHandAccess",
     "DivinePlayerLayersAccess",
-    "DivineMouseInputMixin"
+    "DivineMouseInputMixin",
+    "MeteorAimGlowMixin",
+    "MeteorAimColorMixin",
+    "WeatherCloudMixin"
   ],
   "injectors": {
     "defaultRequire": 1

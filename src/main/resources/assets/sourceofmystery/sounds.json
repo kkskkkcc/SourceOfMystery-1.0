@@ -1379,5 +1379,104 @@
         "stream": false
       }
     ]
+  },
+  "staff.environment_shift.charge": {
+    "subtitle": "subtitles.sourceofmystery.staff.environment_shift",
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.activate",
+        "type": "event",
+        "volume": 0.65,
+        "pitch": 1.1
+      }
+    ]
+  },
+  "staff.environment_shift.release": {
+    "subtitle": "subtitles.sourceofmystery.staff.environment_shift",
+    "sounds": [
+      {
+        "name": "minecraft:block.end_portal.spawn",
+        "type": "event",
+        "volume": 0.65,
+        "pitch": 1.1
+      }
+    ]
+  },
+  "staff.domain_expansion.charge": {
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.activate",
+        "type": "event",
+        "pitch": 0.65,
+        "volume": 0.7
+      }
+    ]
+  },
+  "staff.domain_expansion.release": {
+    "sounds": [
+      {
+        "name": "minecraft:entity.evoker.prepare_summon",
+        "type": "event",
+        "pitch": 0.65,
+        "volume": 0.8
+      }
+    ]
+  },
+  "staff.weather_control.charge": {
+    "sounds": [
+      {
+        "name": "minecraft:block.beacon.ambient",
+        "type": "event",
+        "pitch": 0.7
+      }
+    ],
+    "subtitle": "subtitles.sourceofmystery.staff.weather"
+  },
+  "staff.weather_control.release": {
+    "sounds": [
+      {
+        "name": "minecraft:entity.lightning_bolt.thunder",
+        "type": "event",
+        "pitch": 0.65,
+        "volume": 0.8
+      }
+    ],
+    "subtitle": "subtitles.sourceofmystery.staff.weather"
+  },
+  "weather.tornado.normal": {
+    "sounds": [
+      {
+        "name": "sourceofmystery:weather/normal",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.sourceofmystery.tornado.normal"
+  },
+  "weather.tornado.sand": {
+    "sounds": [
+      {
+        "name": "sourceofmystery:weather/sand",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.sourceofmystery.tornado.sand"
+  },
+  "weather.tornado.water": {
+    "sounds": [
+      {
+        "name": "sourceofmystery:weather/water",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.sourceofmystery.tornado.water"
+  },
+  "weather.tornado.fire": {
+    "sounds": [
+      {
+        "name": "sourceofmystery:weather/fire",
+        "stream": false
+      }
+    ],
+    "subtitle": "subtitles.sourceofmystery.tornado.fire"
   }
 }

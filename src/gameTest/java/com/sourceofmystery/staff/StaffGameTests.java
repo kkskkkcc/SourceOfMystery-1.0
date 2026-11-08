@@ -76,7 +76,10 @@ public final class StaffGameTests {
         StaffCasting.cancel(player);
         h.assertTrue(MysteryEnergy.getEnergy(player)==20000,"Cancelled charge deducted energy");
         player.setHealth(player.getMaxHealth());
+        // Crosshair targeting now needs an explicit entity or terrain hit; empty sky is not auto-filled.
+        BlockPos aimed=player.blockPosition().offset(0,1,6);level.setBlockAndUpdate(aimed,Blocks.STONE.defaultBlockState());
         h.assertTrue(StaffCasting.begin(player,InteractionHand.MAIN_HAND,staff)&&StaffCasting.finish(player,staff),"Completed annihilation failed");
+        level.removeBlock(aimed,false);
         h.assertTrue(MysteryEnergy.getEnergy(player)==10000,"Completed annihilation did not cost exactly 10000");
         for(Entity entity:level.getAllEntities())if(entity instanceof OutsiderSpell spell&&spell.getOwner()==player)spell.discard();
         Cow victim=cow(level,player.position().add(2,0,0));

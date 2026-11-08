@@ -38,6 +38,29 @@ public class OutsiderSpell extends Projectile {
         tag.putInt("duration",ticks);tag.putDouble("ex",point.x);tag.putDouble("ey",point.y+OutsiderRitual.ORB_RADIUS);tag.putDouble("ez",point.z);
         entityData.set(TRAJECTORY,tag);
     }
+    /** Opt-in for player casts. Boss meteors keep their existing immutable trajectory. */
+    public void setTrackedImpact(Entity target,int ticks){
+        setTimedImpact(target.position(),ticks);var tag=entityData.get(TRAJECTORY).copy();
+        tag.putBoolean("homing",true);tag.putUUID("target",target.getUUID());tag.putInt("targetId",target.getId());tag.putInt("fromAge",0);
+        entityData.set(TRAJECTORY,tag);
+    }
+    public Entity trackedTarget(){
+        var tag=entityData.get(TRAJECTORY);if(!tag.hasUUID("target"))return null;
+        Entity e=level() instanceof ServerLevel server?server.getEntity(tag.getUUID("target")):level().getEntity(tag.getInt("targetId"));
+        return e!=null&&e.isAlive()&&e.getUUID().equals(tag.getUUID("target"))?e:null;
+    }
+    public Vec3 timedImpactPoint(){var t=entityData.get(TRAJECTORY);return t.getInt("duration")>0?new Vec3(t.getDouble("ex"),t.getDouble("ey")-OutsiderRitual.ORB_RADIUS,t.getDouble("ez")):position();}
+    private void retarget(int age){
+        var tag=entityData.get(TRAJECTORY);if(!tag.getBoolean("homing"))return;
+        Entity target=trackedTarget();var next=tag.copy();
+        if(target!=null)impactPoint=target.position();
+        else {next.remove("target");next.remove("targetId");}
+        // Rebase only the remaining part of the fall. Moving the endpoint of the original
+        // full trajectory would teleport a nearly landed meteor when the victim dodges.
+        next.putDouble("x",getX());next.putDouble("y",getY());next.putDouble("z",getZ());next.putInt("fromAge",Math.max(0,age-1));
+        next.putDouble("ex",impactPoint.x);next.putDouble("ey",impactPoint.y+OutsiderRitual.ORB_RADIUS);next.putDouble("ez",impactPoint.z);
+        entityData.set(TRAJECTORY,next);
+    }
     public static OutsiderSpell spawn(ServerLevel level,LivingEntity owner,int kind,Vec3 position,Vec3 velocity){
         OutsiderSpell spell=new OutsiderSpell(ModEntities.OUTSIDER_SPELL.get(),level);
         spell.castSource=owner;
@@ -52,7 +75,8 @@ public class OutsiderSpell extends Projectile {
     public Vec3 trajectoryPosition(float partial){
         CompoundTag t=entityData.get(TRAJECTORY);if(t.isEmpty())return position();
         if(t.getInt("duration")>0){
-            double u=Math.min(1,age(partial)/t.getInt("duration"));u*=u;
+            double duration=t.getInt("duration"),u=Math.min(1,age(partial)/duration);u*=u;
+            if(t.getBoolean("homing")){double base=t.getInt("fromAge")/duration;base*=base;u=Math.max(0,Math.min(1,(u-base)/Math.max(1e-8,1-base)));}
             Vec3 from=new Vec3(t.getDouble("x"),t.getDouble("y"),t.getDouble("z"));
             return from.lerp(new Vec3(t.getDouble("ex"),t.getDouble("ey"),t.getDouble("ez")),u);
         }
@@ -98,6 +122,7 @@ public class OutsiderSpell extends Projectile {
             if(age>=80)discard();
         }else if(kind()==RINGS){if(age>=(OutsiderRitual.IMPACT-OutsiderRitual.STAFF_END)*20)discard();}
         else if(kind()==METEOR){
+            retarget(age);
             Vec3 next=trajectoryPosition(0);
             if(entityData.get(TRAJECTORY).getInt("duration")>0){
                 if(age>=entityData.get(TRAJECTORY).getInt("duration"))impact(owner,impactPoint);

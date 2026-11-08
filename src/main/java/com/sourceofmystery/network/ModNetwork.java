@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public class ModNetwork {
 
-    private static final String PROTOCOL_VERSION = "8";
+    private static final String PROTOCOL_VERSION = "12";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(SourceOfMystery.MOD_ID, "main"),
             () -> PROTOCOL_VERSION,
@@ -72,6 +72,11 @@ public class ModNetwork {
                 OfferingRollPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
         CHANNEL.registerMessage(id++, DivineCinematicPacket.class, DivineCinematicPacket::encode, DivineCinematicPacket::decode,
                 DivineCinematicPacket::handle, Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CHANNEL.registerMessage(id++, DomainSyncPacket.class,DomainSyncPacket::encode,DomainSyncPacket::decode,DomainSyncPacket::handle,Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CHANNEL.registerMessage(id++, DomainStopPacket.class,DomainStopPacket::encode,DomainStopPacket::decode,DomainStopPacket::handle,Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL.registerMessage(id++,MeteorAimPacket.class,MeteorAimPacket::encode,MeteorAimPacket::decode,MeteorAimPacket::handle,Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CHANNEL.registerMessage(id++,WeatherSyncPacket.class,WeatherSyncPacket::encode,WeatherSyncPacket::decode,WeatherSyncPacket::handle,Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CHANNEL.registerMessage(id++,WeatherStopPacket.class,WeatherStopPacket::encode,WeatherStopPacket::decode,WeatherStopPacket::handle,Optional.of(NetworkDirection.PLAY_TO_SERVER));
         CHANNEL.registerMessage(id++, DivineCinematicDonePacket.class, DivineCinematicDonePacket::encode, DivineCinematicDonePacket::decode,
                 DivineCinematicDonePacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
     }

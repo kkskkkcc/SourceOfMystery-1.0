@@ -1,1 +1,8 @@
-{"replace":false,"values":["sourceofmystery:outsider_annihilation","sourceofmystery:staff_earth_split"]}
+{
+  "replace": false,
+  "values": [
+    "sourceofmystery:outsider_annihilation",
+    "sourceofmystery:staff_earth_split",
+    "sourceofmystery:domain_execution"
+  ]
+}

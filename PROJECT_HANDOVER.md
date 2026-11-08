@@ -666,3 +666,59 @@ preview-idle.png、preview-fading.png、preview-hidden.png、preview-attack.png�
 为使GitHub主源码默认构建与实装内容一致，被拒绝的五把剑、四件胸甲模型及活动Java接线/资源已归档到drafts/equipment_gecko，原武器类、四件胸甲注册、数据生成器和旧贴图/物品模型恢复；未改神威天佑。外环古文字模型和工具归档drafts/divine_satellites。全部草稿源、可编辑bbmodel与生成器保留，不属于Gradle源集，不会在默认构建中再次启用。chat_history.md等既有进度保留。
 
 仅清理编译类/资源输出缓存后离线assemble shaderCheckJar成功（build/github-progress-source-build.log），重建生产包与已安装包所有条目名称及内容逐字节一致，新增0、缺失0、变化0，审计build/github-progress-source-equivalence.json；整JAR哈希可因ZIP元数据不同而变化。未另开游戏或重跑完整整合包。当前总进度docs/PROJECT_PROGRESS.md，公开验证摘要docs/releases/2026-11-06-inner-star-satellites.json。GitHub目标origin main（kkskkkcc/SourceOfMystery-1.0），以最终推送收据为准。
+
+
+## 2026-11-07：环境转变千格范围与网络参考版法阵
+
+源码基线 b92ff09。本次新增超次元法杖 environment_shift：L 选术、潜行右键循环运行时 64 个原版群系、长按右键默认 4 秒成功消耗 2000 神秘之能；按用户最后要求半径 500、直径 1000，同时改群系、自然地表及植被。SavedData 异步分区块任务、共享软预算、断点恢复和原版客户端群系重发；多圈轮盘自动按 8/16/24 扩展，旧法术 ordinal 保持。协议 9，两端需同版。详见 docs/STAFF_ENVIRONMENT.md。
+
+用户拒绝第一版薄环/粒子后，实际查看网络 Magic Circles – ISAS Addon 和 Mahou Tsukai 图例，加入 CC0 高清符文原图，重做手前竖直控制阵、地面符文带、六节点依次点亮、连续光流和双手动作/释放回收。素材来源及许可打入 JAR 的 STAFF_VFX_CREDITS.md；只参考其他模组构图，无额外依赖或受限资产复制。Oculus 远云盖住近阵问题通过刻纹深度写入修复。原法杖几何/材质与旧六段动画保持，新增关键帧同步 runtime JSON、bbmodel 与生成器。模型来源与预览集中在 F:\ChatGPT\我的世界神秘之源模组开发\modeling\staff_environment。
+
+最终离线构建 build/environment-vfx-v4-build.log 成功。真实静音完整千格沙漠转换 diameter-1000-final 通过，覆盖 64 群系循环、多圈命中、取消/扣费、checkpoint、边界、建筑/容器与客户端群系；海洋/丛林使用相同处理器恢复半径50测试。最终视觉检查 vfx-v4-shaders（Oculus + Complementary 5.9.3）与 vfx-v5-vanilla 六主题第一/第三人称和真正释放通过，人工查看画面。V4 原版复核末段测试角色偏离站位，未用其末段画面验收；V5 固定测试站位并新增相机距离断言。保留旧失败/中间版本证据。静音实机视频46.5秒、1280×800，编码60帧不据此宣称实际渲染性能；完整解码通过。
+
+生产包 build/libs/sourceofmystery-1.0.0.jar SHA256 2b23dc9561b38e8a7bd5167389e790c8083d8903b3c5a038d64c3cec1655fe52。build/staff-environment-release-checks.json 验证全部生产条目与两个最终实测测试包一致，25 个功能类条目与完整千格测试保持，测试器不进入生产包。状态 TECHNICAL_CHECKS_PASS_APPEARANCE_PENDING_USER；完整整合包、真实双客户端、所有维度/群系组合及主观声音未验收，不称日志零ERROR。
+
+本次未安装、未提交/推送。实际 Integrated MC 仍d73ce1d5...；普通Forge实例现为00ff0433...（先前外部操作更新），均无新环境功能，历史两实例相同状态已过时。不要自动拿包含工程师装备V3等变化的普通构建覆盖整合包。
+
+
+## 2026-11-07：领域展开，五种领域统一直径200格（最新）
+
+用户确认五种领域全部半径100、直径200，覆盖原先各自范围。领域展开追加为第七种法术，旧编号不变；L选术，Shift+右键循环极寒/黑暗/重力/定身/斩杀，默认长按2秒、成功消耗5000神秘之能、持续6000tick，费用和时长可配置。持续按住不会误取消，新一次右键提前停止；定身固定释放地点，其他跟随玩家，施法者免疫。极寒锁位/蓝冰外壳/积雪/基础3HP每秒及寒风；黑暗头顶20格黑洞直径5、强制牵引5格每秒/基础10伤害和低级自然方块吸入；重力漂浮发光并清理/恢复既有状态。斩杀前方半圆基础30+最大生命1%独立真实伤害，领域持续5分钟，开场CG10秒只调用本人摄像头、期间无敌/隐藏持杖渲染，结印、面部特写、身后高处FOV130和红黑斩击，结束恢复。详情 docs/STAFF_DOMAINS.md。协议10，联机两端同版。
+
+本地Blender实际组装97构件原创祭龛，GeckoLib运行模型/红色发光贴图及动画已接入，不把GLB当游戏模型。建模源与Blender、GLB、最终Gecko资源及预览集中 F:/ChatGPT/我的世界神秘之源模组开发/modeling/staff_domains/，未使用Lux3D付费任务。既有CC0符文沿用并保留出处。黑洞BreakEvent取消有效，默认数据包标签排除机器/容器/矿物等；最多48碎块，卸载后重载也核对领域会话清理，非生物发光恢复原标记。只处理加载区块，不强制加载100格半径世界；积雪和吸入的实际地形不自动回滚。
+
+构建 build/staff-domain/actor-correction-build.log 成功。真实静音 final-full 完整五分钟通过，含200格定身边界、跟随进出、原生输入/5000扣费、控制/伤害、黑洞5格每秒与取消破坏、碎块重载清理、无AI漂浮、既有效果保留、CG无敌结束恢复和旧令牌拒绝。之后仅客户端DomainActor/DomainDirector修正正常成年玩家比例（EntityModel默认young=true导致近景错误）与相机跟随位置校正/面部构图；最终服务器功能字节与五分钟测试保持一致。actor-final-vanilla 和 actor-final-shaders 均与生产包全部条目逐字节一致，实机短回归与面部对准检查通过，关键截图已人工看过；后者开启Oculus+ComplementaryReimagined5.9.3。旧失败和幼体比例中间画面保留，不能当最终预览。
+
+候选 build/libs/sourceofmystery-1.0.0.jar，54325771字节，SHA256 b4bf4fb0b524eb2541886fd05ecec92e7b7a44bc8961b85b4ca8adb93296a08c。汇总 build/staff-domain/release-verification.json，工具 tools/staff/audit_domain_release.py；测试代码排除，既有装备/Boss/登神资产、环境转换功能及法杖旧七段动画保留。上个环境候选已归档 build/staff-environment-candidate/，原环境审计指向归档包；开发前脏文件基线在 build/staff-domain/baseline/source-before-domain.zip。未安装、未提交、未推送，Integrated MC仍d73ce1d5...、普通Forge仍00ff0433...，不要自动覆盖。
+
+最终静音实机预览 modeling/staff_domains/export/domain-execution-preview-silent.mp4（上述建模根目录），10秒1280x800、600帧完整解码、无音轨；编码60fps不作真实FPS保证。五领域原图和近景图同目录。视频核对 build/staff-domain/preview-verification.json。状态 TECHNICAL_CHECKS_PASS_APPEARANCE_PENDING_USER；完整整合包、真实双客户端与主观音效未验收，日志保留测试模板映射与Embeddium/Oculus提示，不能宣称零ERROR。
+
+
+## 2026-11-07：陨灭杀准心锁定与追踪（最新候选）
+
+用户要求法杖陨灭杀改为玩家准心选择实体或区域、私人发光参考、同一实体连续瞄准2秒后红色锁定，陨石实时追踪。已新增MeteorTargeting，服务端128格射线按最近实体/实心地形选择，固体遮挡有效，不再为空准心虚构前方80格地面。持杖选中陨灭杀即可预瞄，连续40tick同UUID红锁；换目标、移开、遮挡、换法术/收杖、死亡/离线/维度切换清理。释放瞬间重新验证准心，已锁实体绑定UUID、未锁定实体或区域固定当时落点；原末段天空法阵不再提前冻结目标。空准心最终释放失败且不扣能量。默认10000能量、480tick吟唱、100tick落下、200伤害和半径100爆炸保持，其他法术目标算法保持。
+
+MeteorAimPacket仅PLAYER发送给对应施法者，客户端MeteorAimClient通过本机Minecraft发光判定与颜色Mixin显示白/红轮廓，不修改共享发光位或队伍。区域有地面符文、直径200边框及正对镜头的落点光标，解决墙面侧视细线问题。追踪期间私人红色标记保留，转动准心不改变已发出陨石。OutsiderSpell只有调用setTrackedImpact才启用追踪，每tick用剩余飞行段重定向并同步轨迹；目标死亡/离维度/卸载则落最后位置，不另选目标。Boss AI类和原定点陨灭杀调用、全部模型音画、环境及领域功能条目保持。协议11，两端需同版。详见docs/STAFF_METEOR_TARGETING.md。
+
+构建 build/staff-meteor-targeting/final-build.log（build shaderCheckJar compileGameTestJava）成功。真实静音 final-native、area-final-shaders 均通过白色/40tick红色轮廓、共享发光与队伍不变、遮挡/区域、换目标重置、空准心清除、实际useItem释放扣费、目标移动到130格外后落点/伤害与原点旁观目标未受伤、发射后不改UUID、固定区域不跟随、失去目标最后落点及换法术清理。夹具只在隔离配置中把吟唱缩为60tick，生产480tick保持；实际双客户端与完整整合包未测，不把单机私人状态检查说成双端隐私验收。光影Oculus+Complementary5.9.3，最终GPU原图已人工检查。prototype-native因未持久化尸壳在130格外被原版刷怪机制删除而断言失败，修正夹具后通过；中间证据保留。
+
+最终 build/libs/sourceofmystery-1.0.0.jar，54344554字节，SHA256 1ddf3b23fbda57da1788cca0c4fcc112cab279951e58125bc3d2e4913b6967e7；稳定副本build/staff-meteor-targeting/sourceofmystery-targeting-1ddf3b23fbda.jar。汇总build/staff-meteor-targeting/release-verification.json，工具tools/staff/audit_meteor_targeting.py；两最终实测包所有生产条目与候选逐字节相同，测试代码排除，旧资源/语言键/Mixin映射保留。上个领域b4bf4fb0...包已保存build/staff-domain-candidate/并更新旧领域审计路径；源基线build/staff-meteor-targeting/source-before-targeting.zip。最终截图art/staff_meteor_targeting/。本次未安装、未提交/推送，实际两实例仍d73ce1d5...和00ff0433...。状态TECHNICAL_CHECKS_PASS_APPEARANCE_PENDING_USER，保持静音，日志模板和Oculus/Embeddium提示仍在。
+
+
+## 2026-11-08：天气掌控与四种巨型龙卷风（最新候选）
+
+用户要求新增法杖天气魔法，Shift＋右键切换原版天气及巨型龙卷风；龙卷风按环境变体，统一半径100格、每秒5点基础伤害。已追加第八种法术 weather_control，L轮盘选「天气掌控」，潜行右键循环晴天／雨天／雷暴／巨型龙卷风，长按右键默认3秒施放。已说明并采用可配置默认值：原版天气2000能量、10分钟；龙卷风5000能量、5分钟，右键可提前消散。原法术编号保留，网络协议12，两端需同版。说明 docs/STAFF_WEATHER.md。
+
+龙卷风约6秒从云底向下形成，高180格，成熟后约0.5格/秒弯曲前行，不强制加载区块。普通、沙暴、水、火依照真实地表／流体／群系标签每秒重新判断，支持数据包追加模组群系。风场服务端负责牵引、环绕、提升和高空抛出，施法者／其坐骑等免疫；沙暴失明缓慢、水灭火、火更强虚弱与发光并抽样焦化草木，火变体没有另加燃烧伤害。原版晴雨雷暴使用世界天气系统；龙卷风自己绘制云底和变体风雾，不再叠原版全局雨幕。有顶维度按玩家所处高度查找地表，不取基岩屋顶。
+
+自然地表和木结构可被真实卷走，尊重mobGriefing、世界边界、交互权限及Forge BreakEvent；默认每秒20次尝试、每tick地表约2ms共享软预算、每风暴96碎块、每维度8风暴，客户端最多绘制最近4个。不破坏带方块实体的机器／容器或默认未列入标签的矿石。被破坏地形不自动回滚。碎块短时离场，退出／死亡／换维度清理，卸载重载核对风暴会话，避免永久悬空；风暴不跨重启恢复。已有领域定身／冰冻与时间停止优先。
+
+视觉为多层流动湍流网格、软云团、地面尘墙及三个子涡旋；程序原创10张透明纹理、四套8秒风声和staff.weather法杖动作。独立风雾着色器避免实体材质硬透明裁切，Oculus使用项目已有方式选择合适帧缓冲／恢复材质写入，并且水丝与火星统一在同一材质通道。原版云层的有效绘制选项临时覆盖，玩家持久配置不改写；第三方光影自己的云仍可能存在，不能宣称通用光影云控制。形态仅参考NWS 2013 El Reno宽漏斗和多涡旋，不声称真实公里级流体模拟。没有Lux3D付费任务。素材、原始WAV、生成器、运行几何源及导出集中 F:/ChatGPT/我的世界神秘之源模组开发/modeling/staff_weather/。
+
+最终构建 build/staff-weather/release-build.log 成功。真实静音 release-native 与 release-shaders（Oculus+ComplementaryReimagined5.9.3）通过原生右键／四选项、实际能量扣费、晴雨雷暴标记、四变体真实卷吸与5点伤害、100格外不受影响、施法者免疫、特殊效果、破坏事件取消与真实碎块、卸载碎块清理、旧停止令牌拒绝、提前消散和声音实例停止。有顶维度地表查找已查；到期实测采用配置200tick，默认6000tick只验证激活初值，未完整等待5分钟。主音量0，没有主观听音验收。最终两轮未发现GL_INVALID；模板旧映射与Embeddium/Oculus提示仍在，不是零ERROR日志。完整整合包和真实双客户端未测。
+
+中间证据保留：soft-wind-shaders功能通过但自定义材质被Iris屏蔽；composite-final-shaders因混用Iris实体发光通道出现No active program，被测试器GL断言中止。已统一通道，最终release-shaders全部变体通过。不能把这些中间失败／旧预览当交付版本。
+
+候选 build/staff-weather/sourceofmystery-weather-af5c053a3ebd.jar，54,821,823字节，SHA256 af5c053a3ebdc3839ed98dfdd1b2e6746475d9e066d4f15be01d7888f63ffb16；build/libs同内容。审计 build/staff-weather/release-verification.json，工具 tools/staff/audit_weather_release.py；859个生产条目与两最终实测包逐字节一致，旧359个未改资产、旧八段法杖动画及14个环境／领域／索敌／Boss逻辑条目保持，测试类排除。声纹与16秒预览完整解码见 media-verification.json；960帧1280x800，无音轨，60fps只代表编码参数。预览 modeling/staff_weather/export/weather-tornadoes-preview-silent.mp4；同目录preview-native-*为原版图，03-tornado-*为最终光影原图。
+
+状态 TECHNICAL_CHECKS_PASS_APPEARANCE_PENDING_USER。本次未安装、未提交或推送GitHub。实际Integrated MC仍d73ce1d5...，普通Forge仍00ff0433...。陨灭杀1ddf3b23...稳定副本已保留，原陨灭杀审计路径更新指向该副本；天气前源码基线在build/staff-weather/source-before-weather.zip。继续保留开发前环境／领域／索敌脏文件，不要清仓库或自动覆盖正式游戏。

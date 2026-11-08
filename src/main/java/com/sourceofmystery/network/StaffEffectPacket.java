@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 
 /** Visual timelines only; hits, costs, terrain and teleportation remain on the server. */
 public record StaffEffectPacket(int kind, UUID caster, Vec3 origin, Vec3 target, int duration, int variant, int[] blocks) {
-    public static final int CHARGE=0, CANCEL=1, SPLIT=2, LIFT=3, STOP=4, RIFT=5;
+    public static final int CHARGE=0, CANCEL=1, SPLIT=2, LIFT=3, STOP=4, RIFT=5, ENVIRONMENT=6, ENVIRONMENT_FRONT=7;
     public StaffEffectPacket(int kind, UUID caster, Vec3 origin, Vec3 target, int duration, int variant) {
         this(kind, caster, origin, target, duration, variant, new int[0]);
     }

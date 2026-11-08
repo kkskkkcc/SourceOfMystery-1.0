@@ -26,7 +26,7 @@ import net.minecraftforge.fml.common.Mod;
 @Mod.EventBusSubscriber(modid = SourceOfMystery.MOD_ID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ClientModEvents {
     @SubscribeEvent public static void divineMaterials(net.minecraftforge.client.event.RegisterClientReloadListenersEvent event){
-        event.registerReloadListener((net.minecraft.server.packs.resources.ResourceManagerReloadListener)manager->DivineThroneMaterial.invalidate());
+        event.registerReloadListener((net.minecraft.server.packs.resources.ResourceManagerReloadListener)manager->{DivineThroneMaterial.invalidate();StaffArcaneMaterial.invalidate();});
     }
     @SubscribeEvent public static void setupMenus(net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent event) {
         event.enqueueWork(()->net.minecraft.client.gui.screens.MenuScreens.register(com.sourceofmystery.offering.OfferingMenus.LOTTERY.get(),OfferingLotteryScreen::new));

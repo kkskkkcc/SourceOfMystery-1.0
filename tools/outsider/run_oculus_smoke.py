@@ -23,8 +23,13 @@ def allowed(item):
 
 def main():
     global OUT
-    parser=argparse.ArgumentParser();parser.add_argument('--clouds',action='store_true');parser.add_argument('--offering',action='store_true');parser.add_argument('--offering-display',action='store_true');parser.add_argument('--offering-lottery',action='store_true');parser.add_argument('--enchanter',action='store_true');parser.add_argument('--divine-halo',action='store_true');parser.add_argument('--divine-cg',action='store_true');parser.add_argument('--equipment',action='store_true');parser.add_argument('--satellites',action='store_true');parser.add_argument('--post-intro-flight',action='store_true');parser.add_argument('--vanilla',action='store_true');parser.add_argument('--axis',action='store_true');parser.add_argument('--capture-fps',type=int,default=30);parser.add_argument('--profile',action='store_true');parser.add_argument('--video',action='store_true');parser.add_argument('--label',default='current');args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--weather',action='store_true');parser.add_argument('--meteor',action='store_true');parser.add_argument('--domains',action='store_true');parser.add_argument('--domain-visual',action='store_true');parser.add_argument('--environment',action='store_true');parser.add_argument('--environment-visual',action='store_true');parser.add_argument('--clouds',action='store_true');parser.add_argument('--offering',action='store_true');parser.add_argument('--offering-display',action='store_true');parser.add_argument('--offering-lottery',action='store_true');parser.add_argument('--enchanter',action='store_true');parser.add_argument('--divine-halo',action='store_true');parser.add_argument('--divine-cg',action='store_true');parser.add_argument('--equipment',action='store_true');parser.add_argument('--satellites',action='store_true');parser.add_argument('--post-intro-flight',action='store_true');parser.add_argument('--vanilla',action='store_true');parser.add_argument('--axis',action='store_true');parser.add_argument('--capture-fps',type=int,default=30);parser.add_argument('--profile',action='store_true');parser.add_argument('--video',action='store_true');parser.add_argument('--label',default='current');args=parser.parse_args()
     if args.equipment:parser.error('Rejected equipment fixture archived in drafts/equipment_gecko; it is not an active verification target.')
+    domain_check=args.domains or args.domain_visual
+    weather_check=args.weather
+    meteor_check=args.meteor
+    environment_check=args.environment or args.environment_visual or domain_check or meteor_check or weather_check
+    if environment_check:OUT=ROOT/('build/staff-weather-smoke' if weather_check else 'build/staff-meteor-smoke' if meteor_check else 'build/staff-domain-smoke' if domain_check else 'build/staff-environment-smoke')/args.label
     satellites_check=args.satellites
     if satellites_check:OUT=ROOT/'build/divine-satellites-smoke'/args.label
     equipment_check=args.equipment
@@ -55,11 +60,15 @@ def main():
     if args.clouds:(OUT/'shaderpacks'/(pack+'.txt')).write_text('CLOUD_SPEED_MULT=0\n')
     (OUT/'config/oculus.properties').write_text('enableShaders='+str(not args.vanilla).lower()+'\nshaderPack='+pack+'\nmaxShadowRenderDistance=12\n')
     (OUT/'options.txt').write_text('renderDistance:18\nsimulationDistance:5\nmaxFps:60\nenableVsync:false\nfov:0.5\npauseOnLostFocus:false\nhideMatchedNames:true\nguiScale:2\ntutorialStep:none\nsoundCategory_master:0.0\n')
-    if lottery_check or enchanter_check or halo_check or cg_check or equipment_check or satellites_check:
+    if environment_check or lottery_check or enchanter_check or halo_check or cg_check or equipment_check or satellites_check:
         with (OUT/'options.txt').open('a') as options:options.write('lang:zh_cn\n')
+    if environment_check:
+        with (OUT/'options.txt').open('a') as options:options.write('renderDistance:10\nsimulationDistance:3\n')
+    if weather_check:
+        with (OUT/'options.txt').open('a') as options:options.write('renderDistance:18\nsimulationDistance:3\n')
     world=OUT/'saves/shader-smoke'
     if not (world/'level.dat').exists():
-        if args.clouds or enchanter_check or halo_check or cg_check or equipment_check or satellites_check:
+        if environment_check or args.clouds or enchanter_check or halo_check or cg_check or equipment_check or satellites_check:
             # A new isolated all-air world gives real Y=-60 and Y=64 views
             # without terrain hiding the effect. Do not edit any user save.
             sys.path.insert(0,str(ROOT/'build/oculus-deps'));import nbtlib
@@ -68,12 +77,12 @@ def main():
             level['WorldGenSettings']['dimensions']['minecraft:overworld']['generator']=nbtlib.Compound({
                 'type':nbtlib.String('minecraft:flat'),'settings':nbtlib.Compound({'biome':nbtlib.String('minecraft:plains'),
                 'features':nbtlib.Byte(0),'lakes':nbtlib.Byte(0),'layers':nbtlib.List[nbtlib.Compound]([]),'structure_overrides':nbtlib.List[nbtlib.String]([])})})
-            if cg_check:
+            if cg_check or environment_check:
                 # A real generated surface at Y=199 makes the ascent observable;
                 # the cloud and enchanter fixtures keep their existing air worlds.
                 level['WorldGenSettings']['dimensions']['minecraft:overworld']['generator']['settings']['layers']=nbtlib.List[nbtlib.Compound]([
                     nbtlib.Compound({'height':nbtlib.Int(height),'block':nbtlib.String(block)}) for height,block in
-                    [(1,'minecraft:bedrock'),(255,'minecraft:stone'),(7,'minecraft:dirt'),(1,'minecraft:grass_block')]])
+                    [(1,'minecraft:bedrock'),(120 if environment_check else 255,'minecraft:stone'),(7,'minecraft:dirt'),(1,'minecraft:grass_block')]])
             level['LevelName']=nbtlib.String('Isolated cloud regression');level['GameType']=nbtlib.Int(1)
             level.pop('Player',None);data.save(world/'level.dat')
         else:shutil.copytree(ROOT/'build/outsider-gametest/world',world,ignore=shutil.ignore_patterns('session.lock'),dirs_exist_ok=True)
@@ -115,7 +124,9 @@ def main():
     if cg_check:flag='divineCgCheck'
     if equipment_check:flag='equipmentCheck'
     if satellites_check:flag='divineSatellitesCheck'
+    if environment_check:flag='staffWeatherCheck' if weather_check else 'staffMeteorCheck' if meteor_check else 'staffDomainsCheck' if domain_check else 'staffEnvironmentVisualCheck' if args.environment_visual else 'staffEnvironmentCheck'
     command=['-Xmx4G','-Dsourceofmystery.'+flag+'=true','-Dsourceofmystery.offeringCaptureFps='+str(args.capture_fps),'-Dsourceofmystery.offeringAxis='+str(args.axis).lower()]+arguments(data['arguments']['jvm'])+[data['mainClass']]+arguments(data['arguments']['game'])
+    if domain_check:command.insert(0,'-Dsourceofmystery.domainVisualOnly='+str(args.domain_visual).lower())
     if args.profile:command.insert(0,'-XX:StartFlightRecording=filename='+str(OUT/'cinematic.jfr')+',settings=profile,dumponexit=true')
     if args.video:
         sys.path.insert(0,str(ROOT/'build/offering-preview-deps'));import imageio_ffmpeg
@@ -128,9 +139,23 @@ def main():
     java=Path('C:/Program Files/Eclipse Adoptium/jdk-17.0.19.10-hotspot/bin/java.exe')
     started=time.time()
     with (OUT/'launch.log').open('w',encoding='utf8') as log:
-        process=subprocess.run([str(java),'@'+str(argfile)],cwd=OUT,stdout=log,stderr=subprocess.STDOUT,timeout=180)
+        process=subprocess.run([str(java),'@'+str(argfile)],cwd=OUT,stdout=log,stderr=subprocess.STDOUT,timeout=1900 if environment_check else 180)
     if process.returncode==0:
         log=(OUT/'launch.log').read_text(encoding='utf8',errors='replace')
+        if weather_check:
+            assert 'STAFF_WEATHER_OK' in log and 'AssertionError' not in log
+            print((OUT/'weather-verification.json').read_text(encoding='utf-8'));return 0
+        if meteor_check:
+            assert 'STAFF_METEOR_OK' in log and 'AssertionError' not in log
+            print((OUT/'meteor-verification.json').read_text(encoding='utf-8'));return 0
+        if domain_check:
+            assert 'STAFF_DOMAINS_OK' in log and 'AssertionError' not in log
+            print((OUT/'domain-verification.json').read_text(encoding='utf-8'));return 0
+        if environment_check:
+            marker='STAFF_ENVIRONMENT_VISUAL_OK' if args.environment_visual else 'STAFF_ENVIRONMENT_OK'
+            assert marker in log and 'AssertionError' not in log
+            report='environment-visual-verification.json' if args.environment_visual else 'environment-verification.json'
+            print((OUT/report).read_text(encoding='utf-8'));return 0
         if satellites_check:
             assert 'DIVINE_SATELLITES_OK' in log and 'AssertionError' not in log
             print((OUT/'satellites-verification.json').read_text());return 0
@@ -205,6 +230,6 @@ def main():
             report.update(purple_world_pixels=counts,cloud_depth_float_precision=True,terrain_occlusion_verified=True)
         (OUT/'verification.json').write_text(json.dumps(report,indent=2),encoding='utf8')
     print('Forge shader smoke client exit',process.returncode)
-    return process.returncode
+    return 0 if process.returncode==0 else 1
 
 if __name__=='__main__':raise SystemExit(main())

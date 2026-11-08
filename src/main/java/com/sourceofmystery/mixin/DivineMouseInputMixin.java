@@ -14,6 +14,6 @@ public abstract class DivineMouseInputMixin {
     private void som$divineCameraOwnsView(CallbackInfo ci){
         // In the native method the accumulated deltas and event timer have already
         // been updated before this call, so skipping it cannot build a later jump.
-        if(DivineCGDirector.active())ci.cancel();
+        if(DivineCGDirector.active()||com.sourceofmystery.client.DomainDirector.active())ci.cancel();
     }
 }

@@ -10,7 +10,10 @@ public enum StaffSpell {
     EARTH_SPLIT("earth_split", 8000, 60),
     EARTH_LIFT("earth_lift", 1000, 60),
     TIME_STOP("time_stop", 1000, 0),
-    SPACE_RIFT("space_rift", 0, 20);
+    SPACE_RIFT("space_rift", 0, 20),
+    ENVIRONMENT_SHIFT("environment_shift", 2000, 80),
+    DOMAIN_EXPANSION("domain_expansion", 5000, 40),
+    WEATHER_CONTROL("weather_control",2000,60);
 
     public static final String SELECTION_KEY = "SelectedStaffSpell";
     private final String id;
@@ -28,6 +31,7 @@ public enum StaffSpell {
     public long defaultCost() { return defaultCost; }
     public int defaultCastTicks() { return defaultCastTicks; }
     public long cost() { return StaffConfig.SPELLS.get(this).cost().get(); }
+    public long cost(ItemStack stack){return this==WEATHER_CONTROL?WeatherType.selected(stack).cost():cost();}
     public int castTicks() { return StaffConfig.SPELLS.get(this).castTicks().get(); }
 
     public static StaffSpell fromId(String id) {

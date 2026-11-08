@@ -41,7 +41,7 @@ public final class StaffClientEvents {
         if (event.phase != TickEvent.Phase.END) return;
         var client = Minecraft.getInstance();
         while (WHEEL.consumeClick()) {
-            if (client.player == null || client.screen != null || client.player.isUsingItem()) continue;
+            if (client.player == null || client.screen != null || client.player.isUsingItem()||com.sourceofmystery.client.DomainDirector.active()) continue;
             for (InteractionHand hand : InteractionHand.values()) {
                 if (client.player.getItemInHand(hand).getItem() instanceof DimensionBreakerStaffItem) {
                     client.setScreen(new StaffWheelScreen(hand)); break;
@@ -65,7 +65,7 @@ public final class StaffClientEvents {
     @SubscribeEvent public static void key(InputEvent.Key event) {
         var client=Minecraft.getInstance();
         if(event.getAction()!=GLFW.GLFW_PRESS||!WHEEL.matches(event.getKey(),event.getScanCode())||client.player==null
-                ||client.screen!=null||client.player.isUsingItem()||StaffVisuals.frozen(client.player))return;
+                ||client.screen!=null||client.player.isUsingItem()||StaffVisuals.frozen(client.player)||com.sourceofmystery.client.DomainDirector.active())return;
         for(InteractionHand hand:InteractionHand.values())if(client.player.getItemInHand(hand).getItem() instanceof DimensionBreakerStaffItem) {
             if(client.options.keyAdvancements.matches(event.getKey(),event.getScanCode())) {
                 while(client.options.keyAdvancements.consumeClick()) {}
