@@ -61,9 +61,14 @@ public final class StaffEnvironment extends SavedData {
         ServerLevel level=player.serverLevel();
         if(!choices(level.registryAccess()).contains(id))return StaffCasting.fail(player,"environment_missing");
         StaffEnvironment data=get(level);Vec3 origin=player.position();
-        if(data.jobs.size()>=4 || data.jobs.stream().anyMatch(j->j.origin.subtract(origin).horizontalDistanceSqr()<(j.radius+RADIUS)*(j.radius+RADIUS)))
-            return StaffCasting.fail(player,"environment_busy");
         Job job=new Job(player.getUUID(),origin,id,RADIUS);
+        // A newer cast owns its disk permanently, even if it finishes before an
+        // older, partially overlapping conversion. Fully covered jobs can retire.
+        List<Job> replaced=data.jobs.stream().filter(old->job.area().covers(old.area())).toList();
+        if(data.jobs.size()-replaced.size()>=4)return StaffCasting.fail(player,"environment_busy");
+        for(Job old:data.jobs)if(!replaced.contains(old)&&old.area().overlaps(job.area()))old.exclude(job.area());
+        for(Job old:replaced)old.releaseChunk(level);
+        data.jobs.removeAll(replaced);
         data.jobs.add(job);data.setDirty();
         StaffCasting.send(level,new StaffEffectPacket(StaffEffectPacket.ENVIRONMENT,job.owner,origin,
                 new Vec3(RADIUS,0,0),100,job.palette.ordinal()));
@@ -107,8 +112,22 @@ public final class StaffEnvironment extends SavedData {
     private static boolean liquid(BlockState s) { return s.is(Blocks.WATER)||s.is(Blocks.LAVA); }
     private static boolean natural(BlockState s) { return !s.hasBlockEntity()&&(ground(s)||flora(s)||liquid(s)||s.isAir()); }
 
+    private record Area(double x,double z,int radius) {
+        boolean contains(double px,double pz){return (px-x)*(px-x)+(pz-z)*(pz-z)<=radius*(double)radius;}
+        double distance(Area other){return Math.hypot(x-other.x,z-other.z);}
+        boolean covers(Area other){return distance(other)+other.radius<=radius;}
+        boolean overlaps(Area other){return distance(other)<radius+(double)other.radius;}
+        boolean covers(ChunkPos chunk){return contains(chunk.getMinBlockX()+.5,chunk.getMinBlockZ()+.5)
+                &&contains(chunk.getMaxBlockX()+.5,chunk.getMinBlockZ()+.5)
+                &&contains(chunk.getMinBlockX()+.5,chunk.getMaxBlockZ()+.5)
+                &&contains(chunk.getMaxBlockX()+.5,chunk.getMaxBlockZ()+.5);}
+        CompoundTag save(){var tag=new CompoundTag();tag.putDouble("X",x);tag.putDouble("Z",z);tag.putInt("Radius",radius);return tag;}
+    }
+
     private static final class Job {
         final UUID owner;final Vec3 origin;final ResourceLocation biome;final EnvironmentPalette palette;
+        UUID token=UUID.randomUUID();
+        final List<Area> excluded=new ArrayList<>();
         final int radius;
         final List<ChunkPos> chunks=new ArrayList<>();
         int cursor,stage,columnCursor;boolean done;
@@ -131,15 +150,21 @@ public final class StaffEnvironment extends SavedData {
         }
         double distance(double x,double z) { return (x-origin.x)*(x-origin.x)+(z-origin.z)*(z-origin.z); }
         boolean inside(double x,double z) { return distance(x,z)<=radius*radius; }
+        Area area(){return new Area(origin.x,origin.z,radius);}
+        void exclude(Area newer){
+            if(excluded.stream().anyMatch(a->a.covers(newer)))return;
+            excluded.removeIf(newer::covers);excluded.add(newer);
+        }
+        boolean claimed(double x,double z){return inside(x,z)&&excluded.stream().noneMatch(a->a.contains(x,z));}
         boolean editable(ServerLevel level,BlockPos p) {
-            return !level.isOutsideBuildHeight(p)&&level.getWorldBorder().isWithinBounds(p)&&inside(p.getX()+.5,p.getZ()+.5)
+            return !level.isOutsideBuildHeight(p)&&level.getWorldBorder().isWithinBounds(p)&&claimed(p.getX()+.5,p.getZ()+.5)
                     &&natural(level.getBlockState(p));
         }
         void set(ServerLevel level,BlockPos p,BlockState state) {
             if(editable(level,p))level.setBlock(p,state,18);
         }
         private void releaseChunk(ServerLevel level) {
-            if(ticket!=null)level.getChunkSource().removeRegionTicket(ENVIRONMENT_TICKET,ticket,0,owner);
+            if(ticket!=null)level.getChunkSource().removeRegionTicket(ENVIRONMENT_TICKET,ticket,0,token);
             ticket=null;pending=null;activeChunk=null;columns=null;
         }
         void tick(ServerLevel level,long deadline) {
@@ -151,11 +176,12 @@ public final class StaffEnvironment extends SavedData {
                     if(stage>1){finish(level);return;}
                 }
                 ChunkPos pos=chunks.get(cursor);
+                if(excluded.stream().anyMatch(a->a.covers(pos))){releaseChunk(level);cursor++;columnCursor=0;continue;}
                 if(!level.getWorldBorder().isWithinBounds(pos)) {cursor++;columnCursor=0;completedChunks++;continue;}
                 if(activeChunk==null) {
                     if(pending==null) {
                         ticket=pos;
-                        level.getChunkSource().addRegionTicket(ENVIRONMENT_TICKET,pos,0,owner);
+                        level.getChunkSource().addRegionTicket(ENVIRONMENT_TICKET,pos,0,token);
                         pending=level.getChunkSource().getChunkFuture(pos.x,pos.z,ChunkStatus.FULL,true);
                     }
                     if(!pending.isDone())return;
@@ -176,13 +202,14 @@ public final class StaffEnvironment extends SavedData {
                 }
                 while(columnCursor<columns.length&&count<512&&System.nanoTime()<deadline) {
                     BlockPos p=columns[columnCursor++];count++;
+                    if(!claimed(p.getX()+.5,p.getZ()+.5))continue;
                     if(!level.getWorldBorder().isWithinBounds(p.atY((int)origin.y)))continue;
                     if(stage==0)surface(level,p);else decorate(level,p);
                 }
                 if(stage==0&&level.getGameTime()%20==0&&lastFrontTick!=level.getGameTime()) {
                     float current=Math.min(radius,(float)Math.sqrt(distance(pos.getMinBlockX()+8,pos.getMinBlockZ()+8)));
                     current=Math.max(previousFront,current);
-                    StaffCasting.send(level,new StaffEffectPacket(StaffEffectPacket.ENVIRONMENT_FRONT,owner,origin,
+                    StaffCasting.send(level,new StaffEffectPacket(StaffEffectPacket.ENVIRONMENT_FRONT,token,origin,
                             new Vec3(current,previousFront,0),45,palette.ordinal()));previousFront=current;
                     lastFrontTick=level.getGameTime();
                 }
@@ -202,7 +229,7 @@ public final class StaffEnvironment extends SavedData {
             @SuppressWarnings("unchecked") Holder<Biome>[] old=new Holder[(maxY-minY+1)*16];
             for(int x=0;x<4;x++)for(int z=0;z<4;z++)for(int y=minY;y<=maxY;y++)
                 old[(y-minY)*16+z*4+x]=chunk.getNoiseBiome(pos.x*4+x,y,pos.z*4+z);
-            chunk.fillBiomesFromNoise((x,y,z,sampler)->inside(QuartPos.toBlock(x)+2,QuartPos.toBlock(z)+2)
+            chunk.fillBiomesFromNoise((x,y,z,sampler)->claimed(QuartPos.toBlock(x)+2,QuartPos.toBlock(z)+2)
                     &&level.getWorldBorder().isWithinBounds(new BlockPos(QuartPos.toBlock(x)+2,(int)origin.y,QuartPos.toBlock(z)+2))
                     ?replacement:old[(y-minY)*16+(z&3)*4+(x&3)],level.getChunkSource().randomState().sampler());
             chunk.setUnsaved(true);level.getChunkSource().chunkMap.resendBiomesForChunks(List.of(chunk));
@@ -344,7 +371,8 @@ public final class StaffEnvironment extends SavedData {
         CompoundTag save() {
             CompoundTag tag=new CompoundTag();tag.putUUID("Owner",owner);tag.putString("Biome",biome.toString());
             tag.putDouble("X",origin.x);tag.putDouble("Y",origin.y);tag.putDouble("Z",origin.z);
-            tag.putInt("Version",2);tag.putInt("Radius",radius);tag.putInt("Cursor",cursor);tag.putInt("Stage",stage);tag.putInt("ColumnCursor",columnCursor);return tag;
+            tag.putUUID("Token",token);ListTag masks=new ListTag();for(Area area:excluded)masks.add(area.save());tag.put("ExcludedAreas",masks);
+            tag.putInt("Version",3);tag.putInt("Radius",radius);tag.putInt("Cursor",cursor);tag.putInt("Stage",stage);tag.putInt("ColumnCursor",columnCursor);return tag;
         }
     }
     public static StaffEnvironment load(CompoundTag tag) {
@@ -354,8 +382,13 @@ public final class StaffEnvironment extends SavedData {
             if(id==null||!id.getNamespace().equals("minecraft")||!row.hasUUID("Owner"))continue;
             if(!Double.isFinite(row.getDouble("X"))||!Double.isFinite(row.getDouble("Y"))||!Double.isFinite(row.getDouble("Z")))continue;
             Job job=new Job(row.getUUID("Owner"),new Vec3(row.getDouble("X"),row.getDouble("Y"),row.getDouble("Z")),id,Math.max(1,Math.min(RADIUS,row.contains("Radius")?row.getInt("Radius"):50)));
+            if(row.hasUUID("Token"))job.token=row.getUUID("Token");
+            for(Tag mask:row.getList("ExcludedAreas",Tag.TAG_COMPOUND)){
+                var disk=(CompoundTag)mask;double x=disk.getDouble("X"),z=disk.getDouble("Z");
+                if(Double.isFinite(x)&&Double.isFinite(z)&&disk.getInt("Radius")>0)job.exclude(new Area(x,z,Math.min(RADIUS,disk.getInt("Radius"))));
+            }
             job.stage=Math.max(0,Math.min(1,row.getInt("Stage")));
-            job.cursor=row.getInt("Version")==2?Math.max(0,Math.min(job.chunks.size(),row.getInt("Cursor"))):0;
+            job.cursor=row.getInt("Version")>=2?Math.max(0,Math.min(job.chunks.size(),row.getInt("Cursor"))):0;
             job.columnCursor=Math.max(0,Math.min(256,row.getInt("ColumnCursor")));
             if(!job.chunks.isEmpty())data.jobs.add(job);
         }

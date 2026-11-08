@@ -23,13 +23,14 @@ def allowed(item):
 
 def main():
     global OUT
-    parser=argparse.ArgumentParser();parser.add_argument('--weather',action='store_true');parser.add_argument('--meteor',action='store_true');parser.add_argument('--domains',action='store_true');parser.add_argument('--domain-visual',action='store_true');parser.add_argument('--environment',action='store_true');parser.add_argument('--environment-visual',action='store_true');parser.add_argument('--clouds',action='store_true');parser.add_argument('--offering',action='store_true');parser.add_argument('--offering-display',action='store_true');parser.add_argument('--offering-lottery',action='store_true');parser.add_argument('--enchanter',action='store_true');parser.add_argument('--divine-halo',action='store_true');parser.add_argument('--divine-cg',action='store_true');parser.add_argument('--equipment',action='store_true');parser.add_argument('--satellites',action='store_true');parser.add_argument('--post-intro-flight',action='store_true');parser.add_argument('--vanilla',action='store_true');parser.add_argument('--axis',action='store_true');parser.add_argument('--capture-fps',type=int,default=30);parser.add_argument('--profile',action='store_true');parser.add_argument('--video',action='store_true');parser.add_argument('--label',default='current');args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--weather',action='store_true');parser.add_argument('--meteor',action='store_true');parser.add_argument('--domains',action='store_true');parser.add_argument('--domain-visual',action='store_true');parser.add_argument('--environment',action='store_true');parser.add_argument('--environment-overwrite',action='store_true');parser.add_argument('--environment-visual',action='store_true');parser.add_argument('--clouds',action='store_true');parser.add_argument('--offering',action='store_true');parser.add_argument('--offering-display',action='store_true');parser.add_argument('--offering-lottery',action='store_true');parser.add_argument('--enchanter',action='store_true');parser.add_argument('--divine-halo',action='store_true');parser.add_argument('--divine-cg',action='store_true');parser.add_argument('--equipment',action='store_true');parser.add_argument('--satellites',action='store_true');parser.add_argument('--post-intro-flight',action='store_true');parser.add_argument('--vanilla',action='store_true');parser.add_argument('--axis',action='store_true');parser.add_argument('--capture-fps',type=int,default=30);parser.add_argument('--profile',action='store_true');parser.add_argument('--video',action='store_true');parser.add_argument('--label',default='current');args=parser.parse_args()
     if args.equipment:parser.error('Rejected equipment fixture archived in drafts/equipment_gecko; it is not an active verification target.')
     domain_check=args.domains or args.domain_visual
     weather_check=args.weather
     meteor_check=args.meteor
-    environment_check=args.environment or args.environment_visual or domain_check or meteor_check or weather_check
-    if environment_check:OUT=ROOT/('build/staff-weather-smoke' if weather_check else 'build/staff-meteor-smoke' if meteor_check else 'build/staff-domain-smoke' if domain_check else 'build/staff-environment-smoke')/args.label
+    environment_overwrite=args.environment_overwrite
+    environment_check=args.environment or args.environment_visual or domain_check or meteor_check or weather_check or environment_overwrite
+    if environment_check:OUT=ROOT/('build/staff-environment-overwrite-smoke' if environment_overwrite else 'build/staff-weather-smoke' if weather_check else 'build/staff-meteor-smoke' if meteor_check else 'build/staff-domain-smoke' if domain_check else 'build/staff-environment-smoke')/args.label
     satellites_check=args.satellites
     if satellites_check:OUT=ROOT/'build/divine-satellites-smoke'/args.label
     equipment_check=args.equipment
@@ -124,7 +125,7 @@ def main():
     if cg_check:flag='divineCgCheck'
     if equipment_check:flag='equipmentCheck'
     if satellites_check:flag='divineSatellitesCheck'
-    if environment_check:flag='staffWeatherCheck' if weather_check else 'staffMeteorCheck' if meteor_check else 'staffDomainsCheck' if domain_check else 'staffEnvironmentVisualCheck' if args.environment_visual else 'staffEnvironmentCheck'
+    if environment_check:flag='staffEnvironmentOverwriteCheck' if environment_overwrite else 'staffWeatherCheck' if weather_check else 'staffMeteorCheck' if meteor_check else 'staffDomainsCheck' if domain_check else 'staffEnvironmentVisualCheck' if args.environment_visual else 'staffEnvironmentCheck'
     command=['-Xmx4G','-Dsourceofmystery.'+flag+'=true','-Dsourceofmystery.offeringCaptureFps='+str(args.capture_fps),'-Dsourceofmystery.offeringAxis='+str(args.axis).lower()]+arguments(data['arguments']['jvm'])+[data['mainClass']]+arguments(data['arguments']['game'])
     if domain_check:command.insert(0,'-Dsourceofmystery.domainVisualOnly='+str(args.domain_visual).lower())
     if args.profile:command.insert(0,'-XX:StartFlightRecording=filename='+str(OUT/'cinematic.jfr')+',settings=profile,dumponexit=true')
@@ -152,9 +153,9 @@ def main():
             assert 'STAFF_DOMAINS_OK' in log and 'AssertionError' not in log
             print((OUT/'domain-verification.json').read_text(encoding='utf-8'));return 0
         if environment_check:
-            marker='STAFF_ENVIRONMENT_VISUAL_OK' if args.environment_visual else 'STAFF_ENVIRONMENT_OK'
+            marker='STAFF_ENVIRONMENT_OVERWRITE_OK' if environment_overwrite else 'STAFF_ENVIRONMENT_VISUAL_OK' if args.environment_visual else 'STAFF_ENVIRONMENT_OK'
             assert marker in log and 'AssertionError' not in log
-            report='environment-visual-verification.json' if args.environment_visual else 'environment-verification.json'
+            report='environment-overwrite-verification.json' if environment_overwrite else 'environment-visual-verification.json' if args.environment_visual else 'environment-verification.json'
             print((OUT/report).read_text(encoding='utf-8'));return 0
         if satellites_check:
             assert 'DIVINE_SATELLITES_OK' in log and 'AssertionError' not in log

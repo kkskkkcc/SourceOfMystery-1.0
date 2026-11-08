@@ -294,7 +294,7 @@
   "message.sourceofmystery.staff.environment_selected": "Environment Shift: %s (%s/%s)",
   "message.sourceofmystery.staff.environment_started": "Transforming the environment: %s",
   "message.sourceofmystery.staff.environment_done": "Environment transformed: %s",
-  "message.sourceofmystery.staff.environment_busy": "An environment shift overlaps this area, or the active limit was reached",
+  "message.sourceofmystery.staff.environment_busy": "Four environment conversions are still running in this dimension; try again shortly.",
   "message.sourceofmystery.staff.environment_missing": "Environment unavailable; sneak and right-click to choose again",
   "subtitles.sourceofmystery.staff.environment_shift": "Super-Tier Environment Shift",
   "screen.sourceofmystery.staff_cost_compact": "%s energy",

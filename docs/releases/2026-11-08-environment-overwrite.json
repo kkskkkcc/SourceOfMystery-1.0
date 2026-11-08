@@ -1,0 +1,64 @@
+{
+  "date": "2026-11-08",
+  "status": "FIXED_NATIVE_REGRESSION_PASS",
+  "base_commit": "43a659104d09af168a950a83b79cee17cfde80e1",
+  "changes": [
+    "Newer environment casts override active conversions in their overlapping area.",
+    "Fully covered jobs retire; partially covered jobs keep working outside saved exclusion disks.",
+    "Independent job UUIDs protect chunk tickets and effect identities.",
+    "Version 3 saves exclusions and job IDs; version 2 progress remains compatible.",
+    "The four-job limit still applies after fully covered replacements retire."
+  ],
+  "validation": {
+    "build": [
+      "build",
+      "shaderCheckJar"
+    ],
+    "native_regression": {
+      "native_1000_diameter_recast_while_busy": true,
+      "same_centre_surface_server_and_client_biome": true,
+      "partial_overlap_admitted_at_radius_500": true,
+      "independent_chunk_ticket_identities": true,
+      "worker_radius_under_test": 48,
+      "old_job_resumed_after_new_job_completed": true,
+      "non_overlap_preserved_and_overlap_not_reverted": true,
+      "protected_structures_and_inventory": true,
+      "partial_overlap_client_biomes": true,
+      "version2_saved_jobs_load_without_resetting_cursors": true,
+      "covered_recast_at_capacity_and_atomic_limit_failure": true,
+      "checkpoint_keeps_exclusions_and_cursors": true,
+      "master_volume": 0.0,
+      "production_radius": 500
+    },
+    "all_production_entries_match_native_run": true,
+    "production_entries": 865,
+    "preserved_old_entries": 860,
+    "changed_old_entries": [
+      "assets/sourceofmystery/lang/en_us.json",
+      "assets/sourceofmystery/lang/zh_cn.json",
+      "com/sourceofmystery/staff/StaffEnvironment$Job.class",
+      "com/sourceofmystery/staff/StaffEnvironment.class"
+    ],
+    "added_entries": [
+      "com/sourceofmystery/staff/StaffEnvironment$Area.class"
+    ],
+    "test_classes_excluded": true
+  },
+  "jar": {
+    "build_path": "build/libs/sourceofmystery-1.0.0.jar",
+    "archive_path": "build/staff-environment-overwrite/sourceofmystery-environment-overwrite-bd0a88439669.jar",
+    "sha256": "bd0a88439669c0549c408d8521d4afc430d0189aff1cdc922b44d8c349034113",
+    "bytes": 56135704
+  },
+  "protocol": 12,
+  "installed_to_game": false,
+  "limits": [
+    "Admission and native item recasting used the production 500-block radius and 80-tick charge.",
+    "Completed worker and checkpoint tests used restored 48-block-radius jobs; two full 1000-block conversions were not rerun to completion.",
+    "One silent native Forge client. Full modpack, shader-enabled regression and actual two-client multiplayer not rerun.",
+    "Inherited template and Embeddium/Oculus warnings remain; not a zero-warning or zero-error-log claim."
+  ],
+  "local_runtime_evidence": "build/staff-environment-overwrite-smoke/overwrite-native/environment-overwrite-verification.json",
+  "local_release_audit": "build/staff-environment-overwrite/release-verification.json",
+  "local_sync_evidence_directory": "build/github-sync-20261108-185544-environment/"
+}

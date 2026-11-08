@@ -86,3 +86,16 @@
 按用户授权，本地四项法杖进度先保存为5317ca2，与工程师8b7c671（装备V4／登神V4声音）和011821c（登神V5接触动作与剑柄握持）合并。当前源码同时包含双方进展，原候选“未提交”的说明保留为历史记录。仅两语言文件有文本冲突，按JSON键合并并保留双方所有有效改动，音效注册同样核对；工程师的新模型／CG没有被本地旧资源覆盖。
 
 合并后离线build、shaderCheckJar及GameTest源码编译通过，864个生产条目、203个JSON核对通过，385个无关生产class与337个未变资产保留。未重跑游戏／完整整合包或安装新JAR，构建通过不代替合并后模型和CG验收。当前构建56,132,745字节，SHA256 `fd7f1e1befeed41984dc03120755257a717ac99bfdc05f9b752da187e4b93230`，协议12。摘要 [2026-11-08-staff-engineer-merge.json](releases/2026-11-08-staff-engineer-merge.json)，本地原始备份与最终同步回执在 `build/github-sync-20261108-180714/`。正式实例安装状态保持之前记录。
+
+
+## 2026-11-08：环境转变覆盖修复候选
+
+修复旧异步转换未结束时拒绝所有重叠施法的问题。新施法拥有重叠范围，旧任务只完成范围外剩余部分；完整接替释放旧票据并移除任务。覆盖关系随Version3保存，旧任务恢复后不回滚新环境，Version2任务游标兼容。区块票据与前沿效果使用独立任务UUID。四任务上限保留，先释放完整接替的旧任务名额。
+
+构建及真实静音单客户端已验证原生连续吟唱／扣费、R500准入、地表与客户端／服务端群系覆盖、新任务结束后恢复旧任务、非重叠继续、保护和断点迁移。完成改造的处理器回归使用半径48，不代表重跑两次完整千格改造；光影、完整整合包及真实双客户端未测。审计 `build/staff-environment-overwrite/release-verification.json`。
+
+修复包 `build/staff-environment-overwrite/sourceofmystery-environment-overwrite-bd0a88439669.jar`，SHA256 `bd0a88439669c0549c408d8521d4afc430d0189aff1cdc922b44d8c349034113`，56,135,704字节。与fd7合并包相比只改两环境逻辑class／两条繁忙文案并新增Area记录，其余860条目保持。尚未安装、提交或推送，Github仍为此前43a6591；默认build输出已是修复候选。
+
+## 2026-11-08：环境覆盖修复同步提交
+
+当前同步提交包含环境转变覆盖修复、回归夹具及审计工具，沿用此前已通过的构建和静音实机证据。摘要[2026-11-08-environment-overwrite.json](releases/2026-11-08-environment-overwrite.json)记录候选哈希、生产条目保持检查及半径48处理器回归的限制。前节未提交状态属于历史快照；推送和Actions的最终状态见GitHub及`build/github-sync-20261108-185544-environment/final-sync-receipt.json`。本次未安装游戏实例。

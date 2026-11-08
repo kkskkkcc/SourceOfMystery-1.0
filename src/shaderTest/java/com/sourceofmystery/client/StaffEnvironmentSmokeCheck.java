@@ -110,7 +110,8 @@ public final class StaffEnvironmentSmokeCheck {
             if(time==130) {
                 server(p->{var data=StaffEnvironment.get(p.serverLevel());CompoundTag saved=data.save(new CompoundTag());check(!saved.getList("Jobs",10).isEmpty(),"No checkpoint");check(saved.getList("Jobs",10).getCompound(0).getInt("Radius")==500,"Saved radius is not 500");
                     data.releaseTickets(p.serverLevel());p.serverLevel().getDataStorage().set("sourceofmystery_staff_environment",StaffEnvironment.load(saved));checkpoint=true;
-                    check(!StaffEnvironment.start(p,new ResourceLocation("minecraft","snowy_plains")),"Overlapping job accepted");
+                    // Overlapping casts now replace older work; the dedicated overwrite
+                    // fixture checks admission and persistence without changing this desert run.
                     p.teleportTo(p.serverLevel(),.5,120,110,180,27);p.getAbilities().flying=true;p.onUpdateAbilities();
                 });
             }

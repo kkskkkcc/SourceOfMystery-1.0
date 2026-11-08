@@ -294,7 +294,7 @@
   "message.sourceofmystery.staff.environment_selected": "环境转变：%s（%s/%s）",
   "message.sourceofmystery.staff.environment_started": "环境转变开始：%s",
   "message.sourceofmystery.staff.environment_done": "环境转变完成：%s",
-  "message.sourceofmystery.staff.environment_busy": "范围内已有环境转换，或同时转换数量已达上限",
+  "message.sourceofmystery.staff.environment_busy": "当前维度已有4个未完成的环境转换，请稍后再试",
   "message.sourceofmystery.staff.environment_missing": "目标环境已不可用，请潜行右键重新选择",
   "subtitles.sourceofmystery.staff.environment_shift": "超位魔法·环境转变",
   "screen.sourceofmystery.staff_cost_compact": "%s 能量",

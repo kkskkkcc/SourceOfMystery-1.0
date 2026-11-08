@@ -735,3 +735,16 @@ Java17／Gradle8.5离线 build shaderCheckJar compileGameTestJava 成功。新�
 新构建build/libs/sourceofmystery-1.0.0.jar，56,132,745字节，SHA256 fd7f1e1befeed41984dc03120755257a717ac99bfdc05f9b752da187e4b93230；稳定副本build/github-sync-20261108-180714/sourceofmystery-merged-fd7f1e1befee.jar。公共摘要docs/releases/2026-11-08-staff-engineer-merge.json。本地备份、合并核对、构建日志和最终同步回执集中build/github-sync-20261108-180714/；源备份local-progress-before-merge.zip含115条原改动及SHA清单，另有tracked-progress.patch、本地backup/staff-before-engineer-merge-20261108分支。以上只在本地保留，不提交缓存／日志／构建包／密钥。
 
 本次只完成源码与仓库同步、合并和构建，未开游戏或安装新JAR。合并前法杖实机证据仍对应各自已归档候选，不能冒称合并后的装备／登神CG／整合包已重新验收。网络协议12。GitHub与本地最终提交、Actions状态以本次最终回执final-sync-receipt.json及GitHub实际分支为准；不要根据前节“未提交”历史状态判断本次结束后的同步情况。
+
+
+## 2026-11-08：修复环境魔法无法覆盖上一轮转换
+
+用户实测确认任意环境二次施法均提示“范围内已有环境转换”。根因是StaffEnvironment.start对所有运行中重叠圆盘直接拒绝，千格异步转换仍在工作时无法切换目标。现在完全覆盖旧任务时接替并释放其票据；部分重叠时旧任务保存新范围的排除圆盘，只在剩余区域继续处理。地表、植被和完整高度群系统一遵守后施法优先；Version3保存覆盖关系，防止新任务先结束、旧任务恢复后改回旧环境。Version2游标兼容。每任务独立UUID票据／前沿特效，避免同一玩家重叠任务互相释放票据或替换前沿。四任务上限仍保留，先剔除被完全接替的旧任务再计数；真正第5个任务拒绝不扣费，不改变旧覆盖关系。繁忙文案改为数量上限说明。
+
+build/staff-environment-overwrite/build-final.log构建build shaderCheckJar通过。新增StaffEnvironmentOverwriteCheck及--environment-overwrite入口；真实静音overwrite-native通过两次完整80tick吟唱、旧任务未结束时原地R500接替／2000扣费、部分重叠R500准入、客户端／服务端群系、旧任务晚于新任务恢复后的覆盖优先、非重叠继续、箱子7钻石与建筑保护、断点掩码／游标保持、Version2迁移和满容量接替。准入采用生产半径500；完成改造与断点处理使用恢复为半径48的同一处理器，未重跑两次完整千格改造、光影、整合包或真实双客户端。主音量0，最终无GL_INVALID；模板旧映射／Embeddium提示保留。
+
+候选build/staff-environment-overwrite/sourceofmystery-environment-overwrite-bd0a88439669.jar，56,135,704字节，SHA256 bd0a88439669c0549c408d8521d4afc430d0189aff1cdc922b44d8c349034113，build/libs同内容。相对fd7f1e1b合并包，仅StaffEnvironment及Job两class、两语言的繁忙文案改变，新增Area记录class，其余860条目逐字节保持；865生产条目与实测包相同，测试器排除。审计build/staff-environment-overwrite/release-verification.json；工具tools/staff/audit_environment_overwrite.py。原fd7包与旧记录保留。源码基线43a6591，本次未安装、未提交或推送；旧世界任务自动兼容，不必删存档或等待上一轮转换完成。
+
+## 2026-11-08：环境覆盖修复的 GitHub 同步提交
+
+按用户“更新推送，将当前项目同步github”的授权，本次同步提交纳入上述环境覆盖修复、真实静音回归夹具、启动入口与审计工具，并保留此前合并的工程师更新。发布摘要见docs/releases/2026-11-08-environment-overwrite.json。前节“未提交或推送”为修复完成时的历史快照；最终提交、远端一致性及Actions结果以GitHub实际分支和build/github-sync-20261108-185544-environment/final-sync-receipt.json为准。本次不替换游戏实例JAR；既有实测范围与限制保持不变。
