@@ -1,0 +1,62 @@
+{
+  "date": "2026-11-08",
+  "status": "MERGED_SOURCE_BUILD_VERIFIED_GAME_NOT_RETESTED",
+  "base_commit": "b92ff09c0fcf90fb7a5eebae650f714f16492c87",
+  "local_progress_commit": "5317ca25592d596191ec58e64b666f81f4bfeb3c",
+  "engineer_commits": [
+    "8b7c671a375db11bdde9255a4e07f58818a13062",
+    "011821ca091356b70c90fa224cb43fe838214cc0"
+  ],
+  "local_features": [
+    "1000-block environment conversion",
+    "Five 200-block-diameter domains",
+    "Private crosshair meteor targeting and tracking",
+    "Weather control and four tornado variants"
+  ],
+  "engineer_features": [
+    "Gear v4 models and grips",
+    "Ascension v4 authored audio",
+    "Ascension v5 geometry-fitted poses and contacts"
+  ],
+  "conflict_resolution": "Three-way merge by JSON key; both sides preserved. Only two language files had textual conflicts.",
+  "validation": {
+    "unshared_local_paths_identical": 111,
+    "unshared_remote_paths_identical": 70,
+    "preserved_production_classes": 385,
+    "changed_engineer_classes": [
+      "com/sourceofmystery/cinematic/DivineCGSounds.class",
+      "com/sourceofmystery/client/DivineCGDirector.class",
+      "com/sourceofmystery/client/DivineCGPlayer$Saved.class",
+      "com/sourceofmystery/client/DivineCGPlayer.class",
+      "com/sourceofmystery/client/DivineCGTrack$Frames.class",
+      "com/sourceofmystery/client/DivineCGTrack$Sample.class",
+      "com/sourceofmystery/client/DivineCGTrack.class"
+    ],
+    "preserved_local_asset_entries": 337,
+    "parsed_json_entries": 203,
+    "production_entries": 864,
+    "test_classes_excluded": true
+  },
+  "build": {
+    "commands": [
+      "build",
+      "shaderCheckJar",
+      "compileGameTestJava"
+    ],
+    "result": "PASS",
+    "game_tests_executed": false
+  },
+  "jar": {
+    "build_path": "build/libs/sourceofmystery-1.0.0.jar",
+    "sha256": "fd7f1e1befeed41984dc03120755257a717ac99bfdc05f9b752da187e4b93230",
+    "bytes": 56132745
+  },
+  "protocol": 12,
+  "game_client_retest": false,
+  "installed_to_game": false,
+  "limits": [
+    "Source merge and build do not establish in-game acceptance of updated armor or cinematics.",
+    "Prior runtime receipts apply to archived pre-merge candidates."
+  ],
+  "local_evidence_directory": "build/github-sync-20261108-180714/"
+}

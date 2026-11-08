@@ -281,13 +281,12 @@
   "offering.sourceofmystery.luck": "Luck %s",
   "offering.sourceofmystery.boost": "Bonus %s",
   "subtitles.sourceofmystery.divine_cg.ascent": "Ascending beyond the world",
-  "subtitles.sourceofmystery.divine_cg.cosmos": "The cosmos resonates",
   "subtitles.sourceofmystery.divine_cg.stairs": "Celestial steps form",
   "subtitles.sourceofmystery.divine_cg.step": "Footsteps upon the celestial stair",
   "subtitles.sourceofmystery.divine_cg.touch": "Touching the divine armor",
   "subtitles.sourceofmystery.divine_cg.bestowal": "Divine light descends",
   "subtitles.sourceofmystery.divine_cg.armor": "The divine armor binds",
-  "subtitles.sourceofmystery.divine_cg.throne": "Gazing upon the throne",
+  "subtitles.sourceofmystery.divine_cg.throne": "Seated upon the throne",
   "advancements.sourceofmystery.ascend_divinity.description": "Wear Divine Blessing for the first time, receive the celestial light, and behold the empty throne.",
   "spell.sourceofmystery.environment_shift": "Environment Shift",
   "tooltip.sourceofmystery.staff.environment": "Environment: %s",
@@ -341,5 +340,10 @@
   "subtitles.sourceofmystery.tornado.normal": "Debris roars in the wind",
   "subtitles.sourceofmystery.tornado.sand": "Grit hisses in the vortex",
   "subtitles.sourceofmystery.tornado.water": "Water roars in the wind column",
-  "subtitles.sourceofmystery.tornado.fire": "Flames roar in a thermal vortex"
+  "subtitles.sourceofmystery.tornado.fire": "Flames roar in a thermal vortex",
+  "subtitles.sourceofmystery.divine_cg.void": "The silent cosmos",
+  "subtitles.sourceofmystery.divine_cg.call": "The divine armor calls",
+  "subtitles.sourceofmystery.divine_cg.approach": "Approaching the divine armor",
+  "subtitles.sourceofmystery.divine_cg.heart": "Heartbeat",
+  "subtitles.sourceofmystery.divine_cg.divinity": "Ascension to divinity"
 }

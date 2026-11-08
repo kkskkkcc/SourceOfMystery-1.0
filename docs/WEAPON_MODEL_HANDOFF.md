@@ -1,4 +1,4 @@
-> 本文记录已被拒绝的草稿。当前装备与武器模型为 v3，见 [GEAR_MODELS_V3.md](GEAR_MODELS_V3.md)。
+> 本文记录已被拒绝的草稿。当前装备与武器模型为 v4，见 [GEAR_MODELS.md](GEAR_MODELS.md)。
 
 # 武器模型交接：用户拒绝当前草稿
 

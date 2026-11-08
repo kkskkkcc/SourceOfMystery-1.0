@@ -1,10 +1,10 @@
 """Five swords of the mod, designed by name and tier. python tools/gear/swords.py [id ...]
 
-mystery_sword          秘源剑   tempered steel, cyan source-ore fuller
-spirit_source_sword    灵源秘剑 leaf blade of living jade, vine guard
-dark_source_sword      暗源之剑 jagged obsidian blade with violet void cracks
-origin_dragon_sword    始源龙剑 dragon-bone blade held in a dragon's jaws
-divine_punishment_sword 神威天罚 jade-and-gold celestial blade with thunder runes
+mystery_sword          秘源剑   gray-silver steel, small cyan source-ore accents
+spirit_source_sword    灵源秘剑 silver leaf blade with blue veins
+dark_source_sword      暗源之剑 black jagged blade with violet void cracks
+origin_dragon_sword    始源龙剑 bronze blade with ember edges in a dragon's jaws
+divine_punishment_sword 神威天罚 white blade, black fuller, taiji guard
 """
 import math
 import sys
@@ -13,7 +13,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from forge3d import ASSETS, ROOT  # noqa: E402
-from kit import blade, sword_model  # noqa: E402
+from kit import blade, lengthen_hilt, sword_model  # noqa: E402
 from paint import register, rgb  # noqa: E402
 
 
@@ -23,12 +23,12 @@ def glow_line(color, width=.3, path=((.5, .95), (.5, .05)), alpha=1.0):
 
 
 def mystery_sword():
-    register('ms_steel', 'metal', rgb('A9B7C3'), shade=rgb('4D5B68'), light=rgb('EEF5FA'))
+    register('ms_steel', 'metal', rgb('A7ADB5'), shade=rgb('4C5158'), light=rgb('EEF0F3'))
     register('ms_edge', 'metal', rgb('DCE6EE'), shade=rgb('7D8A96'), light=rgb('FFFFFF'), rim_light=60)
-    register('ms_dark', 'metal', rgb('5D6A77'), shade=rgb('262E36'), light=rgb('A3B1BE'))
-    register('ms_leather', 'cloth', rgb('3B2E26'), shade=rgb('17110D'), weave=4)
+    register('ms_dark', 'metal', rgb('62676E'), shade=rgb('26292D'), light=rgb('A9AEB5'))
+    register('ms_leather', 'cloth', rgb('34373C'), shade=rgb('131417'), weave=3)
     register('ms_crystal', 'gem', rgb('7FF6F2'), shade=rgb('147A86'), light=rgb('E8FFFF'), facets=3)
-    register('gold', 'metal', rgb('C9A566'), shade=rgb('6E5126'), light=rgb('F5E2B0'))
+    register('gold', 'metal', rgb('C3C8CF'), shade=rgb('646A73'), light=rgb('F2F4F7'))
     cyan = (120, 250, 245)
     m, r = sword_model('mystery_sword')
     blade(m, r, 2.2, 22, 3.0, .7, 'ms_steel', 'ms_edge', tip=3.6, segments=5, taper=.22,
@@ -56,10 +56,11 @@ DESIGNS = {'mystery_sword': mystery_sword, **HIGHER}
 
 def export(name):
     m = DESIGNS[name]()
+    hold = lengthen_hilt(m)
     info = m.export(ASSETS / f'geo/item/{name}.geo.json', ASSETS / f'textures/gear/{name}.png',
                     ASSETS / f'textures/gear/{name}_glowmask.png', seed=zlib.crc32(name.encode()) & 0xFFFF,
                     manifest_path=ROOT / f'tools/gear/out/{name}.parts.json')
-    print(name, info)
+    print(name, f'hold y {hold:.2f}', info)
 
 
 if __name__ == '__main__':

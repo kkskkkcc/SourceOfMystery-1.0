@@ -722,3 +722,16 @@ MeteorAimPacket仅PLAYER发送给对应施法者，客户端MeteorAimClient通�
 候选 build/staff-weather/sourceofmystery-weather-af5c053a3ebd.jar，54,821,823字节，SHA256 af5c053a3ebdc3839ed98dfdd1b2e6746475d9e066d4f15be01d7888f63ffb16；build/libs同内容。审计 build/staff-weather/release-verification.json，工具 tools/staff/audit_weather_release.py；859个生产条目与两最终实测包逐字节一致，旧359个未改资产、旧八段法杖动画及14个环境／领域／索敌／Boss逻辑条目保持，测试类排除。声纹与16秒预览完整解码见 media-verification.json；960帧1280x800，无音轨，60fps只代表编码参数。预览 modeling/staff_weather/export/weather-tornadoes-preview-silent.mp4；同目录preview-native-*为原版图，03-tornado-*为最终光影原图。
 
 状态 TECHNICAL_CHECKS_PASS_APPEARANCE_PENDING_USER。本次未安装、未提交或推送GitHub。实际Integrated MC仍d73ce1d5...，普通Forge仍00ff0433...。陨灭杀1ddf3b23...稳定副本已保留，原陨灭杀审计路径更新指向该副本；天气前源码基线在build/staff-weather/source-before-weather.zip。继续保留开发前环境／领域／索敌脏文件，不要清仓库或自动覆盖正式游戏。
+
+
+## 2026-11-08：用户授权提交 GitHub、合并工程师更新并同步本地
+
+本地环境转变、五领域、准心陨灭杀与天气魔法共115条变更，先保存到提交5317ca25592d596191ec58e64b666f81f4bfeb3c，再与origin/main工程师两次更新合并：8b7c671（装备V4轻甲／武器、登神CG V4音效）及011821ca091356b70c90fa224cb43fe838214cc0（登神CG V5几何接触／坐姿／空手演出、正确剑柄握持）。这两次更新已经收到用户本次明确的合并授权，但源码合并不代表模型外观验收或安装。
+
+仅中英文语言文件出现文本冲突。以b92ff09作共同基线，按JSON键完成三方合并，两边没有同键不同值的实际冲突；工程师的登神字幕／新增声音和本地所有法术文案均保留。声音注册自动合并后也做相同核对。代码／模型没有人工选边覆盖；合并原始内容时本地独有111条、工程师独有70条均与各自提交blob一致，其余4个共改路径为进度文档和两语言／声音注册。
+
+Java17／Gradle8.5离线 build shaderCheckJar compileGameTestJava 成功。新生产包864条目、203个JSON解析通过，不含测试器；相对天气af5c053a...候选，385个不属于工程师改动的生产class和337个未被工程师修改的资产条目逐字节保持。CG的7个class条目按工程师更新改变，模型与音效采用工程师新版。旧359项资产等历史保留检查针对原候选，不应要求新增合并包与工程师更新前的全部资源保持相同。
+
+新构建build/libs/sourceofmystery-1.0.0.jar，56,132,745字节，SHA256 fd7f1e1befeed41984dc03120755257a717ac99bfdc05f9b752da187e4b93230；稳定副本build/github-sync-20261108-180714/sourceofmystery-merged-fd7f1e1befee.jar。公共摘要docs/releases/2026-11-08-staff-engineer-merge.json。本地备份、合并核对、构建日志和最终同步回执集中build/github-sync-20261108-180714/；源备份local-progress-before-merge.zip含115条原改动及SHA清单，另有tracked-progress.patch、本地backup/staff-before-engineer-merge-20261108分支。以上只在本地保留，不提交缓存／日志／构建包／密钥。
+
+本次只完成源码与仓库同步、合并和构建，未开游戏或安装新JAR。合并前法杖实机证据仍对应各自已归档候选，不能冒称合并后的装备／登神CG／整合包已重新验收。网络协议12。GitHub与本地最终提交、Actions状态以本次最终回执final-sync-receipt.json及GitHub实际分支为准；不要根据前节“未提交”历史状态判断本次结束后的同步情况。

@@ -1,9 +1,10 @@
 """Four tiered chestplates designed by name and rank. python tools/gear/armors.py [id ...]
 
-mystery        秘源甲   tempered blue steel brigandine with cyan source-ore studs
-spirit_source  灵源秘甲 living jade leaf plates, ivory veins, emerald heart
-dark_source    暗源之甲 obsidian plate, violet void cracks, horned pauldrons, wither skull
-origin_dragon  始源龙甲 dragon-scale cuirass, dragon-head pauldrons, folded back wings
+All are light armor built from light.py (fitted suit, slim plates):
+mystery        秘源甲   gray-silver riveted brigandine, one source crystal
+spirit_source  灵源秘甲 blue-silver plates, enamel inlays, feather spaulders, back ribbons
+dark_source    暗源之甲 black lacquer, violet void cracks, left horn, ragged half-cape
+origin_dragon  始源龙甲 orange-glow scales on bronze leather, swept horns, dorsal fins
 神威天佑 (divine_blessing) has its own script: divine_blessing.py
 """
 import math
@@ -15,6 +16,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from forge3d import ASSETS, ROOT  # noqa: E402
 from kit import ALL, armor_model, disc, outer, sleeve_and_bracer, tasset_set, tiered_pauldron  # noqa: E402
 from paint import register, rgb  # noqa: E402
+import light as L  # noqa: E402
 
 
 def glow_line(color, width=.18, path=((.5, .93), (.5, .1)), alpha=.9, material='gold'):
@@ -51,215 +53,189 @@ def chest_core(m, body, plate, under, trim, pec_decals=None, rib_decals=None, be
 
 # ------------------------------------------------------------------ 秘源甲
 def mystery():
-    register('my_steel', 'plate', rgb('9AAAB8'), shade=rgb('4A5866'), light=rgb('E2ECF4'), vein=6, gloss=24)
-    register('my_dark', 'metal', rgb('56636F'), shade=rgb('222A31'), light=rgb('9DACB9'))
-    register('my_edge', 'metal', rgb('C9D5DE'), shade=rgb('6B7884'), light=rgb('FFFFFF'))
-    register('my_cloth', 'cloth', rgb('2B3946'), shade=rgb('0F151B'))
-    register('my_leather', 'cloth', rgb('4A3829'), shade=rgb('1C140D'), weave=5)
-    register('my_crystal', 'gem', rgb('7FF6F2'), shade=rgb('147A86'), light=rgb('E8FFFF'), facets=3)
-    register('gold', 'metal', rgb('C9A566'), shade=rgb('6E5126'), light=rgb('F5E2B0'))
-    cyan = (120, 250, 245)
-    trim = ('my_edge', .12)
-    m, body, arms, legs = armor_model('mystery')
-    studs = [{'kind': 'rivets', 'style': 'inlay', 'material': 'my_edge', 'r': .05,
-              'at': [(.12, .12), (.88, .12), (.12, .88), (.88, .88)]}]
-    chest_core(m, body, 'my_steel', 'my_cloth', trim, pec_decals=lambda s: studs,
-               rib_decals=lambda s: studs, belt='my_leather',
-               belt_decals=[{'kind': 'rivets', 'style': 'inlay', 'material': 'my_edge', 'r': .12,
-                             'at': [(k / 8, .5) for k in range(1, 8)]}])
-    # Source-ore crystal set into the sternum, with glowing channels.
-    m.box('sternum_plate', body, (0, 20.4, -3.3), (2.2, 3.4, .45), 'my_dark', trim=trim)
-    m.box('sternum_crystal', body, (0, 20.5, -3.6), (1.15, 1.15, .5), 'my_crystal', rotation=(0, 0, 45), glow_face=True)
+    """秘源甲 v4: gray steel brigandine light armor with silver rivets and one source crystal."""
+    register('my_steel', 'plate', rgb('8E959E'), shade=rgb('464C54'), light=rgb('CDD2D8'), vein=4, gloss=24)
+    register('my_silver', 'metal', rgb('C3C8CF'), shade=rgb('646A73'), light=rgb('F2F4F7'), rim_light=50)
+    register('my_suit', 'cloth', rgb('34373C'), shade=rgb('131417'), weave=2.6)
+    register('my_seam', 'lacquer', rgb('1D1F22'), shade=rgb('0A0B0C'))
+    register('my_leather', 'cloth', rgb('4A4C50'), shade=rgb('1C1D20'), weave=3.2)
+    register('my_crystal', 'gem', rgb('7FE9F0'), shade=rgb('1A6E7A'), light=rgb('E8FFFF'), facets=3)
+    rivets = lambda cols, rows: [{'kind': 'rivets', 'style': 'inlay', 'material': 'my_silver', 'r': .055,
+                                  'at': [((x + .5) / cols, (y + .5) / rows) for x in range(cols) for y in range(rows)]}]
+    m, body, arms, legs = armor_model('mystery', density=26)
+    L.suit(m, body, 'my_suit', 'my_seam', 'my_leather', 'my_silver')
+    L.straps(m, body, 'my_leather', 'my_silver', 'my_silver')
+    L.pectorals(m, body, 'my_steel', 'my_silver', decal=lambda s: rivets(3, 4))
+    L.ribs(m, body, 'my_steel', 'my_silver', decal=rivets(2, 4))
+    m.box('sternum', body, (0, 19.6, -2.6), (1.0, 5.6, .34), 'my_silver', decals={'north': rivets(1, 5)})
+    L.abdomen(m, body, 'my_steel', 'my_silver', count=3, decal=lambda i: rivets(5, 1))
+    L.sash(m, body, 'my_leather', 'my_silver', 'my_silver', gem='my_crystal', gem_glow=True)
+    # Crossed belt over the back plate.
+    L.back_plate(m, body, 'my_steel', 'my_silver', 'my_silver', decal=rivets(5, 3))
     for s in (-1, 1):
-        m.box(f'channel_{s}', body, (s * 1.8, 21.6, -3.32), (1.6, .22, .15), 'my_crystal', rotation=(0, 0, s * 22),
-              glow_face=True)
-    m.box('buckle', body, (0, 12.8, -2.9), (2.0, 1.6, .4), 'my_dark', trim=trim)
-    m.box('buckle_gem', body, (0, 12.8, -3.15), (.7, .7, .2), 'my_crystal', glow_face=True)
-    for s, arm in arms.items():
-        label = 'Right' if s < 0 else 'Left'
-        tiered_pauldron(m, label, arm, s, 'my_steel', trim, count=2, cheeks=False, slope0=20, slope_step=12,
-                        hem='my_edge')
-        m.box(f'{label}_ore', arm, (s * 8.35, 22.6, 0), (.4, 1.0, 1.0), 'my_crystal', rotation=(45, 0, -s * 30),
-              glow_face=True)
-        sleeve_and_bracer(m, label, arm, s, 'my_cloth', 'my_steel', 'my_dark', trim=trim,
-                          bracer_decals=lambda s: [glow_line(cyan, .05, ((.15, .5), (.85, .5)), .7)])
-    for s, leg in legs.items():
-        label = 'Right' if s < 0 else 'Left'
-        tasset_set(m, label, leg, s, 'my_leather', ('my_dark', .14), hem='my_edge', length=4.4)
+        m.box(f'cross_belt_{s}', body, (0, 16.4, 2.62), (.7, 5.4, .2), 'my_leather', rotation=(0, 0, s * 36),
+              decals={'south': [L.line([[(.5, 0), (.5, 1)]], .1, 'my_silver')]})
+    for s, label in ((-1, 'Right'), (1, 'Left')):
+        arm = arms[s]
+        L.spaulder(m, arm, s, label, 'my_steel', 'my_silver', 'my_suit', cap_decal=rivets(3, 2))
+        L.forearm(m, arm, s, label, 'my_suit', 'my_steel', 'my_silver', 'my_silver', 'my_leather', sleeve_band='my_silver',
+                  outer_decal=rivets(1, 4), face_decal=lambda f: rivets(2, 3))
+        L.faulds(m, legs[s], s, label, 'my_steel', 'my_silver', 'my_leather', 'my_silver', decal=lambda s: rivets(4, 2))
     return m
 
 
-# ------------------------------------------------------------------ 灵源秘甲
 def spirit_source():
-    register('sp_jade', 'plate', rgb('5FB98A'), shade=rgb('1E6646'), light=rgb('CFF5DE'), vein=18, gloss=24)
-    register('sp_ivory', 'plate', rgb('EEE8D2'), shade=rgb('A39C80'), light=rgb('FFFFF6'), vein=5)
-    register('sp_bark', 'bone', rgb('6E4C30'), shade=rgb('2E1C0D'), light=rgb('A47A51'))
-    register('sp_moss', 'cloth', rgb('2F5A3A'), shade=rgb('112417'), weave=3)
-    register('sp_leaf', 'scale', rgb('6CC596'), shade=rgb('1F5E3F'), light=rgb('C6F2D6'))
-    register('sp_gem', 'gem', rgb('8CFFB6'), shade=rgb('1A8A4B'), light=rgb('F0FFF4'), facets=4)
-    register('gold', 'metal', rgb('C9A566'), shade=rgb('6E5126'), light=rgb('F5E2B0'))
-    green = (150, 255, 185)
-    trim = ('sp_ivory', .14)
-    vine = lambda seed: [{'kind': 'veins', 'style': 'inlay', 'material': 'sp_ivory', 'seed': seed, 'count': 2,
-                          'width': .05}]
-    m, body, arms, legs = armor_model('spirit_source')
-    chest_core(m, body, 'sp_jade', 'sp_moss', trim, pec_decals=lambda s: vine(3 + s),
-               rib_decals=lambda s: vine(9 + s), belt='sp_bark',
-               belt_decals=[{'kind': 'lines', 'style': 'inlay', 'material': 'sp_jade', 'width': .2,
-                             'paths': [[(k / 6, 0), (k / 6 + .12, 1)] for k in range(7)]}])
-    # Emerald heart wrapped in ivory leaves.
-    for k in range(6):
-        a = k / 6 * math.tau + math.pi / 2
-        m.box(f'heart_leaf_{k}', body, (math.cos(a) * 1.3, 20.6 + math.sin(a) * 1.3, -3.35), (.9, 1.8, .2), 'sp_ivory',
-              rotation=(0, 0, math.degrees(a) - 90), bevel=.1,
-              decals={'north': [{'kind': 'lines', 'style': 'inlay', 'material': 'sp_jade', 'width': .14,
-                                 'paths': [[(.5, .1), (.5, .9)]]}]})
-    m.box('heart_gem', body, (0, 20.6, -3.6), (1.3, 1.3, .5), 'sp_gem', rotation=(0, 0, 45), glow_face=True)
-    m.box('buckle', body, (0, 12.8, -2.9), (2.2, 1.7, .45), 'sp_ivory', trim=('sp_jade', .1))
-    m.box('buckle_gem', body, (0, 12.8, -3.15), (.7, .7, .2), 'sp_gem', glow_face=True)
-    for s, arm in arms.items():
-        label = 'Right' if s < 0 else 'Left'
+    """灵源秘甲 v4: silver light armor with blue enamel inlays, feather spaulders and ribbons."""
+    register('sp_silver', 'plate', rgb('D5DBE3'), shade=rgb('7C8794'), light=rgb('F7FAFD'), vein=3, gloss=30)
+    register('sp_edge', 'metal', rgb('BFC8D3'), shade=rgb('5E6875'), light=rgb('F4F8FC'), rim_light=55)
+    register('sp_blue', 'lacquer', rgb('2F6FC8'), shade=rgb('123067'), gloss=30)
+    register('sp_suit', 'cloth', rgb('2C3E5C'), shade=rgb('0F1726'), weave=2.4)
+    register('sp_seam', 'lacquer', rgb('1A2638'), shade=rgb('090E16'))
+    register('sp_ribbon', 'cloth', rgb('8FB8EA'), shade=rgb('3D6496'), weave=2.0)
+    register('sp_glow', 'glow', rgb('7CC4FF'), light=rgb('E4F4FF'))
+    register('sp_gem', 'gem', rgb('6CC0FF'), shade=rgb('14508E'), light=rgb('EAF7FF'), facets=4)
+    blue = (110, 190, 255)
+    inlay = lambda paths, w=.05: L.line(paths, w, 'sp_blue')
+    m, body, arms, legs = armor_model('spirit_source', density=26)
+    L.suit(m, body, 'sp_suit', 'sp_seam', 'sp_suit', 'sp_edge')
+    L.straps(m, body, 'sp_suit', 'sp_edge', 'sp_edge')
+    L.pectorals(m, body, 'sp_silver', 'sp_edge', inner='sp_blue',
+                decal=lambda s: [inlay([[(.5, .9), (.5, .12)]], .07),
+                                  inlay([[(.5, .7), (.25, .55)], [(.5, .7), (.75, .55)], [(.5, .45), (.25, .3)], [(.5, .45), (.75, .3)]], .045)])
+    L.ribs(m, body, 'sp_silver', 'sp_edge', decal=[inlay([[(.5, .9), (.5, .1)]], .08)])
+    # Blue crystal heart in a silver diamond, with a glowing stem.
+    m.box('heart_setting', body, (0, 21.15, -2.9), (1.8, 1.8, .3), 'sp_edge', rotation=(0, 0, 45))
+    m.box('heart', body, (0, 21.15, -3.1), (1.0, 1.0, .22), 'sp_gem', rotation=(0, 0, 45), glow_face=True)
+    m.box('sternum', body, (0, 18.4, -2.6), (.9, 3.6, .32), 'sp_suit',
+          decals={'north': [L.line([[(.5, .95), (.5, .05)]], .12, 'sp_glow', blue)]})
+    L.abdomen(m, body, 'sp_silver', 'sp_edge', count=2, decal=lambda i: [inlay([[(.1, .5), (.9, .5)]], .1)])
+    L.sash(m, body, 'sp_ribbon', 'sp_blue', 'sp_edge', gem='sp_gem', gem_glow=True)
+    L.back_plate(m, body, 'sp_silver', 'sp_edge', 'sp_suit',
+                 decal=[inlay([[(.15, .2), (.5, .6), (.85, .2)], [(.3, .85), (.5, .6), (.7, .85)]], .05)])
+    # Two long ribbons from the back strap clasps.
+    for s in (-1, 1):
+        for k, (dx, h, tilt) in enumerate(((0, 12.5, 3), (.75, 10.5, 6))):
+            x = s * (2.6 + dx)
+            m.box(f'ribbon_{s}_{k}', body, (x, 23.3 - h / 2, 3.0 + .05 * k), (.7, h, .12), 'sp_ribbon',
+                  rotation=(-5, 0, s * tilt), pivot=(x, 23.3, 3.0),
+                  decals={'south': [L.line([[(.5, 0), (.5, 1)]], .12, 'sp_blue')]})
+    for s, label in ((-1, 'Right'), (1, 'Left')):
+        arm = arms[s]
         o = outer(s)
-        m.box(f'{label}_cap', arm, (s * 6.2, 24.35, 0), (4.6, 1.0, 5.5), 'sp_jade', rotation=(0, 0, -s * 9),
-              trim=trim, trim_faces=('up', 'north', 'south', o))
-        # Layered leaf pauldron: long leaves fanning down over the shoulder.
-        for i, (z, ang, ln) in enumerate(((-2.0, 34, 5.0), (-.7, 40, 5.6), (.7, 40, 5.6), (2.0, 34, 5.0))):
-            m.box(f'{label}_leaf_{i}', arm, (s * (6.4 + ln * .32), 23.6 - ln * .22, z), (ln, .35, 1.6), 'sp_leaf',
-                  rotation=(0, 0, -s * ang), bevel=.08, scale_rows=1, scale_cols=3,
-                  decals={'up': [glow_line(green, .1, ((.05, .5), (.95, .5)), .6, 'sp_ivory')]})
-        m.box(f'{label}_bud', arm, (s * 8.4, 22.4, 0), (.5, 1.0, 1.0), 'sp_gem', rotation=(45, 0, 0), glow_face=True)
-        sleeve_and_bracer(m, label, arm, s, 'sp_moss', 'sp_bark', 'sp_ivory', trim=('sp_jade', .12),
-                          bracer_decals=lambda s: vine(20 + s), fin='sp_ivory',
-                          fin_decals=[glow_line(green, .2)])
-    for s, leg in legs.items():
-        label = 'Right' if s < 0 else 'Left'
-        tasset_set(m, label, leg, s, 'sp_leaf', trim, hem='sp_ivory', length=5.0, jewel='sp_gem',
-                   scale_rows=1.2, scale_cols=1.0)
+        L.spaulder(m, arm, s, label, 'sp_silver', 'sp_edge', 'sp_suit',
+                   cap_decal=[inlay([[(.1, .5), (.9, .5)]], .08)])
+        # Three feather plates fanned back from the shoulder.
+        root = (s * 7.4, 24.2, .9)
+        for j, (fan, ln) in enumerate(((10, 3.4), (30, 3.0), (50, 2.5))):
+            m.box(f'{label}_feather_{j}', arm, (root[0], root[1] + ln / 2, root[2]), (.24, ln, .9), 'sp_silver',
+                  rotation=(fan + 25, 0, -s * 28), pivot=root, trim=('sp_edge', .1),
+                  decals={o: [L.line([[(.5, .95), (.5, .05)]], .14, 'sp_glow', blue)]})
+        L.forearm(m, arm, s, label, 'sp_suit', 'sp_silver', 'sp_edge', 'sp_edge', 'sp_blue', sleeve_band='sp_ribbon',
+                  outer_decal=[L.line([[(.5, .86), (.5, .14)]], .1, 'sp_glow', blue)],
+                  face_decal=lambda f: [inlay([[(.2, .2), (.5, .5), (.8, .2)], [(.2, .6), (.5, .9), (.8, .6)]], .06)])
+        L.faulds(m, legs[s], s, label, 'sp_silver', 'sp_edge', 'sp_suit', 'sp_ribbon',
+                 decal=lambda s: [inlay([[(.15, .3), (.5, .75), (.85, .3)]], .07)])
     return m
 
 
-# ------------------------------------------------------------------ 暗源之甲
 def dark_source():
-    register('dk_plate', 'lacquer', rgb('241D31'), shade=rgb('09070E'), gloss=30, rim_light=30, rim_dark=30)
-    register('dk_iron', 'metal', rgb('4E4858'), shade=rgb('17141B'), light=rgb('938BA0'))
-    register('dk_edge', 'metal', rgb('7C7290'), shade=rgb('2A2433'), light=rgb('C8BEDA'))
-    register('dk_bone', 'bone', rgb('3E3845'), shade=rgb('141117'), light=rgb('72697C'))
-    register('dk_cloth', 'cloth', rgb('1B1622'), shade=rgb('07050A'))
-    register('dk_void', 'gem', rgb('C27BFF'), shade=rgb('4A1478'), light=rgb('F6E6FF'), facets=5)
-    register('gold', 'metal', rgb('C9A566'), shade=rgb('6E5126'), light=rgb('F5E2B0'))
-    violet = (200, 120, 255)
-    trim = ('dk_edge', .12)
-    m, body, arms, legs = armor_model('dark_source')
-    chest_core(m, body, 'dk_plate', 'dk_cloth', trim, pec_decals=lambda s: [veins(violet, 40 + s, 2)],
-               rib_decals=lambda s: [veins(violet, 44 + s, 2)], belt='dk_iron',
-               belt_decals=[{'kind': 'runes', 'style': 'paint', 'color': (190, 110, 250), 'seed': 8, 'count': 6,
-                             'width': .08, 'glow': violet}])
-    # Wither skull on the sternum, eyes burning.
-    eyes = [[(.2, .34), (.42, .34), (.38, .56), (.24, .56)], [(.58, .34), (.8, .34), (.76, .56), (.62, .56)]]
-    m.box('skull', body, (0, 20.5, -3.45), (2.6, 2.4, .7), 'dk_bone', trim=('dk_iron', .08),
-          decals={'north': [{'kind': 'polys', 'style': 'paint', 'color': (8, 5, 12),
-                             'shapes': eyes + [[(.44, .66), (.56, .66), (.5, .78)]]},
-                            {'kind': 'polys', 'style': 'paint', 'color': (215, 150, 255), 'glow': violet,
-                             'shapes': [[(.26, .4), (.36, .4), (.34, .5), (.28, .5)], [(.64, .4), (.74, .4), (.72, .5), (.66, .5)]]},
-                            {'kind': 'lines', 'style': 'engrave', 'width': .05,
-                             'paths': [[(.3, .86), (.3, .96)], [(.5, .86), (.5, .96)], [(.7, .86), (.7, .96)]]}]})
-    for s in (-1, 1):
-        m.box(f'skull_horn_{s}', body, (s * 1.6, 22.1, -3.4), (.4, 1.5, .4), 'dk_edge', rotation=(0, 0, -s * 40))
-    m.box('back_spine', body, (0, 19.5, 3.15), (.8, 7.0, .4), 'dk_iron')
-    for i in range(4):
-        m.box(f'back_spike_{i}', body, (0, 22.3 - i * 2.0, 3.55), (.5, 1.1, .5), 'dk_edge', rotation=(-35, 45, 0))
-    for s, arm in arms.items():
-        label = 'Right' if s < 0 else 'Left'
-        o = outer(s)
-        tiered_pauldron(m, label, arm, s, 'dk_plate', trim, count=3, cheeks=False, slope0=26, slope_step=11,
-                        hem='dk_edge')
-        # Curved horns: three chained segments sweeping outward and up.
-        p, a = (s * 7.6, 24.6), 20
-        for k, (ln, th) in enumerate(((1.6, .8), (1.5, .6), (1.3, .42))):
-            rad = math.radians(a)
-            c = (p[0] + s * math.cos(rad) * ln / 2, p[1] + math.sin(rad) * ln / 2)
-            m.box(f'{label}_horn_{k}', arm, (c[0], c[1], 0), (ln + .15, th, th), 'dk_bone' if k < 2 else 'dk_edge',
-                  rotation=(0, 0, s * a), bevel=.08)
-            p = (p[0] + s * math.cos(rad) * ln, p[1] + math.sin(rad) * ln)
-            a += 28
-        for k in range(3):
-            m.box(f'{label}_spike_{k}', arm, (s * (8.3 + .2 * k), 22.4 - k * 1.1, (k - 1) * 1.8), (.45, 1.3, .45), 'dk_edge',
-                  rotation=(0, 0, -s * 70))
-        sleeve_and_bracer(m, label, arm, s, 'dk_cloth', 'dk_plate', 'dk_iron', trim=trim,
-                          bracer_decals=lambda s: [veins(violet, 60 + s, 2)], fin='dk_edge',
-                          fin_decals=[glow_line(violet, .2, material='dk_void')])
-    for s, leg in legs.items():
-        label = 'Right' if s < 0 else 'Left'
-        tasset_set(m, label, leg, s, 'dk_plate', trim, hem='dk_edge', length=5.2, jewel='dk_void')
+    """暗源之甲 v4: black lacquer light armor with violet void cracks and a ragged half-cape."""
+    register('dk_plate', 'lacquer', rgb('1D1925'), shade=rgb('07060A'), gloss=34)
+    register('dk_edge', 'metal', rgb('8B6BC2'), shade=rgb('35214F'), light=rgb('D2BEF5'), rim_light=50)
+    register('dk_suit', 'cloth', rgb('2A1F3A'), shade=rgb('0D0913'), weave=2.4)
+    register('dk_seam', 'lacquer', rgb('120E18'), shade=rgb('050407'))
+    register('dk_cape', 'cloth', rgb('3A2457'), shade=rgb('120A1E'), weave=2.0)
+    register('dk_void', 'glow', rgb('B45CFF'), light=rgb('F0DCFF'))
+    register('dk_gem', 'gem', rgb('B06CFF'), shade=rgb('3E1478'), light=rgb('F2E4FF'), facets=4)
+    violet = (180, 90, 255)
+    crack = lambda seed, n=2: [{**veins(violet, seed, n, .035, .9), 'material': 'dk_void'}]
+    m, body, arms, legs = armor_model('dark_source', density=26)
+    L.suit(m, body, 'dk_suit', 'dk_seam', 'dk_plate', 'dk_edge')
+    L.straps(m, body, 'dk_plate', 'dk_edge', 'dk_edge')
+    L.pectorals(m, body, 'dk_plate', 'dk_edge', rivet='dk_edge', decal=lambda s: crack(11 + s))
+    L.ribs(m, body, 'dk_plate', 'dk_edge', decal=crack(21))
+    # Void gem in a violet bezel over the sternum.
+    m.ring('gem_ring', body, (0, 21.1, -2.95), .95, 14, .22, .3, 'dk_edge', bevel=.04)
+    m.box('gem', body, (0, 21.1, -3.0), (1.3, 1.3, .3), 'dk_gem', rotation=(0, 0, 45), glow_face=True)
+    m.box('sternum', body, (0, 18.4, -2.6), (.9, 3.6, .32), 'dk_plate',
+          decals={'north': [L.line([[(.5, .95), (.5, .05)]], .12, 'dk_void', violet)]})
+    L.abdomen(m, body, 'dk_plate', 'dk_edge', count=2, decal=lambda i: crack(31 + i, 1))
+    L.sash(m, body, 'dk_cape', 'dk_edge', 'dk_edge', gem='dk_gem', gem_glow=True)
+    L.back_plate(m, body, 'dk_plate', 'dk_edge', 'dk_plate', decal=crack(41, 3))
+    # Ragged half-cape hanging from the right shoulder blade.
+    for i, (x, h, tilt) in enumerate(((-3.3, 9.6, 4), (-2.2, 10.8, 2), (-1.1, 9.2, -1), (0.0, 7.6, -3), (1.0, 5.6, -5))):
+        m.box(f'cape_{i}', body, (x, 23.6 - h / 2, 3.05 + .04 * i), (1.15, h, .14), 'dk_cape', rotation=(-4, 0, tilt),
+              pivot=(x, 23.6, 3.0), decals={'south': [L.line([[(.5, 0), (.5, 1)]], .05, 'dk_seam')]})
+    m.box('cape_clasp', body, (-2.2, 23.4, 2.9), (3.6, .6, .3), 'dk_edge')
+    for s, label in ((-1, 'Right'), (1, 'Left')):
+        arm = arms[s]
+        L.spaulder(m, arm, s, label, 'dk_plate', 'dk_edge', 'dk_suit', cap_decal=crack(51 + s, 1))
+        L.forearm(m, arm, s, label, 'dk_suit', 'dk_plate', 'dk_edge', 'dk_edge', 'dk_plate', sleeve_band='dk_edge',
+                  outer_decal=[L.line([[(.5, .86), (.5, .14)]], .1, 'dk_void', violet)],
+                  face_decal=lambda f: crack(61, 1))
+        L.faulds(m, legs[s], s, label, 'dk_plate', 'dk_edge', 'dk_suit', 'dk_edge', decal=lambda s: crack(71 + s, 1))
+    # One curved horn on the left spaulder: three segments bending back.
+    arm = arms[1]
+    base = (7.0, 24.6, -.2)
+    for k, (h, ang, w) in enumerate(((1.4, 15, .55), (1.3, 40, .45), (1.1, 68, .34))):
+        y = base[1] + sum(hh * math.cos(math.radians(aa)) for hh, aa, _ in ((1.4, 15, 0), (1.3, 40, 0), (1.1, 68, 0))[:k])
+        z = base[2] + sum(hh * math.sin(math.radians(aa)) for hh, aa, _ in ((1.4, 15, 0), (1.3, 40, 0), (1.1, 68, 0))[:k])
+        m.box(f'horn_{k}', arm, (base[0], y + h / 2, z), (w, h, w), 'dk_plate' if k < 2 else 'dk_edge',
+              rotation=(ang, 0, 0), pivot=(base[0], y, z), bevel=.05)
     return m
 
 
-# ------------------------------------------------------------------ 始源龙甲
 def origin_dragon():
-    register('dr_scale', 'scale', rgb('3E2D57'), shade=rgb('130C1D'), light=rgb('8163B0'))
-    register('dr_hide', 'plate', rgb('3A2A52'), shade=rgb('120B1B'), light=rgb('7A60A3'), vein=10, gloss=26)
-    register('dr_bone', 'bone', rgb('E6DCC8'), shade=rgb('8A7C66'), light=rgb('FFFBF1'))
-    register('dr_edge', 'metal', rgb('CBB9E6'), shade=rgb('5E4D7A'), light=rgb('F7F0FF'), rim_light=60)
-    register('dr_membrane', 'cloth', rgb('4A2E66'), shade=rgb('1A0F26'), weave=6)
-    register('dr_eye', 'gem', rgb('F07BFF'), shade=rgb('7A1A8A'), light=rgb('FFE8FF'), facets=3)
-    register('gold', 'metal', rgb('C9A566'), shade=rgb('6E5126'), light=rgb('F5E2B0'))
-    pink = (240, 130, 255)
-    trim = ('dr_bone', .12)
-    m, body, arms, legs = armor_model('origin_dragon')
-    chest_core(m, body, 'dr_hide', 'dr_scale', trim, belt='dr_hide',
-               pec_decals=lambda s: [veins(pink, 80 + s, 2, .035, .7)],
-               belt_decals=[{'kind': 'rivets', 'style': 'inlay', 'material': 'dr_bone', 'r': .14,
-                             'at': [(k / 7, .5) for k in range(1, 7)]}])
-    # Rib cage of dragon bone over the scales, and the end-crystal heart.
-    for i in range(3):
-        for s in (-1, 1):
-            m.box(f'rib_{i}_{s}', body, (s * 2.0, 21.6 - i * 1.5, -3.35), (2.6, .38, .3), 'dr_bone',
-                  rotation=(0, 0, s * (14 + 8 * i)))
-    m.box('sternum', body, (0, 19.9, -3.35), (.6, 5.4, .35), 'dr_bone')
-    m.box('heart', body, (0, 21.9, -3.55), (1.1, 1.1, .45), 'dr_eye', rotation=(0, 0, 45), glow_face=True)
-    m.box('buckle', body, (0, 12.8, -2.9), (2.2, 1.8, .45), 'dr_bone', trim=('dr_edge', .08))
-    m.box('buckle_eye', body, (0, 12.8, -3.15), (.9, .5, .2), 'dr_eye', glow_face=True)
-    # Folded wings on the back.
+    """始源龙甲 v4: orange-glow dragon light armor over dark bronze leather."""
+    register('dr_plate', 'plate', rgb('E2661A'), shade=rgb('8C300A'), light=rgb('FF9446'), vein=4, gloss=30)
+    register('dr_scale', 'scale', rgb('DC5E16'), shade=rgb('6E2408'), light=rgb('FF9A48'))
+    register('dr_leather', 'cloth', rgb('2C1F18'), shade=rgb('0F0A07'), weave=2.6)
+    register('dr_dark', 'lacquer', rgb('241A15'), shade=rgb('0A0705'), gloss=28)
+    register('dr_bronze', 'metal', rgb('C4904F'), shade=rgb('5E3B1C'), light=rgb('F5D6A2'), rim_light=50)
+    register('dr_ember', 'glow', rgb('FF9A3C'), light=rgb('FFE4B4'))
+    register('dr_eye', 'gem', rgb('FFB24C'), shade=rgb('B0420E'), light=rgb('FFF2CC'), facets=5)
+    ember = (255, 150, 60)
+    m, body, arms, legs = armor_model('origin_dragon', density=26)
+    L.suit(m, body, 'dr_leather', 'dr_dark', 'dr_dark', 'dr_bronze')
+    L.straps(m, body, 'dr_dark', 'dr_bronze', 'dr_bronze')
     for s in (-1, 1):
-        root = (s * 1.4, 22.5, 3.3)
-        m.box(f'wing_arm_{s}', body, (s * 3.0, 23.6, 3.6), (3.6, .55, .55), 'dr_bone', rotation=(0, -s * 15, s * 32))
-        for k, (ln, ang) in enumerate(((7.5, -78), (6.4, -64), (5.2, -50))):
-            m.box(f'wing_finger_{s}_{k}', body, (root[0] + s * (1.2 + k * .9), root[1] - ln / 2 + 1.2, 3.65 + .05 * k),
-                  (.32, ln, .3), 'dr_bone', rotation=(0, 0, s * (90 + ang) * .35))
-        m.box(f'wing_membrane_{s}', body, (s * 2.9, 19.4, 3.55), (3.0, 6.6, .15), 'dr_membrane',
-              rotation=(0, -s * 10, s * 8), decals={'south': [veins(pink, 70 + s, 2, .03, .5)]})
-    for s, arm in arms.items():
-        label = 'Right' if s < 0 else 'Left'
+        m.box(f'pectoral_{s}', body, (s * 2.55, 21.3, -2.6), (3.0, 3.8, .42), 'dr_scale', rotation=(4, s * 14, -s * 1.5),
+              trim=('dr_bronze', .12), trim_faces=('north',), scale_rows=1.5, scale_cols=1.3)
+        m.box(f'pectoral_rim_{s}', body, (s * 2.6, 23.3, -2.45), (2.9, .32, .45), 'dr_bronze', rotation=(18, s * 13, 0))
+    L.ribs(m, body, 'dr_plate', 'dr_bronze', decal=[L.line([[(.5, .9), (.5, .1)]], .1, 'dr_ember', ember)])
+    # Dragon-eye gem in a bronze diamond setting with glowing claw strokes.
+    m.box('eye_setting', body, (0, 21.2, -2.9), (2.0, 2.0, .3), 'dr_bronze', rotation=(0, 0, 45), trim=('dr_dark', .1))
+    m.box('eye_gem', body, (0, 21.2, -3.1), (1.1, 1.6, .2), 'dr_eye', glow_face=True)
+    m.box('sternum', body, (0, 18.3, -2.6), (.9, 3.4, .32), 'dr_dark',
+          decals={'north': [L.line([[(.5, .95), (.5, .05)]], .12, 'dr_ember', ember)]})
+    L.abdomen(m, body, 'dr_plate', 'dr_bronze', count=2,
+              decal=lambda i: [L.line([[(.1, .5), (.35, .5)], [(.65, .5), (.9, .5)]], .1, 'dr_ember', ember)])
+    L.sash(m, body, 'dr_leather', 'dr_bronze', 'dr_bronze', gem='dr_eye', gem_glow=True,
+           buckle_decal=[{'kind': 'cloud', 'style': 'engrave', 'width': .08, 'at': [(.5, .55, .8, 1)]}])
+    # Back: scaled shoulder plate and a row of dorsal fins with glowing edges.
+    m.box('back_plate', body, (0, 21.2, 2.55), (6.8, 4.6, .4), 'dr_scale', rotation=(-6, 0, 0),
+          trim=('dr_bronze', .12), trim_faces=('south',), scale_rows=1.5, scale_cols=1.3)
+    for i, (y, h) in enumerate(((23.0, 1.5), (21.4, 1.35), (19.8, 1.2), (18.2, 1.05), (16.6, .9), (15.1, .75))):
+        m.box(f'dorsal_{i}', body, (0, y, 3.0 + .05 * (5 - i)), (.32, h, 1.3 - .1 * i), 'dr_plate', rotation=(-38, 0, 0),
+              trim=('dr_bronze', .1), decals={f: [L.line([[(.15, .9), (.85, .1)]], .12, 'dr_ember', ember)] for f in ('east', 'west')})
+    for s, label in ((-1, 'Right'), (1, 'Left')):
+        arm = arms[s]
         o = outer(s)
-        # Dragon-head pauldron: skull dome, snout pointing outward and down, horns back.
-        m.box(f'{label}_skull', arm, (s * 6.6, 23.9, 0), (5.0, 2.4, 5.6), 'dr_scale', rotation=(0, 0, -s * 12),
-              trim=trim, trim_faces=('north', 'south', o), scale_rows=1.5, scale_cols=1.5)
-        m.box(f'{label}_snout', arm, (s * 9.6, 22.8, 0), (3.2, 1.8, 2.8), 'dr_hide', rotation=(0, 0, -s * 22),
-              trim=trim, trim_faces=('up', o, 'north', 'south'))
-        m.box(f'{label}_jaw', arm, (s * 9.3, 21.55, 0), (3.0, .6, 2.5), 'dr_bone', rotation=(0, 0, -s * 32))
-        for z in (-1, 1):
-            f = 'north' if z < 0 else 'south'
-            m.box(f'{label}_eye_{f}', arm, (s * 8.0, 23.9, z * 1.45), (.7, .4, .15), 'dr_eye', rotation=(0, 0, -s * 15),
-                  glow_face=True)
-            m.box(f'{label}_tooth_{f}', arm, (s * 10.6, 21.75, z * .8), (.3, .8, .3), 'dr_bone', rotation=(0, 0, -s * 22))
-            p, a = (s * 6.4, 24.9, z * 1.6), 35
-            for k, (ln, th) in enumerate(((2.6, .65), (2.2, .45))):
-                rad = math.radians(a)
-                c = (p[0] - s * math.cos(rad) * ln / 2, p[1] + math.sin(rad) * ln / 2, p[2])
-                m.box(f'{label}_horn_{f}_{k}', arm, c, (ln + .1, th, th), 'dr_bone' if k == 0 else 'dr_edge',
-                      rotation=(0, 0, -s * a), bevel=.08)
-                p = (p[0] - s * math.cos(rad) * ln, p[1] + math.sin(rad) * ln, p[2])
-                a += 25
-        m.box(f'{label}_crest', arm, (s * 6.4, 25.3, 0), (2.6, .5, .4), 'dr_edge', rotation=(0, 0, -s * 8))
-        sleeve_and_bracer(m, label, arm, s, 'dr_hide', 'dr_scale', 'dr_bone', trim=trim, fin='dr_edge',
-                          fin_decals=[glow_line(pink, .2, material='dr_eye')])
-        for k in range(3):
-            m.box(f'{label}_claw_{k}', arm, (s * 8.5, 13.3 + k * .9, (k - 1) * 1.2), (.9, .3, .3), 'dr_bone',
-                  rotation=(0, 0, -s * 25))
-    for s, leg in legs.items():
-        label = 'Right' if s < 0 else 'Left'
-        tasset_set(m, label, leg, s, 'dr_scale', trim, hem='dr_edge', length=5.2, jewel='dr_eye',
-                   scale_rows=2.0, scale_cols=1.6)
+        L.spaulder(m, arm, s, label, 'dr_plate', 'dr_bronze', 'dr_dark',
+                   cap_decal=[L.line([[(.1, .5), (.9, .5)]], .1, 'dr_ember', ember)])
+        # Two small horns swept back from the spaulder.
+        for k, (z, h) in enumerate(((-.8, 2.6), (.8, 1.9))):
+            m.box(f'{label}_horn_{k}', arm, (s * 6.9, 24.6 + h / 2, z + .4), (.3, h, .34), 'dr_bronze',
+                  rotation=(-52, 0, -s * 18), pivot=(s * 6.9, 24.6, z + .4), bevel=.05)
+            m.box(f'{label}_horn_tip_{k}', arm, (s * 6.9, 24.6 + h + .35, z + .4), (.2, .7, .22), 'dr_ember',
+                  rotation=(-52, 0, -s * 18), pivot=(s * 6.9, 24.6, z + .4), glow_face=True)
+        L.forearm(m, arm, s, label, 'dr_leather', 'dr_plate', 'dr_bronze', 'dr_bronze', 'dr_dark', sleeve_band='dr_bronze',
+                  outer_decal=[L.line([[(.5, .86), (.5, .14)]], .1, 'dr_ember', ember)],
+                  face_decal=lambda f: [{'kind': 'scale' if False else 'lines', 'style': 'inlay', 'material': 'dr_bronze',
+                                         'width': .06, 'paths': [[(.2, .25), (.5, .1), (.8, .25)], [(.2, .55), (.5, .4), (.8, .55)],
+                                                                 [(.2, .85), (.5, .7), (.8, .85)]]}])
+        m.box(f'{label}_fin', arm, (s * 8.55, 14.9, .6), (.26, 2.4, 1.0), 'dr_bronze', rotation=(-20, 0, -s * 6))
+        L.faulds(m, legs[s], s, label, 'dr_scale', 'dr_bronze', 'dr_leather', 'dr_bronze')
     return m
 
 

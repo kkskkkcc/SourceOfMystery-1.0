@@ -10,10 +10,11 @@ final class DivineCGTrack {
     private static final ResourceLocation RESOURCE=new ResourceLocation("sourceofmystery","cinematic/divine_ascension.json");
     private static final String[] PARTS={"head","body","rightArm","leftArm","rightLeg","leftLeg"};
     private static Frames body,camera;
+    private static java.util.List<Cue> cues=java.util.List.of();
     private static boolean warned;
     private DivineCGTrack(){}
     static void load(){
-        body=camera=null;
+        body=camera=null;cues=java.util.List.of();
         try(var reader=Minecraft.getInstance().getResourceManager().openAsReader(RESOURCE)){
             var root=JsonParser.parseReader(reader).getAsJsonObject();
             if(root.get("version").getAsInt()!=1 || root.get("rate").getAsFloat()!=20)throw new IllegalArgumentException("Unsupported track format");
@@ -22,13 +23,24 @@ final class DivineCGTrack {
             var parts=root.getAsJsonArray("parts");
             if(parts.size()!=PARTS.length)throw new IllegalArgumentException("Invalid parts");
             for(int i=0;i<PARTS.length;i++)if(!PARTS[i].equals(parts.get(i).getAsString()))throw new IllegalArgumentException("Invalid part order");
-            var parsedBody=new Frames(root.getAsJsonArray("body"),5+PARTS.length*3);
+            // Optional trailing columns (leg lifts) follow the 5 root and 18 rotation columns.
+            int bodyWidth=root.has("body_columns")?root.getAsJsonArray("body_columns").size():5+PARTS.length*3;
+            if(bodyWidth<5+PARTS.length*3)throw new IllegalArgumentException("Invalid body columns");
+            var parsedBody=new Frames(root.getAsJsonArray("body"),bodyWidth);
             var parsedCamera=new Frames(root.getAsJsonArray("camera"),8);
-            body=parsedBody;camera=parsedCamera;
+            var parsedCues=new java.util.ArrayList<Cue>();
+            if(root.has("cues"))for(var element:root.getAsJsonArray("cues")){
+                var row=element.getAsJsonArray();
+                parsedCues.add(new Cue(row.get(0).getAsFloat(),row.get(1).getAsString(),row.get(2).getAsFloat()));
+            }
+            body=parsedBody;camera=parsedCamera;cues=java.util.List.copyOf(parsedCues);
         } catch(Exception ex){
             if(!warned){SourceOfMystery.LOGGER.warn("Cannot load divine ascension track; using formula fallback: {}",ex.toString());warned=true;}
         }
     }
+    /** Sound cue at story time t; empty when the track has none. */
+    record Cue(float time,String sound,float volume){}
+    static java.util.List<Cue> cues(){return cues;}
     static Sample body(float t){return body==null?null:body.sample(t);}
     static Sample camera(float t){return camera==null?null:camera.sample(t);}
     static final class Sample {

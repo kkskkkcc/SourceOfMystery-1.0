@@ -11,6 +11,7 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.util.Mth;
@@ -18,9 +19,13 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.ItemStack;
 import java.util.*;
+import org.joml.Matrix3f;
+import org.joml.Vector3f;
 
 /** Draw a freshly baked vanilla body, while retaining the real player's accessory layers. */
 final class DivineCGPlayer {
+    /** Hip height in model pixels: the leg pivots, where the torso bends. */
+    private static final float HIP_Y=12;
     private PlayerModel<AbstractClientPlayer> model;
     private boolean slim;
     private Object bakedSet;
@@ -62,6 +67,8 @@ final class DivineCGPlayer {
                 // MMD body replacement must never replace this scene's vanilla body.
                 String name=layer.getClass().getName().toLowerCase(Locale.ROOT);
                 if(name.contains("mmdskin") || name.contains("mmd_skin"))continue;
+                // The ritual is performed empty-handed; a held item would cut through the poses.
+                if(layer instanceof ItemInHandLayer)continue;
                 layer.render(poses,buffers,LightTexture.FULL_BRIGHT,player,0,0,partial,t*20,model.head.yRot*Mth.RAD_TO_DEG,model.head.xRot*Mth.RAD_TO_DEG);
                 buffers.endBatch();
             }
@@ -72,6 +79,13 @@ final class DivineCGPlayer {
             original.leftArmPose=leftPose;original.rightArmPose=rightPose;
         }
     }
+    /** Turn the torso about the hip and carry the head and arm pivots with it, so no seam opens at the waist or shoulders. */
+    private static void attachToHip(PlayerModel<?> m){
+        var turn=new Matrix3f().rotationZYX(m.body.zRot,m.body.yRot,m.body.xRot);var v=new Vector3f();
+        for(ModelPart part:new ModelPart[]{m.body,m.head,m.rightArm,m.leftArm}){
+            turn.transform(v.set(part.x,part.y-HIP_Y,part.z));part.x=v.x;part.y=v.y+HIP_Y;part.z=v.z;
+        }
+    }
     private static void rotation(ModelPart part,float[] values,int offset){part.xRot=values[offset];part.yRot=values[offset+1];part.zRot=values[offset+2];}
     private void pose(float t,AbstractClientPlayer p){
         for(var part:parts(model)){part.resetPose();part.xScale=part.yScale=part.zScale=1;part.skipDraw=false;part.visible=true;}
@@ -80,6 +94,8 @@ final class DivineCGPlayer {
         if(sample!=null){
             var v=sample.values;
             rotation(model.head,v,5);rotation(model.body,v,8);rotation(model.rightArm,v,11);rotation(model.leftArm,v,14);rotation(model.rightLeg,v,17);rotation(model.leftLeg,v,20);
+            // Leg lift slides a leg up into the hip, standing in for a bent knee on a stair.
+            if(v.length>=25){model.rightLeg.y-=v[23];model.leftLeg.y-=v[24];}
         } else {
             float motion=DivineCGTimeline.walkAmount(t),cycle=(t-12)*Mth.TWO_PI/2.1666667f;
             float breath=Mth.sin(Math.min(t,32)*1.65f);
@@ -105,6 +121,7 @@ final class DivineCGPlayer {
             model.leftArm.xRot=DivineCGTimeline.mix(model.leftArm.xRot,-.62f,inspect);
             model.rightArm.zRot+=.28f*inspect;model.leftArm.zRot-=.33f*inspect;
         }
+        attachToHip(model);
         model.hat.copyFrom(model.head);model.jacket.copyFrom(model.body);model.rightSleeve.copyFrom(model.rightArm);model.leftSleeve.copyFrom(model.leftArm);
         model.rightPants.copyFrom(model.rightLeg);model.leftPants.copyFrom(model.leftLeg);
         model.hat.visible=p.isModelPartShown(PlayerModelPart.HAT);model.jacket.visible=p.isModelPartShown(PlayerModelPart.JACKET);
