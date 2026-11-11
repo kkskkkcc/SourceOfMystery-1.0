@@ -147,3 +147,8 @@ GuardianSpirit取消祈祷雷击及脚下法阵，保留追踪球；源码/编�
 新增准确九宫格配方、手持右键/潜行放置/放置右键、每天20种材料兑换商品。使用主世界游戏日，同日共用清单和报价存盘；静态配方及Forge标签自动关联下级材料，金块1–9金锭。界面悬停完整材料/持有数量，左键服务端原子兑换，满包/缺料/过期报价不扣，未额外收神秘之能。GeckoLib黑曜石金边、双环祭品核心、药瓶和账本模型；外观待用户确认。协议17。
 
 离线build shaderCheckJar compileGameTestJava及最终静音final-native通过，含774候选/外部配方、交易与NBT保护、跨日/存档、放置挖取和便携有效性。实际SavedData存盘20件已读取，未重启验收。候选build/alchemy-table/sourceofmystery-alchemy-df23c044ebe6.jar，SHA256 df23c044ebe64af90a5c133e8d0777a89388e4bc110188d481c5e4b959b7cd4d，57,256,050字节，920条目与实测一致，旧非语言资产390条完整保留。详见[功能说明](ALCHEMIST_TABLE.md)和[发布证据](releases/2026-11-11-alchemist-table.json)。模型源和六张实机截图位于集中建模目录modeling/alchemist_table。无光影/完整整合包/独立服务器/真实双客户端验收；未安装或推送，正式实例未改动。
+
+
+## 2026-11-11：GitHub同步
+
+按用户授权，当前炼金术士台和之前未提交的法杖/时间/领域修复已提交并推送origin/main，功能提交f8f1fbfca866dc6370ae61d66ee1868a280263ac（112文件）。远端fetch后无需合并，未强推。仓库 https://github.com/kkskkkcc/SourceOfMystery-1.0 。此前各发布回执的“未推送”是生成时状态，以本记录为准。只同步源码/运行资源/测试/文档，build忽略项和正式实例保持原状，未另发GitHub Release或重跑游戏。

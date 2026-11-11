@@ -838,3 +838,10 @@ build/staff-followup-fixes/build-fixes.log的离线build shaderCheckJar compileG
 稳定候选build/alchemy-table/sourceofmystery-alchemy-df23c044ebe6.jar，57,256,050字节，SHA256 df23c044ebe64af90a5c133e8d0777a89388e4bc110188d481c5e4b959b7cd4d。920生产条目与最终实测包逐字节一致；相对7cb185d22822前版无删除，390旧非语言资产完整保持，两语言仅追加键，旧功能class保持，仅注册类更新。测试夹具/lotterycompat数据不入生产包。audit tools/alchemy/audit_release.py，build/alchemy-table/release-verification.json及docs/releases/2026-11-11-alchemist-table.json，使用说明docs/ALCHEMIST_TABLE.md，初始注册/语言/启动器源码备份build/alchemy-table/source-before.zip。
 
 MASTER=0；只跑隔离原生单客户端，Oculus/Embeddium存在但未开光影，非完整整合包/独立服务器/真实双客户端/主观听音验收。旧映射、Embeddium与Oculus模板警告仍在，新增方块使隔离旧存档注册ID重新映射属于预期提示。未改正式实例，未安装、提交或推送；已有未提交时间/领域/东方等工作全部保留。六张最新原生截图及SHA清单在集中建模目录export/preview-20261111-native，Blender预览不能当实机渲染。
+
+
+## 2026-11-11：按用户要求同步GitHub
+
+用户授权上传当前项目进度。已先fetch确认origin/main与本地基线d572ddd一致，无需合并；将炼金术士台、此前未提交的时间/东方/领域/环境队列/陨灭杀/守护灵修复及对应资源、测试和文档一并提交为f8f1fbfca866dc6370ae61d66ee1868a280263ac，共112个文件。已成功普通推送origin/main，没有强推。仓库 https://github.com/kkskkkcc/SourceOfMystery-1.0 。本节取代前文“未提交/未推送”的当时状态；历史发布JSON中的pushed_to_github字段保留为生成时快照。
+
+本次仅Git同步，没有重新游戏测试、安装到正式实例或发布GitHub Release。仍使用前次构建和静音实机验证的df23c044ebe6候选（协议17）；build/安装包/隔离世界/日志保持本地忽略，生产源码和运行资源已入库。此后的文档同步提交只记录本次上传状态，不改变模组产物。
