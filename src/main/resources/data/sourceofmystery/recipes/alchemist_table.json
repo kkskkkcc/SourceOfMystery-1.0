@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "GOG",
+    "OFO",
+    "GOG"
+  ],
+  "key": {
+    "G": {
+      "item": "minecraft:gold_ingot"
+    },
+    "O": {
+      "item": "minecraft:obsidian"
+    },
+    "F": {
+      "item": "sourceofmystery:dark_dimensional_offering"
+    }
+  },
+  "result": {
+    "item": "sourceofmystery:alchemist_table"
+  }
+}

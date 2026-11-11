@@ -37,7 +37,7 @@ public final class StaffVisuals {
     private static MultiBufferSource.BufferSource buffers;
     private static final class Effect {final StaffEffectPacket data;int age;Effect(StaffEffectPacket data){this.data=data;}}
     private StaffVisuals() {}
-    public static boolean timeStopped(){return timeLeft>0;}
+    public static boolean timeStopped(){return timeLeft!=0;}
     public static boolean frozen(Entity entity){return timeStopped()&&!entity.getUUID().equals(timeCaster);}
     public static float chargeAge(net.minecraft.world.item.ItemStack stack,StaffSpell spell,float partial) {
         long itemId=software.bernie.geckolib.animatable.GeoItem.getId(stack);
@@ -65,7 +65,7 @@ public final class StaffVisuals {
         if(packet.kind()==StaffEffectPacket.STOP) {
             timeCaster=packet.caster();timeLeft=packet.duration();timeAge=0;
             shaderFailed=false;
-            if(timeLeft>0)for(Entity entity:client.level.entitiesForRendering())if(frozen(entity)) {
+            if(timeStopped())for(Entity entity:client.level.entitiesForRendering())if(frozen(entity)) {
                 entity.xOld=entity.xo=entity.getX();entity.yOld=entity.yo=entity.getY();entity.zOld=entity.zo=entity.getZ();
                 entity.xRotO=entity.getXRot();entity.yRotO=entity.getYRot();
             }
@@ -98,7 +98,7 @@ public final class StaffVisuals {
             if(effect.data.kind()==StaffEffectPacket.ENVIRONMENT_FRONT)environmentFrontParticles(effect);
         }
         EFFECTS.removeIf(e->e.age>e.data.duration()&&e.data.kind()!=StaffEffectPacket.LIFT);
-        if(timeLeft>0){timeLeft=Math.max(1,timeLeft-1);timeAge++;}
+        if(timeStopped()){if(timeLeft>0)timeLeft=Math.max(1,timeLeft-1);timeAge++;}
         if(timeLeft==0&&timeShader!=null){timeShader.close();timeShader=null;shaderWidth=shaderHeight=0;}
     }
     private static boolean paused(Effect effect) {

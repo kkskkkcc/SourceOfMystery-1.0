@@ -10,6 +10,8 @@ import net.minecraftforge.registries.RegistryObject;
 public class ModBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES =
             DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, SourceOfMystery.MOD_ID);
+    public static final RegistryObject<BlockEntityType<com.sourceofmystery.alchemy.AlchemistTableBlockEntity>> ALCHEMIST_TABLE =
+            BLOCK_ENTITIES.register("alchemist_table",()->BlockEntityType.Builder.of(com.sourceofmystery.alchemy.AlchemistTableBlockEntity::new,ModBlocks.ALCHEMIST_TABLE.get()).build(null));
     public static final RegistryObject<BlockEntityType<com.sourceofmystery.enchanter.MysteryEnchanterBlockEntity>> MYSTERY_ENCHANTER =
             BLOCK_ENTITIES.register("mystery_enchanter",()->BlockEntityType.Builder.of(com.sourceofmystery.enchanter.MysteryEnchanterBlockEntity::new,ModBlocks.MYSTERY_ENCHANTER.get()).build(null));
 

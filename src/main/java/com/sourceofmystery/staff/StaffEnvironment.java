@@ -26,6 +26,7 @@ import java.util.*;
 @Mod.EventBusSubscriber(modid="sourceofmystery")
 public final class StaffEnvironment extends SavedData {
     public static final int RADIUS=500;
+    private static final int ACTIVE_JOBS=4;
     public static final String BIOME_KEY="StaffEnvironmentBiome";
     private static final String DATA_ID="sourceofmystery_staff_environment";
     private static final TicketType<UUID> ENVIRONMENT_TICKET=TicketType.create("sourceofmystery_environment",Comparator.comparing(UUID::toString));
@@ -65,11 +66,12 @@ public final class StaffEnvironment extends SavedData {
         // A newer cast owns its disk permanently, even if it finishes before an
         // older, partially overlapping conversion. Fully covered jobs can retire.
         List<Job> replaced=data.jobs.stream().filter(old->job.area().covers(old.area())).toList();
-        if(data.jobs.size()-replaced.size()>=4)return StaffCasting.fail(player,"environment_busy");
         for(Job old:data.jobs)if(!replaced.contains(old)&&old.area().overlaps(job.area()))old.exclude(job.area());
         for(Job old:replaced)old.releaseChunk(level);
         data.jobs.removeAll(replaced);
-        data.jobs.add(job);data.setDirty();
+        // Admit every paid cast. Prioritize the new disk while preserving older
+        // unfinished land in a saved queue; only four jobs may hold chunk tickets.
+        data.jobs.add(0,job);data.pauseQueued(level);data.setDirty();
         StaffCasting.send(level,new StaffEffectPacket(StaffEffectPacket.ENVIRONMENT,job.owner,origin,
                 new Vec3(RADIUS,0,0),100,job.palette.ordinal()));
         player.displayClientMessage(Component.translatable("message.sourceofmystery.staff.environment_started",title(id)),true);
@@ -78,12 +80,13 @@ public final class StaffEnvironment extends SavedData {
     public boolean busy() { return !jobs.isEmpty(); }
     /** Releases transient chunk tickets before replacing a saved-data instance during checkpoint recovery. */
     public void releaseTickets(ServerLevel level) { for(Job job:jobs)job.releaseChunk(level); }
+    private void pauseQueued(ServerLevel level){for(int i=ACTIVE_JOBS;i<jobs.size();i++)jobs.get(i).releaseChunk(level);}
     @SubscribeEvent public static void tick(TickEvent.LevelTickEvent event) {
         if(event.phase!=TickEvent.Phase.END || !(event.level instanceof ServerLevel level) || TimeStop.active(level))return;
         StaffEnvironment data=get(level);if(data.jobs.isEmpty())return;
         // One shared budget for all casters, including chunk loads and vegetation.
         long deadline=System.nanoTime()+3_000_000;
-        int size=data.jobs.size();
+        data.pauseQueued(level);int size=Math.min(ACTIVE_JOBS,data.jobs.size());
         for(int i=0;i<size && System.nanoTime()<deadline;i++) {
             Job job=data.jobs.get((data.turn+i)%size);job.tick(level,deadline);
         }

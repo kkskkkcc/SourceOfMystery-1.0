@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public class ModNetwork {
 
-    private static final String PROTOCOL_VERSION = "12";
+    private static final String PROTOCOL_VERSION = "17";
     public static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(SourceOfMystery.MOD_ID, "main"),
             () -> PROTOCOL_VERSION,
@@ -79,5 +79,9 @@ public class ModNetwork {
         CHANNEL.registerMessage(id++,WeatherStopPacket.class,WeatherStopPacket::encode,WeatherStopPacket::decode,WeatherStopPacket::handle,Optional.of(NetworkDirection.PLAY_TO_SERVER));
         CHANNEL.registerMessage(id++, DivineCinematicDonePacket.class, DivineCinematicDonePacket::encode, DivineCinematicDonePacket::decode,
                 DivineCinematicDonePacket::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL.registerMessage(id++,TimeMagicSyncPacket.class,TimeMagicSyncPacket::encode,TimeMagicSyncPacket::decode,TimeMagicSyncPacket::handle,Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CHANNEL.registerMessage(id++,DomainSlashPacket.class,DomainSlashPacket::encode,DomainSlashPacket::decode,DomainSlashPacket::handle,Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CHANNEL.registerMessage(id++,AlchemyTradePacket.class,AlchemyTradePacket::encode,AlchemyTradePacket::decode,AlchemyTradePacket::handle,Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL.registerMessage(id++,EasternRitePacket.class,EasternRitePacket::encode,EasternRitePacket::decode,EasternRitePacket::handle,Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 }

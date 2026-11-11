@@ -1,0 +1,152 @@
+{
+  "status": "GAMEPLAY_NATIVE_PASS_APPEARANCE_PENDING_USER",
+  "protocol": 15,
+  "source_base": "d572dddd33c3c1b4ef1acf9471764bd01c16ca09",
+  "jar": {
+    "path": "build/eastern-gameplay-execution/sourceofmystery-staff-gameplay-6f98b85b8ecf.jar",
+    "sha256": "6f98b85b8ecfbf335d42817367d2de216d5aa21761a8c7e8a75430b7bec72ab1",
+    "bytes": 56410392
+  },
+  "production_entries": 891,
+  "changed_entries": [
+    "assets/sourceofmystery/lang/en_us.json",
+    "assets/sourceofmystery/lang/zh_cn.json",
+    "com/sourceofmystery/client/DomainGeometry.class",
+    "com/sourceofmystery/client/DomainVisuals$View.class",
+    "com/sourceofmystery/client/DomainVisuals$Wind.class",
+    "com/sourceofmystery/client/DomainVisuals.class",
+    "com/sourceofmystery/client/EasternGeometry.class",
+    "com/sourceofmystery/client/EasternVisuals$View.class",
+    "com/sourceofmystery/client/EasternVisuals.class",
+    "com/sourceofmystery/client/staff/ClientTimeMagic.class",
+    "com/sourceofmystery/client/staff/StaffClientEvents.class",
+    "com/sourceofmystery/client/staff/StaffItemExtensions$StaffRenderer.class",
+    "com/sourceofmystery/client/staff/StaffItemExtensions.class",
+    "com/sourceofmystery/client/staff/StaffVisuals$1.class",
+    "com/sourceofmystery/client/staff/StaffVisuals.class",
+    "com/sourceofmystery/mixin/DivineMouseInputMixin.class",
+    "com/sourceofmystery/network/EasternRitePacket$View.class",
+    "com/sourceofmystery/network/EasternRitePacket.class",
+    "com/sourceofmystery/network/ModNetwork.class",
+    "com/sourceofmystery/network/StaffSelectionPacket.class",
+    "com/sourceofmystery/network/TimeMagicSyncPacket.class",
+    "com/sourceofmystery/staff/EasternRite$Carried.class",
+    "com/sourceofmystery/staff/EasternRite$Rite.class",
+    "com/sourceofmystery/staff/EasternRite.class",
+    "com/sourceofmystery/staff/StaffCasting$1.class",
+    "com/sourceofmystery/staff/StaffCasting.class",
+    "com/sourceofmystery/staff/StaffConfig.class",
+    "com/sourceofmystery/staff/StaffDomains$1.class",
+    "com/sourceofmystery/staff/StaffDomains$Affected.class",
+    "com/sourceofmystery/staff/StaffDomains$Field.class",
+    "com/sourceofmystery/staff/StaffDomains$Wanted.class",
+    "com/sourceofmystery/staff/StaffDomains$World.class",
+    "com/sourceofmystery/staff/StaffDomains.class",
+    "com/sourceofmystery/staff/TimeMagicType.class",
+    "com/sourceofmystery/staff/TimeStop$Clock.class",
+    "com/sourceofmystery/staff/TimeStop.class"
+  ],
+  "added_entries": [
+    "com/sourceofmystery/client/EasternStaffVfx.class"
+  ],
+  "removed_entries": [
+    "com/sourceofmystery/client/EasternActor$Saved.class",
+    "com/sourceofmystery/client/EasternActor.class",
+    "com/sourceofmystery/client/EasternDirector$1.class",
+    "com/sourceofmystery/client/EasternDirector.class"
+  ],
+  "preserved_non_language_assets": 390,
+  "production_matches_both_native_runs": true,
+  "native_regressions": [
+    {
+      "evidence": "build/eastern-rite-smoke/gameplay-execution-native",
+      "checks": {
+        "native_outer_wheel_selection": true,
+        "canceled_charge_free": true,
+        "charged_cast_cost_5000": true,
+        "normal_camera_movement_and_turning": true,
+        "five_stationary_particle_gates": true,
+        "no_eastern_cg_invulnerability": true,
+        "no_eastern_camera_takeover": true,
+        "live_entity_carry": true,
+        "range_from_launch_exactly_255": true,
+        "swept_radius_10_damage_1000_once": true,
+        "loaded_path_erasure_to_255": true,
+        "original_gravity_restored_and_no_container_drops": true,
+        "unbreakable_impact_stops_early_and_releases": true,
+        "foreign_break_event_cancellation_stops_orb": true,
+        "all_quadrants_and_vertical_aim_real_damage": true,
+        "execution_360_equal_cardinal_damage": true,
+        "execution_radius100_boundary": true,
+        "execution_items_excluded": true,
+        "execution_empty_stops_slashes_and_sweep_audio": true,
+        "render_frame_ms_p50": 20.5521,
+        "render_frame_ms_p95": 28.228,
+        "render_frame_samples": 1152,
+        "particle_only_no_torii_mesh": true,
+        "shader_enabled": false,
+        "master_volume": 0.0,
+        "real_two_client_multiplayer": false
+      }
+    },
+    {
+      "evidence": "build/staff-time-smoke/indefinite-native",
+      "checks": {
+        "stop": {
+          "server_ticks": 100,
+          "world_ticks": 0,
+          "mob_ticks": 0,
+          "player_ticks": 100,
+          "observer_player_ticks": 0,
+          "other_dimension_ticks": 100,
+          "weather_ticks": 0,
+          "furnace_progress": 0,
+          "scheduled_redstone": true,
+          "forge_level_hooks": true
+        },
+        "slow": {
+          "server_ticks": 100,
+          "world_ticks": 10,
+          "mob_ticks": 10,
+          "player_ticks": 100,
+          "observer_player_ticks": 100,
+          "other_dimension_ticks": 100,
+          "weather_ticks": 10,
+          "furnace_progress": 10,
+          "scheduled_redstone": true,
+          "forge_level_hooks": true
+        },
+        "haste": {
+          "server_ticks": 100,
+          "world_ticks": 500,
+          "mob_ticks": 500,
+          "player_ticks": 100,
+          "observer_player_ticks": 100,
+          "other_dimension_ticks": 100,
+          "weather_ticks": 500,
+          "furnace_progress": 500,
+          "scheduled_redstone": true,
+          "forge_level_hooks": true
+        },
+        "native_item_input": true,
+        "native_shift_cycle": true,
+        "client_entity_simulation_rates": true,
+        "other_players_remain_normal_in_speed_modes": true,
+        "stale_finish_packet_rejected": true,
+        "indefinite_beyond_old_240_ticks_manual_right_click_and_cooldown": true,
+        "post_manual_stop_no_catchup": true,
+        "client_state_and_player_interpolation": true,
+        "master_volume": 0.0
+      }
+    }
+  ],
+  "installed": false,
+  "pushed_to_github": false,
+  "limits": [
+    "Silent native clients without shaders; not a full modpack or real two-client test.",
+    "Time modes held for 400 normal ticks each, beyond old240; manual right-click and cooldown verified.",
+    "Execution keeps radius100, 5-minute lifetime and its own10-second CG; full5 minutes not rerun.",
+    "Eastern direction snaps to aim when charging completes, then gates remain fixed.",
+    "Audio scheduling is checked; MASTER=0 means no subjective listening acceptance."
+  ]
+}

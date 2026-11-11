@@ -12,8 +12,9 @@ public final class StaffWheelLayout {
         List<Segment> result=new ArrayList<>();
         for(int offset=0,ring=0;offset<count;ring++) {
             int size=Math.min(8*(ring+1),count-offset);
+            int sectors=ring==0?size:Math.max(8,size);
             for(int i=0;i<size;i++)result.add(new Segment(offset+i,30+ring*90,112+ring*90,
-                    i*Math.PI*2/size-Math.PI/2+.025,(i+1)*Math.PI*2/size-Math.PI/2-.025));
+                    i*Math.PI*2/sectors-Math.PI/2+.025,(i+1)*Math.PI*2/sectors-Math.PI/2-.025));
             offset+=size;
         }
         return List.copyOf(result);

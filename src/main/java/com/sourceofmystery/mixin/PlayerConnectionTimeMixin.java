@@ -12,9 +12,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class PlayerConnectionTimeMixin {
     @Shadow public ServerPlayer player;
     @Inject(method="handleMovePlayer",at=@At("HEAD"),cancellable=true)
-    private void som$move(ServerboundMovePlayerPacket packet,CallbackInfo info) { if(TimeStop.frozen(player)||com.sourceofmystery.staff.StaffDomains.constrained(player)){player.setYRot(packet.getYRot(player.getYRot()));player.setXRot(packet.getXRot(player.getXRot()));info.cancel();} }
+    private void som$move(ServerboundMovePlayerPacket packet,CallbackInfo info) { if(TimeStop.frozen(player)||(com.sourceofmystery.staff.StaffDomains.constrained(player)||com.sourceofmystery.staff.EasternRite.constrained(player))){player.setYRot(packet.getYRot(player.getYRot()));player.setXRot(packet.getXRot(player.getXRot()));info.cancel();} }
     @Inject(method="handleMoveVehicle",at=@At("HEAD"),cancellable=true)
-    private void som$vehicle(ServerboundMoveVehiclePacket packet,CallbackInfo info) { if(TimeStop.frozen(player)||com.sourceofmystery.staff.StaffDomains.constrained(player))info.cancel(); }
+    private void som$vehicle(ServerboundMoveVehiclePacket packet,CallbackInfo info) { if(TimeStop.frozen(player)||(com.sourceofmystery.staff.StaffDomains.constrained(player)||com.sourceofmystery.staff.EasternRite.constrained(player)))info.cancel(); }
     @Inject(method="handleUseItem",at=@At("HEAD"),cancellable=true)
     private void som$use(ServerboundUseItemPacket packet,CallbackInfo info) { if(TimeStop.frozen(player))info.cancel(); }
     @Inject(method="handleUseItemOn",at=@At("HEAD"),cancellable=true)

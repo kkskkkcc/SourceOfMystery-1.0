@@ -31,6 +31,7 @@ public class ClientModEvents {
     @SubscribeEvent public static void setupMenus(net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent event) {
         event.enqueueWork(()->net.minecraft.client.gui.screens.MenuScreens.register(com.sourceofmystery.offering.OfferingMenus.LOTTERY.get(),OfferingLotteryScreen::new));
         event.enqueueWork(()->net.minecraft.client.gui.screens.MenuScreens.register(com.sourceofmystery.enchanter.EnchanterMenus.ENCHANTER.get(),MysteryEnchanterScreen::new));
+        event.enqueueWork(()->net.minecraft.client.gui.screens.MenuScreens.register(com.sourceofmystery.alchemy.AlchemyMenus.TABLE.get(),AlchemyScreen::new));
     }
 
     @SubscribeEvent
@@ -55,6 +56,7 @@ public class ClientModEvents {
         event.registerBlockEntityRenderer(ModBlockEntities.GUARDIAN_ALTAR.get(), GuardianAltarRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.DARK_DIMENSIONAL_OFFERING.get(), DarkDimensionalOfferingRenderer::new);
         event.registerBlockEntityRenderer(ModBlockEntities.MYSTERY_ENCHANTER.get(),MysteryEnchanterRenderer::new);
+        event.registerBlockEntityRenderer(ModBlockEntities.ALCHEMIST_TABLE.get(),AlchemistTableRenderer::new);
 
     }
 

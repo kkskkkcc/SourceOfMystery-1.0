@@ -50,7 +50,12 @@ public final class MeteorAimClient {
         if(world!=mc.level){world=mc.level;confirmed=null;FLIGHTS.clear();}
         preview=new MeteorTargeting.Pick(null,null);FLIGHTS.clear();
         if(world==null||mc.player==null||mc.isPaused())return;
-        if(mc.screen==null&&MeteorTargeting.enabled(mc.player)&&!DomainDirector.active()&&!DivineCGDirector.active()&&!OfferingIntroDirector.active())preview=MeteorTargeting.pick(mc.player,1);
+        if(mc.screen==null&&MeteorTargeting.enabled(mc.player)&&!DomainDirector.active()&&!DivineCGDirector.active()&&!OfferingIntroDirector.active()){
+            preview=MeteorTargeting.pick(mc.player,1);
+            if(confirmed!=null&&confirmed.dwell()>=MeteorTargeting.LOCK_TICKS){var target=world.getEntity(confirmed.entityId());
+                if(target!=null&&target.getUUID().equals(confirmed.entity())&&MeteorTargeting.lockable(mc.player,target))preview=new MeteorTargeting.Pick(target,target.position());
+            }
+        }
         for(var e:world.entitiesForRendering())if(e instanceof OutsiderSpell s&&s.kind()==OutsiderSpell.METEOR&&s.getOwner()==mc.player)FLIGHTS.add(s);
     }
     @SubscribeEvent public static void render(RenderLevelStageEvent event){

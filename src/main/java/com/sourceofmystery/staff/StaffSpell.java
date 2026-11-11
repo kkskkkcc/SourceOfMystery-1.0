@@ -13,7 +13,8 @@ public enum StaffSpell {
     SPACE_RIFT("space_rift", 0, 20),
     ENVIRONMENT_SHIFT("environment_shift", 2000, 80),
     DOMAIN_EXPANSION("domain_expansion", 5000, 40),
-    WEATHER_CONTROL("weather_control",2000,60);
+    WEATHER_CONTROL("weather_control",2000,60),
+    EASTERN_RITE("eastern_rite",5000,EasternRite.MAX_CHARGE);
 
     public static final String SELECTION_KEY = "SelectedStaffSpell";
     private final String id;
@@ -27,12 +28,16 @@ public enum StaffSpell {
     }
 
     public String id() { return id; }
-    public Component title() { return Component.translatable("spell.sourceofmystery." + id); }
+    public Component title() { return Component.translatable("spell.sourceofmystery." + (this==TIME_STOP?"time_magic":id)); }
     public long defaultCost() { return defaultCost; }
     public int defaultCastTicks() { return defaultCastTicks; }
     public long cost() { return StaffConfig.SPELLS.get(this).cost().get(); }
-    public long cost(ItemStack stack){return this==WEATHER_CONTROL?WeatherType.selected(stack).cost():cost();}
-    public int castTicks() { return StaffConfig.SPELLS.get(this).castTicks().get(); }
+    public long cost(ItemStack stack){return this==TIME_STOP?TimeMagicType.selected(stack).cost():this==WEATHER_CONTROL?WeatherType.selected(stack).cost():cost();}
+    public int castTicks() {
+        int ticks=StaffConfig.SPELLS.get(this).castTicks().get();
+        // Old worlds may retain60 here: keep Eastern's complete windup under80 ticks.
+        return this==EASTERN_RITE?Math.min(EasternRite.MAX_CHARGE,ticks):ticks;
+    }
 
     public static StaffSpell fromId(String id) {
         for (StaffSpell spell : values()) if (spell.id.equals(id)) return spell;

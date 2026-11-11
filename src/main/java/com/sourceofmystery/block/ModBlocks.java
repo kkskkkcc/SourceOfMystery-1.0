@@ -25,6 +25,7 @@ public class ModBlocks {
 
     public static final RegistryObject<Block> DARK_DIMENSIONAL_OFFERING = BLOCKS.register("dark_dimensional_offering",
             DarkDimensionalOfferingBlock::new);
+    public static final RegistryObject<Block> ALCHEMIST_TABLE = BLOCKS.register("alchemist_table",com.sourceofmystery.alchemy.AlchemistTableBlock::new);
     public static final RegistryObject<Block> MYSTERY_ENCHANTER = BLOCKS.register("mystery_enchanter",
             com.sourceofmystery.enchanter.MysteryEnchanterBlock::new);
 }

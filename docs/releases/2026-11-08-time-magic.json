@@ -1,0 +1,103 @@
+{
+  "status": "TIME_MAGIC_NATIVE_REGRESSION_PASS",
+  "source_base": "d572dddd33c3c1b4ef1acf9471764bd01c16ca09",
+  "protocol": 13,
+  "native_regression": {
+    "stop": {
+      "server_ticks": 100,
+      "world_ticks": 0,
+      "mob_ticks": 0,
+      "player_ticks": 100,
+      "observer_player_ticks": 0,
+      "other_dimension_ticks": 100,
+      "weather_ticks": 0,
+      "furnace_progress": 0,
+      "scheduled_redstone": true,
+      "forge_level_hooks": true
+    },
+    "slow": {
+      "server_ticks": 100,
+      "world_ticks": 10,
+      "mob_ticks": 10,
+      "player_ticks": 100,
+      "observer_player_ticks": 100,
+      "other_dimension_ticks": 100,
+      "weather_ticks": 10,
+      "furnace_progress": 10,
+      "scheduled_redstone": true,
+      "forge_level_hooks": true
+    },
+    "haste": {
+      "server_ticks": 100,
+      "world_ticks": 500,
+      "mob_ticks": 500,
+      "player_ticks": 100,
+      "observer_player_ticks": 100,
+      "other_dimension_ticks": 100,
+      "weather_ticks": 500,
+      "furnace_progress": 500,
+      "scheduled_redstone": true,
+      "forge_level_hooks": true
+    },
+    "native_item_input": true,
+    "native_shift_cycle": true,
+    "client_entity_simulation_rates": true,
+    "other_players_remain_normal_in_speed_modes": true,
+    "stale_finish_packet_rejected": true,
+    "natural_expiry_and_cooldown": true,
+    "post_expiry_no_catchup": true,
+    "client_state_and_player_interpolation": true,
+    "master_volume": 0.0
+  },
+  "all_production_entries_match_native_run": true,
+  "production_entries": 871,
+  "preserved_old_entries": 845,
+  "preserved_non_language_assets": 382,
+  "changed_old_entries": [
+    "assets/sourceofmystery/lang/en_us.json",
+    "assets/sourceofmystery/lang/zh_cn.json",
+    "com/sourceofmystery/client/staff/StaffWheelScreen.class",
+    "com/sourceofmystery/item/DimensionBreakerStaffItem.class",
+    "com/sourceofmystery/mixin/ClientLevelTimeMixin.class",
+    "com/sourceofmystery/mixin/EntityRenderTimeMixin.class",
+    "com/sourceofmystery/mixin/LevelRendererTimeMixin.class",
+    "com/sourceofmystery/mixin/ParticleTimeMixin.class",
+    "com/sourceofmystery/mixin/ServerLevelTimeMixin.class",
+    "com/sourceofmystery/mixin/TextureTimeMixin.class",
+    "com/sourceofmystery/network/ModNetwork.class",
+    "com/sourceofmystery/staff/StaffCasting$1.class",
+    "com/sourceofmystery/staff/StaffCasting$Cast.class",
+    "com/sourceofmystery/staff/StaffCasting.class",
+    "com/sourceofmystery/staff/StaffConfig.class",
+    "com/sourceofmystery/staff/StaffSpell.class",
+    "com/sourceofmystery/staff/TimeStop$Clock.class",
+    "com/sourceofmystery/staff/TimeStop.class",
+    "sourceofmystery.mixins.json",
+    "sourceofmystery.refmap.json"
+  ],
+  "added_entries": [
+    "com/sourceofmystery/client/staff/ClientTimeMagic.class",
+    "com/sourceofmystery/mixin/ServerLevelTimeAccess.class",
+    "com/sourceofmystery/mixin/ServerTimeMagicMixin.class",
+    "com/sourceofmystery/network/TimeMagicSyncPacket.class",
+    "com/sourceofmystery/staff/TimeMagicType$1.class",
+    "com/sourceofmystery/staff/TimeMagicType.class"
+  ],
+  "test_classes_excluded": true,
+  "installed": false,
+  "pushed_to_github": false,
+  "limits": [
+    "One silent native Forge client, with a server-side FakePlayer observer; not actual two-client multiplayer.",
+    "Active clocks were exercised in the overworld, with Nether clock isolation checks.",
+    "No shader-enabled or full modpack regression in this run.",
+    "Network and essential chunk IO remain normal. Independent real-time/global mod tasks are not universally controlled.",
+    "Inherited template and Embeddium/Oculus warnings and FakePlayer info warnings remain."
+  ],
+  "jar": {
+    "path": "build/staff-time/sourceofmystery-time-magic-607386a2ce7a.jar",
+    "sha256": "607386a2ce7ac2f94e08c9ba89968875cb394672d922df8a2f9d76fe2897d7e4",
+    "bytes": 56150915
+  },
+  "local_runtime_evidence": "build/staff-time-smoke/time-native-final/time-magic-verification.json",
+  "local_release_audit": "build/staff-time/release-verification.json"
+}

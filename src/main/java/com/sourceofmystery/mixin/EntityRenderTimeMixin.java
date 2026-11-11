@@ -13,6 +13,6 @@ public abstract class EntityRenderTimeMixin {
     @ModifyVariable(method="render",at=@At("HEAD"),argsOnly=true,ordinal=1)
     private float som$partial(float partial,Entity entity,double x,double y,double z,float yaw,float original,
                               PoseStack poses,MultiBufferSource buffers,int light) {
-        return StaffVisuals.frozen(entity)?0:partial;
+        return com.sourceofmystery.client.staff.ClientTimeMagic.partial(entity,partial);
     }
 }

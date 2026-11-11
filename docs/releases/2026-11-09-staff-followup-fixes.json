@@ -1,0 +1,78 @@
+{
+  "status": "ENVIRONMENT_QUEUE_AND_METEOR_LATCH_NATIVE_PASS",
+  "protocol": 14,
+  "source_base": "d572dddd33c3c1b4ef1acf9471764bd01c16ca09",
+  "jar": {
+    "path": "build/staff-followup-fixes/sourceofmystery-staff-fixes-7c1db7d10b67.jar",
+    "sha256": "7c1db7d10b67601c6fad9bcbafed378f5f007e1ce3508268bced37e53caa2543",
+    "bytes": 56419402
+  },
+  "native_regressions": [
+    {
+      "evidence": "build/staff-environment-overwrite-smoke/queue-native",
+      "checks": {
+        "native_1000_diameter_recast_while_busy": true,
+        "same_centre_surface_server_and_client_biome": true,
+        "partial_overlap_admitted_at_radius_500": true,
+        "independent_chunk_ticket_identities": true,
+        "worker_radius_under_test": 48,
+        "old_job_resumed_after_new_job_completed": true,
+        "non_overlap_preserved_and_overlap_not_reverted": true,
+        "protected_structures_and_inventory": true,
+        "partial_overlap_client_biomes": true,
+        "version2_saved_jobs_load_without_resetting_cursors": true,
+        "fifth_and_sixth_casts_admitted_and_paid": true,
+        "saved_queue_keeps_order_ownership_and_cursors": true,
+        "queue_completion_worker_radius": 4,
+        "bounded_tickets_and_queued_job_eventually_completes": true,
+        "checkpoint_keeps_exclusions_and_cursors": true,
+        "master_volume": 0.0,
+        "production_radius": 500
+      }
+    },
+    {
+      "evidence": "build/staff-meteor-smoke/sticky-lock-native",
+      "checks": {
+        "target_switch_resets_dwell": true,
+        "solid_occlusion_and_area_selection": true,
+        "forty_tick_lock_and_private_red_outline": true,
+        "look_away_retains_server_lock_and_private_red_outline": true,
+        "charging_and_release_keep_latched_target": true,
+        "out_of_range_ready_lock_released": true,
+        "in_flight_target_updates_and_uuid_stability": true,
+        "moving_impact_and_old_area_untouched": true,
+        "another_two_second_target_replaces_lock": true,
+        "area_cast_has_no_homing_target": true,
+        "fixed_area_and_no_target_no_cost": true,
+        "dead_target_falls_to_last_position": true,
+        "switch_spell_cleanup": true,
+        "master_volume": 0.0,
+        "shader_enabled": false,
+        "fixture_cast_ticks": 60,
+        "shipped_default_cast_ticks": 480
+      }
+    }
+  ],
+  "production_entries": 894,
+  "changed_entries": [
+    "com/sourceofmystery/client/EasternGeometry.class",
+    "com/sourceofmystery/client/MeteorAimClient.class",
+    "com/sourceofmystery/staff/MeteorTargeting$State.class",
+    "com/sourceofmystery/staff/MeteorTargeting.class",
+    "com/sourceofmystery/staff/StaffEnvironment$Area.class",
+    "com/sourceofmystery/staff/StaffEnvironment$Job.class",
+    "com/sourceofmystery/staff/StaffEnvironment.class"
+  ],
+  "preserved_asset_entries": 392,
+  "production_entries_match_both_runs": true,
+  "compiled_core_radius": 10,
+  "compiled_shell_scale": 1.16,
+  "installed": false,
+  "pushed_to_github": false,
+  "limits": [
+    "Silent native clients without shaders; not full-modpack or two-client multiplayer.",
+    "Queue admission used radius500; processing and queue promotion used smaller saved jobs.",
+    "Meteor fixture charges for60 ticks; shipped charge stays480 ticks.",
+    "The radius change is compiled and audited; the cinematic preview was not re-recorded."
+  ]
+}

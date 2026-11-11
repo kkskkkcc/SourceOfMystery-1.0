@@ -48,13 +48,7 @@ public final class DomainGeometry {
                 SHRINE.render(p,b,seconds);p.popPose();
                 p.pushPose();p.mulPose(Axis.YP.rotationDegrees(-f.yaw()));p.translate(0,6.2,-9);
                 StaffArcaneMaterial.seal(p,b,3.5f*reveal,-seconds*7,color(type,.55f*reveal),true);p.popPose();
-                if(age>=48)for(int i=0;i<18;i++){
-                    float phase=(age*.065f+i*.173f)%1,alpha=Mth.sin(phase*Mth.PI)*.55f;
-                    double angle=-Math.PI/2+i*2.399963;float r=7+i%7*4;
-                    p.pushPose();p.mulPose(Axis.YP.rotationDegrees(-f.yaw()));p.translate(Math.cos(angle)*r,1.3+(i%3)*.7,Math.abs(Math.sin(angle))*r+2);
-                    p.mulPose(Axis.YP.rotationDegrees(f.yaw()));p.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());p.mulPose(Axis.ZP.rotationDegrees(-35+i%3*35));
-                    cut(glow(b),p.last().pose(),10+i%4*3,phase,alpha);p.popPose();
-                }
+
             }
         }
     }
@@ -111,11 +105,13 @@ public final class DomainGeometry {
         var ink=glow(b);for(int i=0;i<4;i++){float a=i*Mth.HALF_PI;float r=e.getBbWidth()*.55f;
             ribbon(ink,p.last().pose(),new float[]{Mth.cos(a)*r,0,Mth.sin(a)*r},new float[]{Mth.cos(a+.5f)*r,e.getBbHeight()*.75f,Mth.sin(a+.5f)*r},.009f,color(DomainType.BINDING,.6f));}
     }
-    public static void slashes(PoseStack p,MultiBufferSource b,Entity e,float age){
+    public static void slashes(PoseStack p,MultiBufferSource b,Entity e,float age,int pulse){
+        if(!(e instanceof net.minecraft.world.entity.LivingEntity)||e.isRemoved()||!e.isAttackable())return;
         p.pushPose();p.translate(0,e.getBbHeight()*.55,0);
         for(int i=0;i<5;i++){
-            float cycle=age/7+i*.31f+e.getId()*.13f,phase=cycle-(int)cycle;
-            float angle=(float)Math.floor(cycle)*73+i*33;
+            float phase=Mth.clamp(age/DomainVisuals.SLASH_TICKS-i*.045f,0,1);
+            if(phase<=0||phase>=1)continue;
+            float angle=pulse*13+e.getId()*17+i*33;
             p.pushPose();p.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());p.mulPose(Axis.ZP.rotationDegrees(angle));
             cut(glow(b),p.last().pose(),Math.max(1.4f,e.getBbWidth()*2.3f),phase,Mth.sin(phase*Mth.PI));p.popPose();
         }p.popPose();

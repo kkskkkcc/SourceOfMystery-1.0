@@ -30,10 +30,12 @@ public final class StaffCasting {
         final net.minecraft.resources.ResourceLocation environment;
         final DomainType domain;
         final WeatherType weather;final long cost;
+        final TimeMagicType timeMagic;
         Cast(ServerLevel level,InteractionHand hand,ItemStack stack,StaffSpell spell) {
             this.level=level;this.hand=hand;this.stack=stack;this.spell=spell;
             this.environment=StaffEnvironment.selected(stack);this.domain=DomainType.selected(stack);
             this.weather=WeatherType.selected(stack);this.cost=spell.cost(stack);
+            this.timeMagic=TimeMagicType.selected(stack);
         }
     }
     private static final Map<UUID, Cast> CASTS = new HashMap<>();
@@ -42,6 +44,7 @@ public final class StaffCasting {
     public static boolean begin(Player player, InteractionHand hand, ItemStack stack) {
         if (!(player instanceof ServerPlayer server) || TimeStop.frozen(player)) return false;
         StaffSpell spell = StaffSpell.selected(stack);
+        if(spell==StaffSpell.EASTERN_RITE&&!EasternRite.mayCast(server))return fail(player,"eastern_busy");
         if (spell == StaffSpell.TIME_STOP && !TimeStop.canCast(server)) return fail(player,"time_cooldown");
         if (MysteryEnergy.getEnergy(player) < spell.cost(stack)) return fail(player,"energy");
         CASTS.put(player.getUUID(),new Cast(server.serverLevel(),hand,stack,spell));
@@ -57,7 +60,7 @@ public final class StaffCasting {
     private static String animation(StaffSpell spell) {
         return switch(spell) {
             case ANNIHILATION->"charge"; case EARTH_SPLIT->"cleave"; case EARTH_LIFT->"uplift";
-            case SPACE_RIFT->"rift"; case TIME_STOP->"time_stop"; case ENVIRONMENT_SHIFT->"environment"; case DOMAIN_EXPANSION->"domain";case WEATHER_CONTROL->"weather";
+            case SPACE_RIFT->"rift"; case TIME_STOP->"time_stop"; case ENVIRONMENT_SHIFT->"environment"; case DOMAIN_EXPANSION->"domain";case WEATHER_CONTROL->"weather";case EASTERN_RITE->"eastern_rite";
         };
     }
 
@@ -81,11 +84,12 @@ public final class StaffCasting {
             case ANNIHILATION->meteor(server,cast);
             case EARTH_SPLIT->StaffTerrain.split(server);
             case EARTH_LIFT->StaffTerrain.lift(server);
-            case TIME_STOP->TimeStop.start(server);
+            case TIME_STOP->TimeStop.start(server,cast.timeMagic);
             case SPACE_RIFT->StaffPortals.open(server);
             case ENVIRONMENT_SHIFT->StaffEnvironment.start(server,cast.environment);
             case DOMAIN_EXPANSION->StaffDomains.start(server,cast.domain);
             case WEATHER_CONTROL->StaffWeather.start(server,cast.weather);
+            case EASTERN_RITE->EasternRite.start(server);
         };
         if (!success) {discardSky(cast);return false;}
         if (cast.cost>0) MysteryEnergy.consumeEnergy(player,cast.cost);

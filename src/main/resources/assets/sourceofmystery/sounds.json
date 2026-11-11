@@ -1514,5 +1514,50 @@
       }
     ],
     "subtitle": "subtitles.sourceofmystery.tornado.fire"
+  },
+  "staff.eastern_rite.charge": {
+    "subtitle": "subtitles.sourceofmystery.eastern_rite",
+    "sounds": [
+      {
+        "name": "sourceofmystery:staff/eastern_rite_charge",
+        "stream": false
+      }
+    ]
+  },
+  "staff.eastern_rite.release": {
+    "subtitle": "subtitles.sourceofmystery.eastern_rite",
+    "sounds": [
+      {
+        "name": "sourceofmystery:staff/eastern_rite_release",
+        "stream": false
+      }
+    ]
+  },
+  "eastern.gate_rise": {
+    "subtitle": "subtitles.sourceofmystery.eastern_rite",
+    "sounds": [
+      {
+        "name": "sourceofmystery:staff/eastern_gate_rise",
+        "stream": false
+      }
+    ]
+  },
+  "eastern.orb_charge": {
+    "subtitle": "subtitles.sourceofmystery.eastern_rite",
+    "sounds": [
+      {
+        "name": "sourceofmystery:staff/eastern_orb_charge",
+        "stream": false
+      }
+    ]
+  },
+  "eastern.orb_launch": {
+    "subtitle": "subtitles.sourceofmystery.eastern_rite",
+    "sounds": [
+      {
+        "name": "sourceofmystery:staff/eastern_orb_launch",
+        "stream": false
+      }
+    ]
   }
 }

@@ -691,6 +691,40 @@
           }
         }
       }
+    },
+    "staff.eastern_rite": {
+      "loop": false,
+      "animation_length": 3.0,
+      "bones": {
+        "crystal": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            "3": [
+              0,
+              540,
+              0
+            ]
+          }
+        },
+        "orbit_0": {
+          "rotation": {
+            "0": [
+              0,
+              0,
+              0
+            ],
+            "3": [
+              0,
+              -270,
+              0
+            ]
+          }
+        }
+      }
     }
   }
 }

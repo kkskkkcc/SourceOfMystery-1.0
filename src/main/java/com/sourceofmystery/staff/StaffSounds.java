@@ -17,10 +17,12 @@ public final class StaffSounds {
             EVENTS.put(name,SOUNDS.register(name,()->SoundEvent.createVariableRangeEvent(new ResourceLocation("sourceofmystery",name))));
         }
         for(var variant:TornadoVariant.values()){String name="weather.tornado."+variant.id;WINDS.put(variant,SOUNDS.register(name,()->SoundEvent.createVariableRangeEvent(new ResourceLocation("sourceofmystery",name))));}
+        for(String effect:List.of("gate_rise","orb_charge","orb_launch")){String name="eastern."+effect;EVENTS.put(name,SOUNDS.register(name,()->SoundEvent.createFixedRangeEvent(new ResourceLocation("sourceofmystery",name),256)));}
     }
     private StaffSounds() {}
     public static SoundEvent event(StaffSpell spell,String phase){return EVENTS.get("staff."+spell.id()+"."+phase).get();}
     public static SoundEvent wind(TornadoVariant variant){return WINDS.get(variant).get();}
+    public static void eastern(ServerLevel level,Vec3 point,String effect,float volume,float pitch){level.playSound(null,point.x,point.y,point.z,EVENTS.get("eastern."+effect).get(),SoundSource.PLAYERS,volume,pitch);}
     public static void play(ServerLevel level,Vec3 point,StaffSpell spell,String phase){
         level.playSound(null,point.x,point.y,point.z,event(spell,phase),SoundSource.PLAYERS,1.25f,1);
     }

@@ -58,6 +58,7 @@ public final class DimensionBreakerStaffItem extends Item implements GeoItem {
         text.add(Component.translatable("tooltip.sourceofmystery.dimension_breaker_staff.lore").withStyle(ChatFormatting.GOLD));
         text.add(Component.translatable("tooltip.sourceofmystery.dimension_breaker_staff.dream").withStyle(ChatFormatting.GRAY));
         text.add(StaffSpell.selected(stack).title().copy().withStyle(ChatFormatting.WHITE));
+        if(StaffSpell.selected(stack)==StaffSpell.TIME_STOP){text.add(com.sourceofmystery.staff.TimeMagicType.selected(stack).title().copy().withStyle(ChatFormatting.AQUA));text.add(Component.translatable("tooltip.sourceofmystery.staff.time_hint").withStyle(ChatFormatting.GRAY));}
         if(StaffSpell.selected(stack)==StaffSpell.ENVIRONMENT_SHIFT) {
             text.add(Component.translatable("tooltip.sourceofmystery.staff.environment",StaffEnvironment.title(StaffEnvironment.selected(stack))).withStyle(ChatFormatting.AQUA));
             text.add(Component.translatable("tooltip.sourceofmystery.staff.environment_hint").withStyle(ChatFormatting.GRAY));
@@ -80,6 +81,16 @@ public final class DimensionBreakerStaffItem extends Item implements GeoItem {
 
     @Override public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
+        // Holding right-click past the short charge must not retry an already running rite.
+        if(StaffSpell.selected(stack)==StaffSpell.EASTERN_RITE
+                &&(level.isClientSide?com.sourceofmystery.client.EasternVisuals.local()!=null
+                :com.sourceofmystery.staff.EasternRite.rite(player)!=null))return InteractionResultHolder.consume(stack);
+        if(StaffSpell.selected(stack)==StaffSpell.TIME_STOP&&player.isShiftKeyDown()){
+            if(player instanceof net.minecraft.server.level.ServerPlayer server)com.sourceofmystery.staff.TimeStop.cycle(server,stack);
+            return InteractionResultHolder.sidedSuccess(stack,level.isClientSide);
+        }
+        if(StaffSpell.selected(stack)==StaffSpell.TIME_STOP&&player instanceof net.minecraft.server.level.ServerPlayer server&&com.sourceofmystery.staff.TimeStop.stop(server))return InteractionResultHolder.success(stack);
+        if(level.isClientSide&&StaffSpell.selected(stack)==StaffSpell.TIME_STOP&&com.sourceofmystery.client.staff.ClientTimeMagic.localActive()&&!player.isShiftKeyDown())return InteractionResultHolder.consume(stack);
         if(StaffSpell.selected(stack)==StaffSpell.WEATHER_CONTROL&&player.isShiftKeyDown()){
             if(player instanceof net.minecraft.server.level.ServerPlayer server)StaffWeather.cycle(server,stack);
             return InteractionResultHolder.sidedSuccess(stack,level.isClientSide);
@@ -138,7 +149,7 @@ public final class DimensionBreakerStaffItem extends Item implements GeoItem {
         var controller = new AnimationController<>(this, "staff", 4,
                 state -> state.setAndContinue(RawAnimation.begin().thenLoop("staff.idle")));
         controller.triggerableAnim("charge", RawAnimation.begin().thenLoop("staff.charge"));
-        for (String name : List.of("cleave", "uplift", "rift", "time_stop", "environment", "domain", "weather"))
+        for (String name : List.of("cleave", "uplift", "rift", "time_stop", "environment", "domain", "weather", "eastern_rite"))
             controller.triggerableAnim(name, RawAnimation.begin().thenPlay("staff." + name));
         controllers.add(controller);
     }

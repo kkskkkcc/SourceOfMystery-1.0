@@ -18,6 +18,7 @@ public class ModItems {
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, SourceOfMystery.MOD_ID);
 
     public static final RegistryObject<Item> DIMENSION_BREAKER_STAFF = ITEMS.register("dimension_breaker_staff", DimensionBreakerStaffItem::new);
+    public static final RegistryObject<Item> ALCHEMIST_TABLE = ITEMS.register("alchemist_table",com.sourceofmystery.alchemy.AlchemistTableItem::new);
     public static final RegistryObject<Item> MYSTERY_ENCHANTER = ITEMS.register("mystery_enchanter",com.sourceofmystery.enchanter.MysteryEnchanterItem::new);
 
     // 秘源锭

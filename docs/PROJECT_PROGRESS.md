@@ -99,3 +99,51 @@
 ## 2026-11-08：环境覆盖修复同步提交
 
 当前同步提交包含环境转变覆盖修复、回归夹具及审计工具，沿用此前已通过的构建和静音实机证据。摘要[2026-11-08-environment-overwrite.json](releases/2026-11-08-environment-overwrite.json)记录候选哈希、生产条目保持检查及半径48处理器回归的限制。前节未提交状态属于历史快照；推送和Actions的最终状态见GitHub及`build/github-sync-20261108-185544-environment/final-sync-receipt.json`。本次未安装游戏实例。
+
+## 2026-11-08：时间魔法分类与维度倍率
+
+轮盘时停入口现为「时间魔法」，Shift＋右键选择时间停止、时间延缓0.1倍、时间加速5倍。新增模式的所有玩家保持正常速度，当前维度的完整模拟及Forge维度tick事件按倍率；旧时停保存ID／序号及偏移数据兼容。默认1000能量、12秒、恢复后3秒共享冷却，新增时长／费用可独立配置，右键可提前结束。网络协议13。
+
+构建与真实静音客户端回归通过：100正常服务器tick对应世界／生物／天气／熔炉0、10、500tick，玩家正常100tick；另一维度保持100tick。红石、客户端实体计数、原生Shift切换、扣费、到期／冷却、无补跑跳时、过期消息拦截及FakePlayer观察者豁免已查。没有真实双客户端、主动跨维度施法、完整整合包或开启光影的本轮证明。联网与必要区块IO保持正常，独立线程和第三方全局计时不保证受控。
+
+说明[STAFF_TIME_MAGIC.md](STAFF_TIME_MAGIC.md)，摘要[2026-11-08-time-magic.json](releases/2026-11-08-time-magic.json)。候选`build/staff-time/sourceofmystery-time-magic-607386a2ce7a.jar`，SHA256 `607386a2ce7ac2f94e08c9ba89968875cb394672d922df8a2f9d76fe2897d7e4`，56,150,915字节；871个生产条目与实测包相同，845旧条目／382个非语言资产保持。源码基线d572ddd；本次未安装、提交或推送。
+
+## 2026-11-09：来自东方的术／粒子神门／嵌套纯白球
+
+法杖外圈第九项，60tick蓄力、5000能量；五门为橙红发光粒子并保持固定。按用户最新要求，CG在发射后0.4秒收镜，总12.4秒，法球继续独立飞行；内球纯白不透明、外球透明，不带铭文或球下纹路。发射后三主三细灰色流星丝带沿飞行方向持续螺旋、变细变淡，最大拖尾46格。255射程从发射球心计算，1000单次伤害后带实体继续飞，撞不可破坏或受保护方块提前终止并恢复实体重力。
+
+离线构建及最新真实静音无光影回归通过：输入／扣费、CG恢复、255射程、伤害／裹挟／重力、连续碰撞、基岩／BreakEvent保护和无掉落；实际渲染帧中位17.2669ms、P95为21.6534ms。最新光影启动因native／graphics内存分配失败，未进入施法，不能冒称最新光影通过。外观待用户验收，未做双客户端／整合包／主观音效验收。没有安装或推送。
+
+候选build/eastern-rite/sourceofmystery-eastern-rite-0163871b553e.jar，SHA256 0163871b553e2d5cc0dab86dd601090a5894dec0f5c7062927268a77695c182a，894生产条目与实测包一致、380旧资产保持。详情[STAFF_EASTERN_RITE.md](STAFF_EASTERN_RITE.md)及[发布摘要](releases/2026-11-09-eastern-rite.json)。最新静音视频与截图位于F:/ChatGPT/我的世界神秘之源模组开发/modeling/eastern_rite/export/preview-20261109-white-ribbons，旧否决方案仅保留drafts。
+## 2026-11-09：10格实心球、环境队列和陨灭杀保持锁定
+
+后续用户反馈已合并处理：纯白实心内球从8.6改成半径10格（直径20），透明外壳11.6，灰色丝带根部随外形外移。服务端碰撞半径保持原10格。旧export/preview-20261109-white-ribbons的录像仍是8.6内球，未重录本次尺寸，不可当10格新版外观证据。
+
+环境转变原有4个未完成任务硬上限导致千格任务积压后无法再施法。现在所有有效施法可准入，新的任务置于队首优先处理；最多4个任务处理并保有独立区块票据，其他任务释放临时票据、保留游标并排队。新范围覆盖旧范围的让位关系不变，不丢弃旧区域剩余工作；SavedData原格式直接保存队列顺序、覆盖和进度，旧世界无需清任务。共用3ms预算，原地覆盖和部分重叠规则继续。
+
+陨灭杀原来服务端每tick按新射线覆盖Selection，客户端也只画当前准心对象。现在完成40tick红色锁定后保留已锁定实体，移开准心／看天空／蓄力及释放均保持，服务端重新验证实体并更新实时位置。另一个实体持续瞄准40tick可换锁；死亡／移除／离维度／超128格、切换法术或收起法杖清除待发锁定。已发出陨石继续原UUID追踪，不因后续瞄准变化改目标。仅PLAYER同步的格式不变，全局协议仍14，服务端和客户端均需更新本次包。
+
+build/staff-followup-fixes/build-fixes.log的离线build shaderCheckJar compileGameTestJava通过。真实静音无光影queue-native通过R500新施法准入、第五第六处扣费准入、存档队列顺序／覆盖／游标、旧版本迁移、票据<=4、队列末任务提升并完成，以及旧覆盖修复的地表／客户端服务端群系／建筑容器保护。完整处理使用R48覆盖工作和R4队列工作，没有重跑六次完整千格地形。sticky-lock-native通过白轮廓／40tick红锁、移开看天仍红、蓄力与释放保留原实体、2秒换锁、目标超距释放待发锁但已发陨石继续追踪、原实体实际落点与伤害、区域／空目标不扣费、目标死亡最后位置、切法术清理。测试吟唱60tick，生产480tick未改。两次MASTER=0；未查光影、完整整合包或真实双客户端。
+
+稳定候选build/staff-followup-fixes/sourceofmystery-staff-fixes-7c1db7d10b67.jar，56,419,402字节，SHA256 7c1db7d10b67601c6fad9bcbafed378f5f007e1ce3508268bced37e53caa2543。894生产条目与上述两实测包完全相同，相对0163871b553e仅7个逻辑class改变，392资产全部保持。编译产物javap常量确认CORE_RADIUS=10、SHELL_SCALE=1.16。审计build/staff-followup-fixes/release-verification.json；公开摘要docs/releases/2026-11-09-staff-followup-fixes.json，工具tools/staff/audit_followup_fixes.py。新增测试启动参数--heap-mb2048仅影响隔离测试堆内存。原源码备份在build/staff-followup-fixes及build/eastern-rite/source-before-radius10.java。本次未安装、未提交或推送，已有未提交工作保留。
+
+## 2026-11-09：法杖交互与范围修复
+
+东方之术取消CG/操作锁，杖尖白银能流与旋转刻纹绑定GeckoLib骨骼；完整yaw/pitch支持全方位和上下释放，五门/双层白球/灰色丝带一致定向。斩杀覆盖整个半径100圆形领域，有存活有效生物才播放目标斩击和扫击声，掉落物/投射物排除。时间三模式无限持续，右键解除；生命周期清理和结束后冷却保留，旧持续时间配置不再生效。协议15，两端同版。
+
+离线build shaderCheckJar compileGameTestJava通过；静音gameplay-execution-native验证八种方向、球体旧物理、360同伤害/边界/空场/掉落物；indefinite-native验证三模式超过旧240tick到400tick再实际右键解除，倍率、冷却和无补跑保持。仅原生客户端、无光影，非完整整合包/真实双客户端。外观待用户验收，未安装/推送。
+
+候选build/eastern-gameplay-execution/sourceofmystery-staff-gameplay-6f98b85b8ecf.jar，SHA256 6f98b85b8ecfbf335d42817367d2de216d5aa21761a8c7e8a75430b7bec72ab1。891生产条目与两次实测相同，390非语言资产保持。审计build/eastern-gameplay-execution/release-verification.json，公开docs/releases/2026-11-09-staff-gameplay.json。新24秒静音预览位于modeling/eastern_rite/export/preview-20261109-gameplay（集中建模目录），旧含CG预览仅历史保留。详见PROJECT_HANDOVER末节。
+
+
+## 2026-11-09：守卫去雷击／东方4秒内发射／斩杀按伤害触发
+
+GuardianSpirit取消祈祷雷击及脚下法阵，保留追踪球；源码/编译/字节码核对，未单独村庄实测。东方默认蓄力20+世界58tick，旧castTicks60自动限20，原生静音实测78tick（20TPS下3.9秒）；持续按键不重复busy。斩杀以实际生命/吸收损失结算发送DomainSlashPacket，8tick残影与扫击同步，取消伤害、空场、掉落物及两轮伤害之间不空斩。协议16。
+
+最终fast-release-hit-sync-final-native通过78tick、9轮真实伤害同步、取消伤害无FX，及之前球体物理/方向/保护/360领域回归。候选build/eastern-fast-release/sourceofmystery-combat-timing-7cb185d22822.jar，SHA256 7cb185d228222a593c56bab074023ce77a1e1604210546864b4919fe3ae524b6；894条目与实测相同，392资产保持。build/eastern-fast-release/release-verification.json和docs/releases/2026-11-09-combat-timing.json含边界。新14秒静音预览在集中建模目录eastern_rite/export/preview-20261109-fast-release。未安装/推送，非光影/整合包/真实双客户端验收。
+
+## 2026-11-11：炼金术士台
+
+新增准确九宫格配方、手持右键/潜行放置/放置右键、每天20种材料兑换商品。使用主世界游戏日，同日共用清单和报价存盘；静态配方及Forge标签自动关联下级材料，金块1–9金锭。界面悬停完整材料/持有数量，左键服务端原子兑换，满包/缺料/过期报价不扣，未额外收神秘之能。GeckoLib黑曜石金边、双环祭品核心、药瓶和账本模型；外观待用户确认。协议17。
+
+离线build shaderCheckJar compileGameTestJava及最终静音final-native通过，含774候选/外部配方、交易与NBT保护、跨日/存档、放置挖取和便携有效性。实际SavedData存盘20件已读取，未重启验收。候选build/alchemy-table/sourceofmystery-alchemy-df23c044ebe6.jar，SHA256 df23c044ebe64af90a5c133e8d0777a89388e4bc110188d481c5e4b959b7cd4d，57,256,050字节，920条目与实测一致，旧非语言资产390条完整保留。详见[功能说明](ALCHEMIST_TABLE.md)和[发布证据](releases/2026-11-11-alchemist-table.json)。模型源和六张实机截图位于集中建模目录modeling/alchemist_table。无光影/完整整合包/独立服务器/真实双客户端验收；未安装或推送，正式实例未改动。

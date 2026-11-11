@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "sourceofmystery:block/alchemist_table"
+    },
+    "facing=south": {
+      "model": "sourceofmystery:block/alchemist_table"
+    },
+    "facing=east": {
+      "model": "sourceofmystery:block/alchemist_table"
+    },
+    "facing=west": {
+      "model": "sourceofmystery:block/alchemist_table"
+    }
+  }
+}

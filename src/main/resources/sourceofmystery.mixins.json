@@ -12,7 +12,9 @@
     "EntityTimeMixin",
     "StaffBlockBreakingMixin",
     "NaturalSpawnerTimeMixin",
-    "MobTimeMixin"
+    "MobTimeMixin",
+    "ServerTimeMagicMixin",
+    "ServerLevelTimeAccess"
   ],
   "client": [
     "ClientLevelTimeMixin",

@@ -28,6 +28,7 @@ public class SourceOfMystery {
     public SourceOfMystery() {
         var modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModItems.ITEMS.register(modEventBus);
+        com.sourceofmystery.alchemy.AlchemyMenus.MENUS.register(modEventBus);
         ModBlocks.BLOCKS.register(modEventBus);
         ModBlockEntities.BLOCK_ENTITIES.register(modEventBus);
         com.sourceofmystery.offering.OfferingMenus.MENUS.register(modEventBus);

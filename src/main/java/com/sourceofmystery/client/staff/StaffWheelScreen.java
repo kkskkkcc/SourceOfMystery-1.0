@@ -65,6 +65,10 @@ public final class StaffWheelScreen extends Screen {
         graphics.drawCenteredString(font,Component.translatable("screen.sourceofmystery.staff_hint"),width/2,bottom,0xfff0f1f3);
         if(minecraft.player!=null) {
             var stack=minecraft.player.getItemInHand(hand);
+            if((hovered>=0&&spells[hovered]==StaffSpell.TIME_STOP)||StaffSpell.selected(stack)==StaffSpell.TIME_STOP){
+                graphics.drawCenteredString(font,TimeMagicType.selected(stack).title(),width/2,bottom+13,0xffc6c7ff);
+                graphics.drawCenteredString(font,Component.translatable("tooltip.sourceofmystery.staff.time_hint"),width/2,bottom+26,0xffd7e1e5);
+            }
             if((hovered>=0&&spells[hovered]==StaffSpell.WEATHER_CONTROL)||StaffSpell.selected(stack)==StaffSpell.WEATHER_CONTROL){
                 graphics.drawCenteredString(font,WeatherType.selected(stack).title(),width/2,bottom+13,0xffa9dbe9);
                 graphics.drawCenteredString(font,Component.translatable("tooltip.sourceofmystery.staff.weather_hint"),width/2,bottom+26,0xffd7e1e5);

@@ -54,7 +54,7 @@ public final class StaffMeteorSmokeCheck {
             server(p->{
                 var level=p.serverLevel();ground=level.getHeight(net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING,0,0);
                 level.getGameRules().getRule(GameRules.RULE_DOMOBSPAWNING).set(false,p.server);level.getGameRules().getRule(GameRules.RULE_MOBGRIEFING).set(false,p.server);level.setDayTime(12500);level.setWeatherParameters(100000,0,false,false);
-                com.sourceofmystery.config.MysteryConfig.ENERGY_REGEN_PER_SECOND.set(0d);com.sourceofmystery.config.MysteryConfig.DAILY_REFRESH.set(false);
+                com.sourceofmystery.config.MysteryConfig.ENERGY_REGEN_FRACTION.set(0d);com.sourceofmystery.config.MysteryConfig.DAILY_REFRESH.set(false);
                 StaffConfig.SPELLS.get(StaffSpell.ANNIHILATION).castTicks().set(60); // Only this isolated fixture; the shipped default stays 480.
                 p.setGameMode(GameType.CREATIVE);p.teleportTo(level,.5,ground,.5,0,0);p.getAbilities().flying=true;p.onUpdateAbilities();
                 p.getInventory().clearContent();p.setItemInHand(InteractionHand.MAIN_HAND,new ItemStack(ModItems.DIMENSION_BREAKER_STAFF.get()));StaffSpell.ANNIHILATION.select(p.getMainHandItem());
@@ -65,7 +65,7 @@ public final class StaffMeteorSmokeCheck {
         }
         time++;mc.options.setCameraType(CameraType.FIRST_PERSON);mc.player.setDeltaMovement(Vec3.ZERO);
         for(var k:new KeyMapping[]{mc.options.keyUp,mc.options.keyDown,mc.options.keyLeft,mc.options.keyRight,mc.options.keyJump,mc.options.keyShift})k.setDown(false);
-        if(time<25||time>=40&&time<100||time>=110&&time<235)look(new Vec3(.5,ground+1.35,14.5));
+        if(time<25||time>=40&&time<100||time>=110&&time<180)look(new Vec3(.5,ground+1.35,14.5));
         else if(time>=25&&time<40||time>=235&&time<349||time>=420&&time<505)look(new Vec3(6.5,ground+1.35,8.5));
         else if(time>=349&&time<420)look(new Vec3(.5,ground,9.5));
         else look(mc.player.getEyePosition().add(0,60,10));
@@ -81,18 +81,22 @@ public final class StaffMeteorSmokeCheck {
             var e=mc.level.getEntity(primaryId);check(e!=null&&MeteorAimClient.outlineColor(e)==MeteorAimClient.RED&&e.getTeamColor()==MeteorAimClient.RED,"Two-second target not red");capture("03-red-locked-target.png");
             server(p->{var s=MeteorTargeting.current(p);check(s.locked()&&s.pick().entity()==target,"Server did not confirm forty ticks");check(!target.isCurrentlyGlowing()&&target.getTeam()==null,"Target hint leaked into shared entity/team state");report.addProperty("forty_tick_lock_and_private_red_outline",true);});
         }
-        if(time==105)server(p->{var s=MeteorTargeting.forCast(p);check(!s.pick().valid()&&s.dwell()==0,"Looking at sky retained a lock or invented a target");report.addProperty("miss_clears_lock_without_auto_selection",true);});
+        if(time==105){check(MeteorAimClient.previewLocked()&&MeteorAimClient.outlineColor(mc.level.getEntity(primaryId))==MeteorAimClient.RED,"Looking away cleared the local red outline");capture("03b-red-lock-after-looking-away.png");server(p->{var s=MeteorTargeting.forCast(p);check(s.locked()&&s.pick().entity()==target,"Looking at sky cleared the confirmed target");report.addProperty("look_away_retains_server_lock_and_private_red_outline",true);});}
         if(time==160)use();
+        if(time==205)server(p->{var s=MeteorTargeting.forCast(p);check(s.locked()&&s.pick().entity()==target,"Looking away while charging lost the target");report.addProperty("charging_and_release_keep_latched_target",true);});
         if(time==230){release();server(p->{moving=flight(p);check(moving.trackedTarget()==target,"Locked cast did not bind exact target UUID");check(MysteryEnergy.getEnergy(p)==90000,"Meteor cost changed");});}
         if(time==245)server(p->target.setPos(130.5,ground,14.5));
-        if(time==260){capture("04-homing-flight.png");server(p->{check(moving.trackedTarget()==target&&moving.timedImpactPoint().distanceToSqr(target.position())<.1,"Moving target not followed: age="+moving.age(0)+" kind="+moving.kind()+" point="+moving.timedImpactPoint()+" target="+target.position()+" removed="+target.isRemoved()+" alive="+target.isAlive());check(moving.trackedTarget()!=decoy,"Moving the crosshair hijacked an in-flight meteor");report.addProperty("in_flight_target_updates_and_uuid_stability",true);});}
+        if(time==260){capture("04-homing-flight.png");server(p->{check(moving.trackedTarget()==target&&moving.timedImpactPoint().distanceToSqr(target.position())<.1,"Moving target not followed: age="+moving.age(0)+" kind="+moving.kind()+" point="+moving.timedImpactPoint()+" target="+target.position()+" removed="+target.isRemoved()+" alive="+target.isAlive());check(moving.trackedTarget()!=decoy,"Moving the crosshair hijacked an in-flight meteor");check(MeteorTargeting.current(p).pick().entity()!=target,"Out-of-range target retained its ready lock");report.addProperty("out_of_range_ready_lock_released",true);report.addProperty("in_flight_target_updates_and_uuid_stability",true);});}
         if(time==335)server(p->{
             check(moving.hasImpacted()&&moving.position().distanceToSqr(target.position())<.1,"Meteor did not land at moved target");
-            check(target.getHealth()==800&&decoy.getHealth()==1000,"Moving impact damaged the abandoned target area");report.addProperty("moving_impact_and_old_area_untouched",true);
+            check(target.getHealth()==800&&decoy.getHealth()==1000,"Moving impact damaged the abandoned target area");report.addProperty("moving_impact_and_old_area_untouched",true);var s=MeteorTargeting.current(p);check(s.locked()&&s.pick().entity()==decoy,"Aiming at another entity for two seconds did not replace the latch");report.addProperty("another_two_second_target_replaces_lock",true);StaffSpell.EARTH_SPLIT.select(p.getMainHandItem());p.inventoryMenu.broadcastChanges();
         });
+        if(time==340)server(p->{StaffSpell.ANNIHILATION.select(p.getMainHandItem());p.inventoryMenu.broadcastChanges();});
         if(time==350){capture("02b-ground-area.png");use();}
         if(time==420){release();server(p->{fixed=flight(p);check(fixed.trackedTarget()==null,"Area cast acquired an entity automatically");fixedPoint=fixed.timedImpactPoint();report.addProperty("area_cast_has_no_homing_target",true);});}
         if(time==430)server(p->target.setPos(.5,ground,18.5));
+        if(time==500)server(p->{StaffSpell.EARTH_SPLIT.select(p.getMainHandItem());p.inventoryMenu.broadcastChanges();});
+        if(time==504)server(p->{StaffSpell.ANNIHILATION.select(p.getMainHandItem());p.inventoryMenu.broadcastChanges();});
         if(time==510)server(p->{
             check(fixed.hasImpacted()&&fixed.position().distanceToSqr(fixedPoint)<.1,"Area cast retargeted after release");
             check(MysteryEnergy.getEnergy(p)==80000,"Two casts did not cost exactly 20000");

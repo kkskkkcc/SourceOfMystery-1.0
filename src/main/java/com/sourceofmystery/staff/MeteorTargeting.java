@@ -24,7 +24,7 @@ public final class MeteorTargeting {
     public static final double RANGE=128;
     public record Pick(Entity entity,Vec3 point) { public boolean valid(){return point!=null;} }
     public record Selection(Pick pick,int dwell) {public boolean locked(){return pick.entity()!=null&&dwell>=LOCK_TICKS;} }
-    private record State(net.minecraft.world.level.Level level,Selection selection){}
+    private record State(net.minecraft.world.level.Level level,Selection selection,Pick focus,int focusTicks){}
     private static final Map<UUID,State> AIM=new HashMap<>();
     private MeteorTargeting(){}
     public static boolean enabled(Player player){
@@ -45,14 +45,21 @@ public final class MeteorTargeting {
         return block.getType()==HitResult.Type.BLOCK?new Pick(null,block.getLocation()):new Pick(null,null);
     }
     private static boolean same(Pick a,Pick b){return a.entity()!=null&&b.entity()!=null&&a.entity().getUUID().equals(b.entity().getUUID());}
+    public static boolean lockable(Player player,Entity target){return target!=null&&target.level()==player.level()&&target.isAlive()&&!target.isRemoved()&&target.isPickable()&&!target.isSpectator()&&!target.hasPassenger(player)&&target.distanceToSqr(player)<=RANGE*RANGE;}
     private static Selection update(ServerPlayer player,boolean advance){
         Pick current=pick(player,1);var old=AIM.get(player.getUUID());
-        int dwell=current.entity()==null?0:old!=null&&old.level==player.level()&&same(old.selection.pick,current)
-                ?Math.min(LOCK_TICKS,old.selection.dwell+(advance?1:0)):advance?1:0;
-        Selection selection=new Selection(current,dwell);AIM.put(player.getUUID(),new State(player.level(),selection));
+        if(old!=null&&old.level!=player.level())old=null;
+        int dwell=current.entity()==null?0:old!=null&&same(old.focus,current)
+                ?Math.min(LOCK_TICKS,old.focusTicks+(advance?1:0)):advance?1:0;
+        Selection selection=new Selection(current,dwell);
+        if(old!=null&&old.selection.locked()&&lockable(player,old.selection.pick.entity())){
+            var target=old.selection.pick.entity();selection=new Selection(new Pick(target,target.position()),LOCK_TICKS);
+        }
+        if(dwell>=LOCK_TICKS)selection=new Selection(current,LOCK_TICKS);
+        AIM.put(player.getUUID(),new State(player.level(),selection,current,dwell));
         return selection;
     }
-    /** Refresh at release so an aim change on the final use tick cannot use a stale lock. */
+    /** Revalidate a latched target at release; moving the crosshair does not unlock it. */
     public static Selection forCast(ServerPlayer player){return update(player,false);}
     public static Selection current(ServerPlayer player){var s=AIM.get(player.getUUID());return s==null?null:s.selection;}
     private static void send(ServerPlayer player,Selection s){

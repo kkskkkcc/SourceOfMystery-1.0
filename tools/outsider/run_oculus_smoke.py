@@ -23,14 +23,17 @@ def allowed(item):
 
 def main():
     global OUT
-    parser=argparse.ArgumentParser();parser.add_argument('--weather',action='store_true');parser.add_argument('--meteor',action='store_true');parser.add_argument('--domains',action='store_true');parser.add_argument('--domain-visual',action='store_true');parser.add_argument('--environment',action='store_true');parser.add_argument('--environment-overwrite',action='store_true');parser.add_argument('--environment-visual',action='store_true');parser.add_argument('--clouds',action='store_true');parser.add_argument('--offering',action='store_true');parser.add_argument('--offering-display',action='store_true');parser.add_argument('--offering-lottery',action='store_true');parser.add_argument('--enchanter',action='store_true');parser.add_argument('--divine-halo',action='store_true');parser.add_argument('--divine-cg',action='store_true');parser.add_argument('--equipment',action='store_true');parser.add_argument('--satellites',action='store_true');parser.add_argument('--post-intro-flight',action='store_true');parser.add_argument('--vanilla',action='store_true');parser.add_argument('--axis',action='store_true');parser.add_argument('--capture-fps',type=int,default=30);parser.add_argument('--profile',action='store_true');parser.add_argument('--video',action='store_true');parser.add_argument('--label',default='current');args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--heap-mb',type=int);parser.add_argument('--alchemy',action='store_true');parser.add_argument('--eastern',action='store_true');parser.add_argument('--time-magic',action='store_true');parser.add_argument('--weather',action='store_true');parser.add_argument('--meteor',action='store_true');parser.add_argument('--domains',action='store_true');parser.add_argument('--domain-visual',action='store_true');parser.add_argument('--environment',action='store_true');parser.add_argument('--environment-overwrite',action='store_true');parser.add_argument('--environment-visual',action='store_true');parser.add_argument('--clouds',action='store_true');parser.add_argument('--offering',action='store_true');parser.add_argument('--offering-display',action='store_true');parser.add_argument('--offering-lottery',action='store_true');parser.add_argument('--enchanter',action='store_true');parser.add_argument('--divine-halo',action='store_true');parser.add_argument('--divine-cg',action='store_true');parser.add_argument('--equipment',action='store_true');parser.add_argument('--satellites',action='store_true');parser.add_argument('--post-intro-flight',action='store_true');parser.add_argument('--vanilla',action='store_true');parser.add_argument('--axis',action='store_true');parser.add_argument('--capture-fps',type=int,default=30);parser.add_argument('--profile',action='store_true');parser.add_argument('--video',action='store_true');parser.add_argument('--label',default='current');args=parser.parse_args()
     if args.equipment:parser.error('Rejected equipment fixture archived in drafts/equipment_gecko; it is not an active verification target.')
+    alchemy_check=args.alchemy
     domain_check=args.domains or args.domain_visual
     weather_check=args.weather
     meteor_check=args.meteor
+    eastern_check=args.eastern
+    time_check=args.time_magic
     environment_overwrite=args.environment_overwrite
-    environment_check=args.environment or args.environment_visual or domain_check or meteor_check or weather_check or environment_overwrite
-    if environment_check:OUT=ROOT/('build/staff-environment-overwrite-smoke' if environment_overwrite else 'build/staff-weather-smoke' if weather_check else 'build/staff-meteor-smoke' if meteor_check else 'build/staff-domain-smoke' if domain_check else 'build/staff-environment-smoke')/args.label
+    environment_check=args.environment or args.environment_visual or domain_check or meteor_check or weather_check or environment_overwrite or time_check or eastern_check
+    if environment_check:OUT=ROOT/('build/eastern-rite-smoke' if eastern_check else 'build/staff-time-smoke' if time_check else 'build/staff-environment-overwrite-smoke' if environment_overwrite else 'build/staff-weather-smoke' if weather_check else 'build/staff-meteor-smoke' if meteor_check else 'build/staff-domain-smoke' if domain_check else 'build/staff-environment-smoke')/args.label
     satellites_check=args.satellites
     if satellites_check:OUT=ROOT/'build/divine-satellites-smoke'/args.label
     equipment_check=args.equipment
@@ -42,6 +45,7 @@ def main():
     display_check=args.offering_display
     enchanter_check=args.enchanter
     if enchanter_check:OUT=ROOT/'build/enchanter-smoke'/args.label
+    if alchemy_check:OUT=ROOT/'build/alchemy-table-smoke'/args.label
     lottery_check=args.offering_lottery
     if lottery_check:OUT=ROOT/'build/offering-lottery-smoke'/args.label
     if display_check:OUT=ROOT/'build/offering-display-smoke'/args.label
@@ -61,15 +65,17 @@ def main():
     if args.clouds:(OUT/'shaderpacks'/(pack+'.txt')).write_text('CLOUD_SPEED_MULT=0\n')
     (OUT/'config/oculus.properties').write_text('enableShaders='+str(not args.vanilla).lower()+'\nshaderPack='+pack+'\nmaxShadowRenderDistance=12\n')
     (OUT/'options.txt').write_text('renderDistance:18\nsimulationDistance:5\nmaxFps:60\nenableVsync:false\nfov:0.5\npauseOnLostFocus:false\nhideMatchedNames:true\nguiScale:2\ntutorialStep:none\nsoundCategory_master:0.0\n')
-    if environment_check or lottery_check or enchanter_check or halo_check or cg_check or equipment_check or satellites_check:
+    if environment_check or lottery_check or enchanter_check or alchemy_check or halo_check or cg_check or equipment_check or satellites_check:
         with (OUT/'options.txt').open('a') as options:options.write('lang:zh_cn\n')
     if environment_check:
         with (OUT/'options.txt').open('a') as options:options.write('renderDistance:10\nsimulationDistance:3\n')
+    if eastern_check:
+        with (OUT/'options.txt').open('a') as options:options.write('renderDistance:16\nsimulationDistance:3\n')
     if weather_check:
         with (OUT/'options.txt').open('a') as options:options.write('renderDistance:18\nsimulationDistance:3\n')
     world=OUT/'saves/shader-smoke'
     if not (world/'level.dat').exists():
-        if environment_check or args.clouds or enchanter_check or halo_check or cg_check or equipment_check or satellites_check:
+        if environment_check or args.clouds or enchanter_check or alchemy_check or halo_check or cg_check or equipment_check or satellites_check:
             # A new isolated all-air world gives real Y=-60 and Y=64 views
             # without terrain hiding the effect. Do not edit any user save.
             sys.path.insert(0,str(ROOT/'build/oculus-deps'));import nbtlib
@@ -121,12 +127,13 @@ def main():
     if display_check:flag='offeringDisplayCheck'
     if lottery_check:flag='offeringLotteryCheck'
     if enchanter_check:flag='enchanterCheck'
+    if alchemy_check:flag='alchemyCheck'
     if halo_check:flag='divineHaloCheck'
     if cg_check:flag='divineCgCheck'
     if equipment_check:flag='equipmentCheck'
     if satellites_check:flag='divineSatellitesCheck'
-    if environment_check:flag='staffEnvironmentOverwriteCheck' if environment_overwrite else 'staffWeatherCheck' if weather_check else 'staffMeteorCheck' if meteor_check else 'staffDomainsCheck' if domain_check else 'staffEnvironmentVisualCheck' if args.environment_visual else 'staffEnvironmentCheck'
-    command=['-Xmx4G','-Dsourceofmystery.'+flag+'=true','-Dsourceofmystery.offeringCaptureFps='+str(args.capture_fps),'-Dsourceofmystery.offeringAxis='+str(args.axis).lower()]+arguments(data['arguments']['jvm'])+[data['mainClass']]+arguments(data['arguments']['game'])
+    if environment_check:flag='easternRiteCheck' if eastern_check else 'staffTimeMagicCheck' if time_check else 'staffEnvironmentOverwriteCheck' if environment_overwrite else 'staffWeatherCheck' if weather_check else 'staffMeteorCheck' if meteor_check else 'staffDomainsCheck' if domain_check else 'staffEnvironmentVisualCheck' if args.environment_visual else 'staffEnvironmentCheck'
+    command=[('-Xmx'+str(args.heap_mb)+'M') if args.heap_mb else ('-Xmx3G' if eastern_check else '-Xmx4G'),'-Dsourceofmystery.'+flag+'=true','-Dsourceofmystery.offeringCaptureFps='+str(args.capture_fps),'-Dsourceofmystery.offeringAxis='+str(args.axis).lower()]+arguments(data['arguments']['jvm'])+[data['mainClass']]+arguments(data['arguments']['game'])
     if domain_check:command.insert(0,'-Dsourceofmystery.domainVisualOnly='+str(args.domain_visual).lower())
     if args.profile:command.insert(0,'-XX:StartFlightRecording=filename='+str(OUT/'cinematic.jfr')+',settings=profile,dumponexit=true')
     if args.video:
@@ -143,6 +150,15 @@ def main():
         process=subprocess.run([str(java),'@'+str(argfile)],cwd=OUT,stdout=log,stderr=subprocess.STDOUT,timeout=1900 if environment_check else 180)
     if process.returncode==0:
         log=(OUT/'launch.log').read_text(encoding='utf8',errors='replace')
+        if alchemy_check:
+            assert 'ALCHEMY_SMOKE_OK' in log and 'AssertionError' not in log
+            print((OUT/'alchemy-verification.json').read_text(encoding='utf8'));return 0
+        if eastern_check:
+            assert 'EASTERN_RITE_OK' in log and 'AssertionError' not in log
+            print((OUT/'eastern-verification.json').read_text(encoding='utf-8'));return 0
+        if time_check:
+            assert 'STAFF_TIME_MAGIC_OK' in log and 'AssertionError' not in log
+            print((OUT/'time-magic-verification.json').read_text(encoding='utf-8'));return 0
         if weather_check:
             assert 'STAFF_WEATHER_OK' in log and 'AssertionError' not in log
             print((OUT/'weather-verification.json').read_text(encoding='utf-8'));return 0

@@ -54,7 +54,7 @@ import java.util.UUID;
  * one movement decision per tick; GeckoLib only displays the synchronized state.
  */
 public class GuardianSpirit extends PathfinderMob implements GeoEntity {
-    private enum Action { IDLE, LOVE, WATER_FLOAT, CHARGE, PRAYER }
+    private enum Action { IDLE, LOVE, WATER_FLOAT, CHARGE }
 
     private static final EntityDataAccessor<Integer> ACTION =
             SynchedEntityData.defineId(GuardianSpirit.class, EntityDataSerializers.INT);
@@ -73,7 +73,6 @@ public class GuardianSpirit extends PathfinderMob implements GeoEntity {
     private long recentAttackerExpires;
     private int actionTicks;
     private int chargeCooldown;
-    private int prayerCooldown;
     private int loveCooldown;
     private int floatCooldown;
     private int flightTicks;
@@ -105,7 +104,6 @@ public class GuardianSpirit extends PathfinderMob implements GeoEntity {
     @Nullable public BlockPos getHomeVillageCenter() { return homeVillageCenter; }
     public void setHomeVillageCenter(BlockPos center) { homeVillageCenter = center.immutable(); }
     public int getAnimState() { return entityData.get(ACTION); }
-    public boolean isPraying() { return getAnimState() == Action.PRAYER.ordinal(); }
     public long getStateAge() { return Math.max(0L, level().getGameTime() - entityData.get(ACTION_STARTED)); }
 
     /** The event handler records a player attacker without ever targeting players. */
@@ -138,7 +136,6 @@ public class GuardianSpirit extends PathfinderMob implements GeoEntity {
     private void serverTick(ServerLevel server) {
         if (tickCount % 20 == 0 && getHealth() < getMaxHealth()) heal(5.0F);
         chargeCooldown = Math.max(0, chargeCooldown - 1);
-        prayerCooldown = Math.max(0, prayerCooldown - 1);
         loveCooldown = Math.max(0, loveCooldown - 1);
         floatCooldown = Math.max(0, floatCooldown - 1);
 
@@ -198,7 +195,6 @@ public class GuardianSpirit extends PathfinderMob implements GeoEntity {
             }
             if (--actionTicks <= 0) {
                 if (current == Action.CHARGE) fireOrb(server);
-                if (current == Action.PRAYER) castLightning(server);
                 setAction(Action.IDLE, 0);
             }
             return;
@@ -206,12 +202,7 @@ public class GuardianSpirit extends PathfinderMob implements GeoEntity {
 
         LivingEntity target = getTarget();
         if (target != null && isHostileToPlayers(target) && distanceToSqr(target) <= ATTACK_DISTANCE_SQR) {
-            int hostileCount = server.getEntitiesOfClass(LivingEntity.class,
-                    getBoundingBox().inflate(32), this::isHostileToPlayers).size();
-            if (prayerCooldown == 0 && (hostileCount >= 2 || random.nextInt(4) == 0)) {
-                setAction(Action.PRAYER, 60);
-                prayerCooldown = 180;
-            } else if (chargeCooldown == 0) {
+            if (chargeCooldown == 0) {
                 setAction(Action.CHARGE, 40);
                 chargeCooldown = 20;
             }
@@ -277,24 +268,6 @@ public class GuardianSpirit extends PathfinderMob implements GeoEntity {
                 1.0F, 1.15F);
     }
 
-    private void castLightning(ServerLevel server) {
-        AABB area = getBoundingBox().inflate(32.0);
-        List<LivingEntity> targets = server.getEntitiesOfClass(LivingEntity.class, area,
-                entity -> isHostileToPlayers(entity) && distanceToSqr(entity) <= ATTACK_DISTANCE_SQR);
-        for (LivingEntity target : targets) {
-            var bolt = EntityType.LIGHTNING_BOLT.create(server);
-            if (bolt != null) {
-                bolt.moveTo(target.getX(), target.getY(), target.getZ());
-                bolt.setVisualOnly(true);
-                server.addFreshEntity(bolt);
-            }
-            target.invulnerableTime = 0;
-            target.hurt(damageSources().indirectMagic(this, this), 10.0F);
-        }
-        if (!targets.isEmpty()) server.playSound(null, blockPosition(), SoundEvents.LIGHTNING_BOLT_THUNDER,
-                SoundSource.NEUTRAL, 2.0F, 1.0F);
-    }
-
     private void tickMovement(ServerLevel server) {
         if (homeVillageCenter == null) {
             setDeltaMovement(getDeltaMovement().scale(0.65));
@@ -315,8 +288,8 @@ public class GuardianSpirit extends PathfinderMob implements GeoEntity {
         }
 
         Action action = Action.values()[getAnimState()];
-        if (action == Action.LOVE || action == Action.CHARGE || action == Action.PRAYER) {
-            // The 3-second affection hold and both spell casts remain in place.
+        if (action == Action.LOVE || action == Action.CHARGE) {
+            // The 3-second affection hold and orb charge remain in place.
             setDeltaMovement(getDeltaMovement().scale(isNoGravity() ? 0.25 : 0.50));
             patrolDestination = null;
             if (getTarget() != null) faceMovement(getTarget().position().subtract(position()));
@@ -519,7 +492,6 @@ public class GuardianSpirit extends PathfinderMob implements GeoEntity {
         if (homeVillageCenter != null) tag.putLong("HomeVillage", homeVillageCenter.asLong());
         tag.putInt("DesiredAllays", desiredAllays);
         tag.putInt("ChargeCooldown", chargeCooldown);
-        tag.putInt("PrayerCooldown", prayerCooldown);
         tag.putInt("LoveCooldown", loveCooldown);
         tag.putInt("FloatCooldown", floatCooldown);
         tag.putInt("FlightTicks", flightTicks);
@@ -538,7 +510,6 @@ public class GuardianSpirit extends PathfinderMob implements GeoEntity {
         homeVillageCenter = tag.contains("HomeVillage") ? BlockPos.of(tag.getLong("HomeVillage")) : null;
         desiredAllays = tag.getInt("DesiredAllays");
         chargeCooldown = tag.getInt("ChargeCooldown");
-        prayerCooldown = tag.getInt("PrayerCooldown");
         loveCooldown = tag.getInt("LoveCooldown");
         floatCooldown = tag.getInt("FloatCooldown");
         flightTicks = Math.max(1, tag.getInt("FlightTicks"));
@@ -566,7 +537,6 @@ public class GuardianSpirit extends PathfinderMob implements GeoEntity {
                 case LOVE -> RawAnimation.begin().thenPlay("animation.guardian_spirit.love");
                 case WATER_FLOAT -> RawAnimation.begin().thenLoop("animation.guardian_spirit.water_float");
                 case CHARGE -> RawAnimation.begin().thenPlay("animation.guardian_spirit.attack_charge");
-                case PRAYER -> RawAnimation.begin().thenPlay("animation.guardian_spirit.attack_prayer");
                 default -> RawAnimation.begin().thenLoop("animation.guardian_spirit.idle");
             };
             return state.setAndContinue(animation);

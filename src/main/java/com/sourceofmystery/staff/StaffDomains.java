@@ -42,10 +42,7 @@ public final class StaffDomains {
         final Set<UUID> debris=new HashSet<>();int snowCursor;
         Field(ServerPlayer player,DomainType type){owner=player.getUUID();this.type=type;anchor=center=player.position();yaw=player.getYRot();remaining=StaffConfig.DOMAIN_DURATION.get();}
         public boolean contains(Vec3 point){
-            if(point.distanceToSqr(center)>type.radius*type.radius)return false;
-            if(type!=DomainType.EXECUTION)return true;
-            Vec3 delta=point.subtract(center);
-            return delta.x*(-Math.sin(yaw*Math.PI/180))+delta.z*Math.cos(yaw*Math.PI/180)>=-.5;
+            return point.distanceToSqr(center)<=type.radius*type.radius;
         }
         DomainSyncPacket.Field snapshot(){return new DomainSyncPacket.Field(token,owner,type.ordinal(),center,yaw,age,remaining);}
     }
@@ -84,6 +81,12 @@ public final class StaffDomains {
     public static void stop(ServerPlayer p){
         var w=WORLDS.get(p.serverLevel());if(w==null)return;var f=w.fields.remove(p.getUUID());if(f==null)return;
         clearDebris(p.serverLevel(),f);reconcile(p.serverLevel(),w);broadcast(p.serverLevel());
+    }
+    /** Shared by damage and rendering: dropped items/projectiles never receive cuts. */
+    public static boolean executionTarget(Entity e,UUID owner){
+        if(!(e instanceof LivingEntity)||!e.isAlive()||e.isRemoved()||!e.isAttackable()||e.isSpectator()||e.getUUID().equals(owner))return false;
+        for(var passenger:e.getIndirectPassengers())if(passenger.getUUID().equals(owner))return false;
+        return true;
     }
     private static boolean immune(Entity e,ServerPlayer owner){return e==owner||e.hasPassenger(owner)||e.isSpectator()||e instanceof net.minecraft.world.entity.Marker;}
     private static void merge(Map<Entity,Wanted> desired,Entity e,int flag,Vec3 pull){
@@ -195,9 +198,19 @@ public final class StaffDomains {
         String key=switch(f.type){case FROST->"domain_frost";case DARKNESS->"domain_void";default->"domain_slash";};
         float amount=f.type==DomainType.FROST?3:f.type==DomainType.DARKNESS?10:30;
         var area=new AABB(f.center,f.center).inflate(f.type.radius);
-        for(var e:level.getEntitiesOfClass(LivingEntity.class,area,e->e.isAlive()&&!immune(e,owner)))if(f.contains(e.getBoundingBox().getCenter())){
+        var hits=new ArrayList<DomainSlashPacket.Target>();
+        for(var e:level.getEntitiesOfClass(LivingEntity.class,area,e->e.isAlive()&&!immune(e,owner)))if(f.contains(e.getBoundingBox().getCenter())&&(f.type!=DomainType.EXECUTION||executionTarget(e,owner.getUUID()))){
+            float health=e.getHealth()+e.getAbsorptionAmount();
             e.hurt(source(level,owner,key),amount);
             if(f.type==DomainType.EXECUTION&&e.isAlive())e.hurt(source(level,owner,"domain_execution"),e.getMaxHealth()*.01f);
+            if(f.type==DomainType.EXECUTION&&e.getHealth()+e.getAbsorptionAmount()<health)
+                hits.add(new DomainSlashPacket.Target(e.getId(),e.getUUID()));
+        }
+        // One short visual pulse for this exact damage settlement, never a client timer.
+        for(int start=0;start<hits.size();start+=DomainSlashPacket.MAX_TARGETS){
+            var batch=List.copyOf(hits.subList(start,Math.min(hits.size(),start+DomainSlashPacket.MAX_TARGETS)));
+            ModNetwork.CHANNEL.send(PacketDistributor.DIMENSION.with(level::dimension),
+                    new DomainSlashPacket(level.dimension().location(),f.token,f.age,batch));
         }
     }
     private static void snow(ServerLevel level,Field f){

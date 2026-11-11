@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.sourceofmystery.item.DimensionBreakerStaffItem;
 import com.sourceofmystery.staff.StaffSpell;
+import com.sourceofmystery.staff.EasternRite;
 import com.sourceofmystery.staff.StaffEnvironment;
 import com.sourceofmystery.staff.EnvironmentPalette;
 import net.minecraft.client.Minecraft;
@@ -45,6 +46,15 @@ public final class StaffItemExtensions implements IClientItemExtensions {
                         support.xRot = -.2f;
                         support.yRot = 0;
                     }
+                } else if(spell==StaffSpell.EASTERN_RITE){
+                    float ritual=com.sourceofmystery.client.EasternVisuals.staffAge(active,Minecraft.getInstance().getFrameTime());
+                    float liftEastern=ritual<0?ease(age/.65f):1;
+                    float release=ritual<0?0:ease((ritual-EasternRite.LAUNCH+2)/5)*(1-ease((ritual-EasternRite.LAUNCH-4)/16));
+                    // Arm-only channel pose: ordinary walking, head movement and camera remain available.
+                    dominant.xRot=-.45f-.4f*liftEastern-.30f*release;
+                    dominant.yRot=-side*.12f;dominant.zRot=-side*.18f;
+                    support.xRot=-.2f-.7f*liftEastern+.4f*release;
+                    support.yRot=-side*.20f;support.zRot=side*.14f;
                 } else if(spell==StaffSpell.WEATHER_CONTROL){
                     float p=Mth.clamp(age/Math.max(.1f,spell.castTicks()/20f),0,1),rise=ease(p/.4f),turn=ease((p-.55f)/.4f);
                     dominant.xRot=-.3f-2.0f*rise+.65f*turn;dominant.zRot=-side*(.12f+.2f*rise);dominant.yRot=side*.15f*turn;
@@ -100,13 +110,25 @@ public final class StaffItemExtensions implements IClientItemExtensions {
     @Override public HumanoidModel.ArmPose getArmPose(LivingEntity entity, InteractionHand hand, ItemStack stack) {
         boolean channel=entity.isUsingItem()&&entity.getUsedItemHand()==hand;
         boolean recovery=StaffSpell.selected(stack)==StaffSpell.ENVIRONMENT_SHIFT&&StaffVisuals.environmentPoseAge(entity,Minecraft.getInstance().getFrameTime())>=0;
-        return channel||recovery?CAST:HumanoidModel.ArmPose.EMPTY;
+        boolean eastern=StaffSpell.selected(stack)==StaffSpell.EASTERN_RITE&&com.sourceofmystery.client.EasternVisuals.staffAge(stack,Minecraft.getInstance().getFrameTime())>=0;
+        return channel||recovery||eastern?CAST:HumanoidModel.ArmPose.EMPTY;
     }
 
     @Override public boolean applyForgeHandTransform(PoseStack poses, LocalPlayer player, HumanoidArm arm,
                                                      ItemStack item, float partial, float equip, float swing) {
-        if (!player.isUsingItem() || player.getUseItem() != item) return false;
+        boolean channel=player.isUsingItem()&&player.getUseItem()==item;
+        float ritual=StaffSpell.selected(item)==StaffSpell.EASTERN_RITE?com.sourceofmystery.client.EasternVisuals.staffAge(item,partial):-1;
+        if (!channel&&ritual<0) return false;
         float side = arm == HumanoidArm.RIGHT ? 1 : -1;
+        if(StaffSpell.selected(item)==StaffSpell.EASTERN_RITE){
+            float rise=channel?ease((player.getTicksUsingItem()+partial)/12):1;
+            float recoil=ritual<0?0:ease((ritual-EasternRite.LAUNCH)/2)*(1-ease((ritual-EasternRite.LAUNCH-2)/14));
+            float settle=ritual<0?0:ease((ritual-EasternRite.LAUNCH-10)/10);
+            poses.translate(side*(.48-.035*rise+.07*recoil),-.70-equip*.6+.06*rise-.09*recoil-.04*settle,-1.03+.12*recoil);
+            poses.mulPose(Axis.ZP.rotationDegrees(side*(7+3*rise)));
+            poses.mulPose(Axis.XP.rotationDegrees(-8*rise+13*recoil));
+            return true;
+        }
         if(StaffSpell.selected(item)==StaffSpell.ENVIRONMENT_SHIFT) {
             float p=Mth.clamp((player.getTicksUsingItem()+partial)/Math.max(1f,StaffSpell.ENVIRONMENT_SHIFT.castTicks()),0,1);
             float rise=ease(p/.25f),strike=ease((p-.76f)/.19f);
@@ -129,9 +151,19 @@ public final class StaffItemExtensions implements IClientItemExtensions {
 
     private static final class StaffRenderer extends GeoItemRenderer<DimensionBreakerStaffItem> {
         private org.joml.Matrix4f crystal;
+        private boolean heldContext;
         StaffRenderer(){
             super(new DefaultedItemGeoModel<>(new ResourceLocation("sourceofmystery","dimension_breaker_staff")));
             addRenderLayer(new software.bernie.geckolib.renderer.layer.AutoGlowingGeoLayer<>(this));
+        }
+        @Override public void renderByItem(ItemStack stack,net.minecraft.world.item.ItemDisplayContext context,PoseStack poses,
+                net.minecraft.client.renderer.MultiBufferSource buffers,int light,int overlay){
+            boolean previous=heldContext;
+            heldContext=context==net.minecraft.world.item.ItemDisplayContext.FIRST_PERSON_RIGHT_HAND
+                    ||context==net.minecraft.world.item.ItemDisplayContext.FIRST_PERSON_LEFT_HAND
+                    ||context==net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_RIGHT_HAND
+                    ||context==net.minecraft.world.item.ItemDisplayContext.THIRD_PERSON_LEFT_HAND;
+            try{super.renderByItem(stack,context,poses,buffers,light,overlay);}finally{heldContext=previous;}
         }
         @Override public void renderRecursively(PoseStack poses,DimensionBreakerStaffItem item,software.bernie.geckolib.cache.object.GeoBone bone,
                 net.minecraft.client.renderer.RenderType type,net.minecraft.client.renderer.MultiBufferSource buffers,
@@ -148,6 +180,14 @@ public final class StaffItemExtensions implements IClientItemExtensions {
             if(crystal!=null&&age>=0&&!reRender) {
                 PoseStack seal=new PoseStack();seal.last().pose().set(crystal);
                 com.sourceofmystery.client.StaffMagicGeometry.earthSeal(seal,buffers,age/20f);
+            }
+            if(crystal!=null&&heldContext&&!reRender&&StaffSpell.selected(getCurrentItemStack())==StaffSpell.EASTERN_RITE){
+                float charge=StaffVisuals.chargeAge(getCurrentItemStack(),StaffSpell.EASTERN_RITE,partial);
+                float ritual=com.sourceofmystery.client.EasternVisuals.staffAge(getCurrentItemStack(),partial);
+                if(charge>=0||ritual>=0){
+                    PoseStack energy=new PoseStack();energy.last().pose().set(crystal);
+                    com.sourceofmystery.client.EasternStaffVfx.render(energy,buffers,charge,StaffSpell.EASTERN_RITE.castTicks(),ritual);
+                }
             }
         }
     }

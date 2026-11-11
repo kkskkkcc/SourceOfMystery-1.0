@@ -1,0 +1,27 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_offering": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sourceofmystery:dark_dimensional_offering"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "requirements": [
+    [
+      "has_offering"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "sourceofmystery:alchemist_table"
+    ]
+  }
+}

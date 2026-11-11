@@ -14,9 +14,19 @@ import java.util.function.BiConsumer;
 @Mixin(ServerLevel.class)
 public abstract class ServerLevelTimeMixin {
     @Inject(method="tickNonPassenger",at=@At("HEAD"),cancellable=true)
-    private void som$entity(Entity entity,CallbackInfo info) { if(TimeStop.frozen(entity))info.cancel(); }
+    private void som$entity(Entity entity,CallbackInfo info) { if(TimeStop.skipEntityTick(entity))info.cancel(); }
     @Inject(method="tickPassenger",at=@At("HEAD"),cancellable=true)
-    private void som$passenger(Entity vehicle,Entity passenger,CallbackInfo info) { if(TimeStop.frozen(passenger))info.cancel(); }
+    private void som$passenger(Entity vehicle,Entity passenger,CallbackInfo info) { if(TimeStop.skipEntityTick(passenger))info.cancel(); }
+    @Inject(method="tickTime",at=@At("HEAD"),cancellable=true)
+    private void som$scaledTime(CallbackInfo info){
+        var level=(ServerLevel)(Object)this;
+        if(TimeStop.rateControlled(level)&&!TimeStop.rawTimeOnly(level)){TimeStop.advanceSimulationTime(level);info.cancel();}
+    }
+    @Redirect(method="tickTime",at=@At(value="INVOKE",target="Lnet/minecraft/world/level/timers/TimerQueue;tick(Ljava/lang/Object;J)V"))
+    private void som$timers(net.minecraft.world.level.timers.TimerQueue<net.minecraft.server.MinecraftServer> queue,Object server,long raw){
+        var level=(ServerLevel)(Object)this;
+        if(!TimeStop.altered(level))queue.tick((net.minecraft.server.MinecraftServer)server,level.getGameTime());
+    }
     @Inject(method="tickChunk",at=@At("HEAD"),cancellable=true)
     private void som$randomTicks(LevelChunk chunk,int randomSpeed,CallbackInfo info) { if(TimeStop.active((ServerLevel)(Object)this))info.cancel(); }
     @Inject(method={"advanceWeatherCycle","runBlockEvents"},at=@At("HEAD"),cancellable=true)
