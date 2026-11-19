@@ -54,6 +54,12 @@ minecraft {
                 args '--username', 'GearCheck', '--width', '1280', '--height', '720'
                 mods { sourceofmystery { source sourceSets.gameTest } }
             }
+            if (project.hasProperty('tangDaoCheck')) {
+                workingDirectory project.file('build/tang-dao-client-check')
+                property 'sourceofmystery.tangDaoCheck', 'true'
+                args '--username', 'TangDaoCheck', '--width', '1280', '--height', '800'
+                mods { sourceofmystery { source sourceSets.shaderTest } }
+            }
             if (project.hasProperty('outsiderCheck')) {
                 workingDirectory project.file('build/outsider-client-check')
                 property 'sourceofmystery.outsiderCheck', 'true'
