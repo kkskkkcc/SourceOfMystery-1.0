@@ -38,6 +38,7 @@ public class ModCreativeTabs {
                         output.accept(ModItems.ALCHEMIST_TABLE.get());
 
                         // 武器
+                        output.accept(ModItems.TANG_DAO.get());
                         output.accept(ModItems.MYSTERY_SWORD.get());
                         output.accept(ModItems.SPIRIT_SOURCE_SWORD.get());
                         output.accept(ModItems.DARK_SOURCE_SWORD.get());

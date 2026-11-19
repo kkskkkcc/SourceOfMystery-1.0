@@ -24,6 +24,8 @@
     "LevelRendererTimeMixin",
     "EntityRenderTimeMixin",
     "ItemInHandAccess",
+    "TangDaoPlayerModelMixin",
+    "TangDaoHeldLayerMixin",
     "DivinePlayerLayersAccess",
     "DivineMouseInputMixin",
     "MeteorAimGlowMixin",

@@ -1,0 +1,4 @@
+newmtl forged_palette
+Ka 0 0 0
+Kd 1 1 1
+map_Kd sourceofmystery:item/tang_dao

@@ -50,6 +50,9 @@ public class ModItems {
             () -> new DarkDimensionalOfferingItem(new Item.Properties().rarity(Rarity.EPIC).stacksTo(1).fireResistant()));
 
     // ==================== 武器 ====================
+    public static final RegistryObject<Item> TANG_DAO = ITEMS.register("tang_dao",
+            () -> new Item(new Item.Properties().stacksTo(1)));
+
     // 武器伤害（物品栏显示值）= 玩家基础 1 + MysteryTier.attackDamageBonus + 构造参数 attackDamageBonus
     // 攻击速度 = 玩家基础 4.0 + 构造参数 attackSpeedBonus
     // MYSTERY:           1 + 4   + 3  = 8   伤害, 1.6 攻速

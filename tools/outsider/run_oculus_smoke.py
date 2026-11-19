@@ -23,7 +23,9 @@ def allowed(item):
 
 def main():
     global OUT
-    parser=argparse.ArgumentParser();parser.add_argument('--heap-mb',type=int);parser.add_argument('--alchemy',action='store_true');parser.add_argument('--eastern',action='store_true');parser.add_argument('--time-magic',action='store_true');parser.add_argument('--weather',action='store_true');parser.add_argument('--meteor',action='store_true');parser.add_argument('--domains',action='store_true');parser.add_argument('--domain-visual',action='store_true');parser.add_argument('--environment',action='store_true');parser.add_argument('--environment-overwrite',action='store_true');parser.add_argument('--environment-visual',action='store_true');parser.add_argument('--clouds',action='store_true');parser.add_argument('--offering',action='store_true');parser.add_argument('--offering-display',action='store_true');parser.add_argument('--offering-lottery',action='store_true');parser.add_argument('--enchanter',action='store_true');parser.add_argument('--divine-halo',action='store_true');parser.add_argument('--divine-cg',action='store_true');parser.add_argument('--equipment',action='store_true');parser.add_argument('--satellites',action='store_true');parser.add_argument('--post-intro-flight',action='store_true');parser.add_argument('--vanilla',action='store_true');parser.add_argument('--axis',action='store_true');parser.add_argument('--capture-fps',type=int,default=30);parser.add_argument('--profile',action='store_true');parser.add_argument('--video',action='store_true');parser.add_argument('--label',default='current');args=parser.parse_args()
+    parser=argparse.ArgumentParser();parser.add_argument('--heap-mb',type=int);parser.add_argument('--alchemy',action='store_true');parser.add_argument('--eastern',action='store_true');parser.add_argument('--time-magic',action='store_true');parser.add_argument('--weather',action='store_true');parser.add_argument('--meteor',action='store_true');parser.add_argument('--domains',action='store_true');parser.add_argument('--domain-visual',action='store_true');parser.add_argument('--environment',action='store_true');parser.add_argument('--environment-overwrite',action='store_true');parser.add_argument('--environment-visual',action='store_true');parser.add_argument('--clouds',action='store_true');parser.add_argument('--offering',action='store_true');parser.add_argument('--offering-display',action='store_true');parser.add_argument('--offering-lottery',action='store_true');parser.add_argument('--enchanter',action='store_true');parser.add_argument('--divine-halo',action='store_true');parser.add_argument('--divine-cg',action='store_true');parser.add_argument('--equipment',action='store_true');parser.add_argument('--satellites',action='store_true');parser.add_argument('--post-intro-flight',action='store_true');parser.add_argument('--vanilla',action='store_true');parser.add_argument('--axis',action='store_true');parser.add_argument('--capture-fps',type=int,default=30);parser.add_argument('--profile',action='store_true');parser.add_argument('--video',action='store_true');parser.add_argument('--label',default='current')
+    parser.add_argument('--tang-dao',action='store_true');args=parser.parse_args()
+    tang_dao_check=args.tang_dao
     if args.equipment:parser.error('Rejected equipment fixture archived in drafts/equipment_gecko; it is not an active verification target.')
     alchemy_check=args.alchemy
     domain_check=args.domains or args.domain_visual
@@ -46,6 +48,7 @@ def main():
     enchanter_check=args.enchanter
     if enchanter_check:OUT=ROOT/'build/enchanter-smoke'/args.label
     if alchemy_check:OUT=ROOT/'build/alchemy-table-smoke'/args.label
+    if tang_dao_check:OUT=ROOT/'build/tang-dao-smoke'/args.label
     lottery_check=args.offering_lottery
     if lottery_check:OUT=ROOT/'build/offering-lottery-smoke'/args.label
     if display_check:OUT=ROOT/'build/offering-display-smoke'/args.label
@@ -65,7 +68,7 @@ def main():
     if args.clouds:(OUT/'shaderpacks'/(pack+'.txt')).write_text('CLOUD_SPEED_MULT=0\n')
     (OUT/'config/oculus.properties').write_text('enableShaders='+str(not args.vanilla).lower()+'\nshaderPack='+pack+'\nmaxShadowRenderDistance=12\n')
     (OUT/'options.txt').write_text('renderDistance:18\nsimulationDistance:5\nmaxFps:60\nenableVsync:false\nfov:0.5\npauseOnLostFocus:false\nhideMatchedNames:true\nguiScale:2\ntutorialStep:none\nsoundCategory_master:0.0\n')
-    if environment_check or lottery_check or enchanter_check or alchemy_check or halo_check or cg_check or equipment_check or satellites_check:
+    if environment_check or lottery_check or enchanter_check or alchemy_check or tang_dao_check or halo_check or cg_check or equipment_check or satellites_check:
         with (OUT/'options.txt').open('a') as options:options.write('lang:zh_cn\n')
     if environment_check:
         with (OUT/'options.txt').open('a') as options:options.write('renderDistance:10\nsimulationDistance:3\n')
@@ -75,7 +78,7 @@ def main():
         with (OUT/'options.txt').open('a') as options:options.write('renderDistance:18\nsimulationDistance:3\n')
     world=OUT/'saves/shader-smoke'
     if not (world/'level.dat').exists():
-        if environment_check or args.clouds or enchanter_check or alchemy_check or halo_check or cg_check or equipment_check or satellites_check:
+        if environment_check or args.clouds or enchanter_check or alchemy_check or tang_dao_check or halo_check or cg_check or equipment_check or satellites_check:
             # A new isolated all-air world gives real Y=-60 and Y=64 views
             # without terrain hiding the effect. Do not edit any user save.
             sys.path.insert(0,str(ROOT/'build/oculus-deps'));import nbtlib
@@ -128,6 +131,7 @@ def main():
     if lottery_check:flag='offeringLotteryCheck'
     if enchanter_check:flag='enchanterCheck'
     if alchemy_check:flag='alchemyCheck'
+    if tang_dao_check:flag='tangDaoCheck'
     if halo_check:flag='divineHaloCheck'
     if cg_check:flag='divineCgCheck'
     if equipment_check:flag='equipmentCheck'
@@ -150,6 +154,12 @@ def main():
         process=subprocess.run([str(java),'@'+str(argfile)],cwd=OUT,stdout=log,stderr=subprocess.STDOUT,timeout=1900 if environment_check else 180)
     if process.returncode==0:
         log=(OUT/'launch.log').read_text(encoding='utf8',errors='replace')
+        if tang_dao_check:
+            assert 'TANG_DAO_OK' in log and 'AssertionError' not in log
+            marker=next(line for line in log.splitlines() if 'TANG_DAO_OK' in line)
+            expected_frames=int(marker.split('TANG_DAO_OK frames=',1)[1].split()[0])
+            assert len(list((OUT/'screenshots').glob('*.png'))) == expected_frames
+            print(marker);return 0
         if alchemy_check:
             assert 'ALCHEMY_SMOKE_OK' in log and 'AssertionError' not in log
             print((OUT/'alchemy-verification.json').read_text(encoding='utf8'));return 0
